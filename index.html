@@ -129,6 +129,11 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
   <label>국가법령정보센터 인증키(OC)</label>
   <input id="oc" placeholder="open.law.go.kr 에서 신청한 OC" autocapitalize="off" autocomplete="off">
   <div class="muted" style="font-size:.78em;margin-top:4px">이 폰의 브라우저에만 저장되고, 법제처로 조회할 때만 쓰입니다.</div>
+  <label>즐겨찾기 공유 (PC와 같은 인증키끼리)</label>
+  <input id="syRepo" placeholder="공유 주소(앱스크립트 웹앱 URL) 또는 GitHub 저장소" autocapitalize="off" autocomplete="off">
+  <input id="syTok" type="password" placeholder="GitHub 토큰 (웹앱 주소를 쓰면 비움)" autocapitalize="off" autocomplete="off" style="margin-top:6px">
+  <div class="muted" style="font-size:.78em;margin-top:4px">토큰은 이 폰에만 저장됩니다. 저장소가 공개면 즐겨찾기 목록도 공개되니 비공개를 권합니다. 비우면 공유를 끕니다.</div>
+  <button class="btn g" id="syNow" style="margin-top:8px;width:100%">지금 동기화</button>
   <label>색상 테마</label>
   <select id="theme"><option value="">기본 (청록)</option><option value="paper">종이</option><option value="dark">남색 (어두움)</option></select>
   <label>글자 크기</label>
@@ -141,7 +146,7 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
 <div id="toast"></div>
 
 <script>
-const VERSION = "5.2";
+const VERSION = "5.4";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -200,10 +205,14 @@ function applyPrefs() {
   if (mc) mc.content = getComputedStyle(document.documentElement).getPropertyValue("--acc").trim() || "#0E7C6B";
 }
 applyPrefs();
-$("#bSet").onclick = () => { $("#oc").value = OC; $("#theme").value = LS.get("lv_theme", ""); $("#fsz").value = LS.get("lv_fs", 16); $("#ver").textContent = "법령 뷰어 모바일 v" + VERSION + " · 법제처 국가법령정보센터 Open API"; $("#ovSet").classList.add("on"); };
+$("#bSet").onclick = () => { $("#oc").value = OC; $("#syRepo").value = LS.get("lv_syrepo", ""); $("#syTok").value = LS.get("lv_sytok", ""); $("#theme").value = LS.get("lv_theme", ""); $("#fsz").value = LS.get("lv_fs", 16); $("#ver").textContent = "법령 뷰어 모바일 v" + VERSION + " · 법제처 국가법령정보센터 Open API"; $("#ovSet").classList.add("on"); };
+$("#syNow").onclick = () => { LS.set("lv_syrepo", $("#syRepo").value.trim()); LS.set("lv_sytok", $("#syTok").value.trim()); OC = $("#oc").value.trim() || OC; syncNow(true); };
 $("#setNo").onclick = () => $("#ovSet").classList.remove("on");
 $("#setOk").onclick = () => {
   OC = $("#oc").value.trim(); LS.set("lv_oc", OC);
+  const sr = $("#syRepo").value.trim(), st = $("#syTok").value.trim(), had = LS.get("lv_syrepo", "") + LS.get("lv_sytok", "");
+  LS.set("lv_syrepo", sr); LS.set("lv_sytok", st);
+  if (sr && (st || isScript(sr)) && sr + st !== had) setTimeout(() => syncNow(true), 300);
   LS.set("lv_theme", $("#theme").value); LS.set("lv_fs", parseInt($("#fsz").value, 10));
   applyPrefs(); $("#ovSet").classList.remove("on"); toast("저장했습니다");
 };
@@ -285,7 +294,67 @@ function paintHits() {
   L.querySelectorAll(".card").forEach((c) => (c.onclick = () => { const x = hits[+c.dataset.i]; openDoc(x.kind, x.rawmst, x.lawname, x.date); }));
 }
 let favs = LS.get("lv_favs", []);
-function saveFavs() { LS.set("lv_favs", favs); }
+function saveFavs() { LS.set("lv_favs", favs); LS.set("lv_favs_ts", Date.now()); syncSoon(); }
+// ---- 즐겨찾기 공유: PC 와 같은 형식(name·label·title)으로 GitHub 저장소 파일에 둔다(나중에 바꾼 쪽이 이김)
+const GHAPI = P.get("ghapi") || "https://api.github.com";
+function canon(f) { const m = String(f.label || "").match(/^(\S+)\s*(.*)$/); return { kind: f.kind, name: f.lawname, rawmst: f.rawmst, date: f.date || "", key: f.key || "", label: f.key && m ? m[1] : "", title: f.key && m ? m[2] : "" }; }
+function fromCanon(c) { return { kind: c.kind, rawmst: c.rawmst, lawname: c.name, date: c.date || "", key: c.key || "", label: c.key ? ((c.label || "") + " " + (c.title || "")).trim() : "" }; }
+const fid = (f) => [f.kind, String(f.name || f.lawname || "").replace(/\s+/g, ""), f.key || ""].join("|");
+async function syPath() {
+  const b = await crypto.subtle.digest("SHA-1", new TextEncoder().encode("lawviewer:" + OC));
+  return "favs/" + [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("").slice(0, 12) + ".json";
+}
+async function ghReq(method, url, tok, body) {
+  const r = await fetch(url, { method, headers: { Authorization: "Bearer " + tok, Accept: "application/vnd.github+json", ...(body ? { "Content-Type": "application/json" } : {}) }, body: body ? JSON.stringify(body) : undefined });
+  if (r.status === 404 && method === "GET") return null;
+  if (r.status === 401 || r.status === 403) throw new Error("저장소 접근이 거부되었습니다(토큰·권한 확인)");
+  if (r.status === 404) throw new Error("저장소를 찾지 못했습니다(이름·토큰 권한 확인)");
+  if (!r.ok) throw new Error("GitHub 오류 " + r.status);
+  return r.json();
+}
+let syncing = false, syT = null;
+const isScript = (r) => /^https?:/i.test(r || "");
+function syncSoon() { clearTimeout(syT); const r = LS.get("lv_syrepo", ""); if (r && (LS.get("lv_sytok", "") || isScript(r))) syT = setTimeout(() => syncNow(false), 1500); }
+async function syKey() { return (await syPath()).slice(5, 17); }
+async function scriptGet(url) {
+  const r = await fetch(url + (url.includes("?") ? "&" : "?") + "k=" + (await syKey()));
+  let d; try { d = await r.json(); } catch (e) { throw new Error("공유 서버가 이상한 답을 줬습니다(웹앱 주소·'모든 사용자' 배포 확인)"); }
+  return d && d.ts != null ? d : null;
+}
+async function scriptPut(url, data) {
+  const r = await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ k: await syKey(), data }) });
+  const d = await r.json().catch(() => ({}));
+  if (!d.ok) throw new Error("공유 서버가 저장을 거절했습니다");
+}
+async function syncNow(manual) {
+  const repo = LS.get("lv_syrepo", ""), tok = LS.get("lv_sytok", "");
+  if (!repo || (!tok && !isScript(repo)) || !OC) { if (manual) toast("설정에서 저장소와 토큰을 넣어 주세요", true); return; }
+  if (syncing) return; syncing = true;
+  try {
+    const sc = isScript(repo);
+    const url = sc ? repo : GHAPI + "/repos/" + repo + "/contents/" + (await syPath());
+    for (let k = 0; k < 2; k++) {
+      const j = sc ? null : await ghReq("GET", url, tok);
+      let ts = LS.get("lv_favs_ts", 0), now = Date.now(), data = sc ? await scriptGet(url) : null;
+      if (j) { try { data = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\n/g, "")), (c) => c.charCodeAt(0)))); } catch (e) { throw new Error("저장소의 즐겨찾기 파일을 읽지 못했습니다"); } }
+      const put = (obj) => sc ? scriptPut(url, obj) : ghReq("PUT", url, tok, { message: "favs", content: btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(obj)))), ...(j ? { sha: j.sha } : {}) });
+      const mine = favs.map(canon);
+      if (!data) { if (!mine.length) { if (manual) toast("즐겨찾기가 비어 있습니다"); return; } await put({ ts: ts || now, favs: mine }); LS.set("lv_favs_ts", ts || now); if (manual) toast("즐겨찾기를 공유 저장소에 올렸습니다"); return; }
+      const rts = +data.ts || 0, rf = data.favs || [];
+      if (!ts && mine.length && rf.length) {                          // 이 기기가 처음 연결: 양쪽을 합침
+        const seen = new Set(), m = [];
+        for (const f of [...rf, ...mine]) { const i = fid(f); if (!seen.has(i)) { seen.add(i); m.push(f); } }
+        try { await put({ ts: now, favs: m }); } catch (e) { continue; }
+        favs = m.map(fromCanon); LS.set("lv_favs", favs); LS.set("lv_favs_ts", now); if (tab === "f") paintFavs(); toast("즐겨찾기를 합쳤습니다 (" + favs.length + "개)"); return;
+      }
+      if (rts > ts) { favs = rf.map(fromCanon); LS.set("lv_favs", favs); LS.set("lv_favs_ts", rts); if (tab === "f") paintFavs(); toast("공유 저장소에서 즐겨찾기를 불러왔습니다 (" + favs.length + "개)"); return; }
+      if (rts === ts) { if (manual) toast("즐겨찾기가 이미 같습니다 (" + favs.length + "개)"); return; }
+      try { await put({ ts, favs: mine }); } catch (e) { continue; }
+      if (manual) toast("즐겨찾기를 공유 저장소에 올렸습니다"); return;
+    }
+    throw new Error("동기화가 겹쳤습니다 — 잠시 뒤 다시 시도하세요");
+  } catch (e) { toast("즐겨찾기 공유 실패 — " + (e.message || e), true); } finally { syncing = false; }
+}
 function paintFavs() {
   const L = $("#list");
   if (!favs.length) { L.innerHTML = '<div class="empty">즐겨찾기가 없습니다.<br>법령 화면 위의 ☆(법령 전체)나<br>조문 옆의 ☆(조문)를 눌러 담으세요.</div>'; return; }
@@ -509,7 +578,7 @@ $("#ver").textContent = "";
 if (P.get("oc")) { OC = P.get("oc"); LS.set("lv_oc", OC); history.replaceState(null, "", location.pathname); }
 setTab("r");
 if (!OC) setTimeout(() => $("#bSet").click(), 300);
-else setTimeout(startWorker, 400);        // 엔진은 미리 내려받아 둔다
+else { setTimeout(startWorker, 400); setTimeout(() => syncNow(false), 1500); }        // 엔진은 미리 내려받아 둔다
 </script>
 </body>
 </html>
