@@ -112,11 +112,44 @@ def _doc_json(law, selfname_target):
 
 
 # ---- 화면에서 부르는 함수들
+def _hits(r):
+    return [{"kind": h["kind"], "lawname": h["lawname"], "rawmst": h["rawmst"], "mst": h["mst"], "short": h["short"],
+             "info": h.get("snippet", ""), "date": h.get("date", "")} for h in r["hits"]]
+
+
 def search(oc, q):
+    """데스크톱 run()과 같은 순서: 조 번호가 있으면 바로 열기 / 법 이름·약칭이면 법·시행령·시행규칙·지침 목록 / 그 밖엔 이름 검색."""
+    q = (q or "").strip()
+    kind = "art" if "조례" in q else L.query_kind(q)
+    if kind == "empty":
+        kind = "name"
+    msg = ""
+    if kind == "art":
+        if "조례" in q:
+            name, jo, ji = L.parse_ordin_query(q)
+            if not name:
+                return {"hits": [], "total": 0, "msg": "조례 이름을 알 수 없습니다. 예) 고양시 도시계획 조례 55조"}
+            p = {"name": name, "suffix": "", "jo": jo, "ji": ji}
+        else:
+            p = L.parse_query(q)
+        if p.get("jo"):
+            return {"hits": [], "total": 0, "open": {"name": L.full_name(p), "key": "%d:%d" % (p["jo"], p.get("ji") or 0)}}
+        kind = "law"
+    if kind == "law":
+        names, rest = L.split_query(q)
+        if names and len(names) == 3 and not rest:
+            try:
+                r = L.family_search(oc, q, getter)
+            except Exception as e:  # noqa: BLE001
+                r = None
+                msg = "목록을 만들지 못했습니다: %s" % e
+            if r and r["hits"]:
+                return {"hits": _hits(r), "total": r["total"], "msg": r.get("note", "")}
+        if names:
+            return {"hits": [], "total": 0, "open": {"name": names[0] if len(names) == 1 else L.full_name(L.parse_query(q)), "key": ""}}
+        return {"hits": [], "total": 0, "open": {"name": L.full_name(L.parse_query(q)), "key": ""}}
     r = L.name_search(oc, q, getter)
-    hits = [{"kind": h["kind"], "lawname": h["lawname"], "rawmst": h["rawmst"], "mst": h["mst"], "short": h["short"],
-             "info": h["snippet"], "date": h["date"]} for h in r["hits"]]
-    return {"hits": hits, "total": r["total"]}
+    return {"hits": _hits(r), "total": r["total"], "msg": msg or ("'%s' 이름의 법령·행정규칙·자치법규를 찾지 못했습니다." % q if not r["hits"] else "")}
 
 
 def open_doc(oc, kind, rawmst, name, date=""):

@@ -134,7 +134,7 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
 <div id="toast"></div>
 
 <script>
-const VERSION = "5.0";
+const VERSION = "5.1";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -235,8 +235,9 @@ async function doSearch() {
   const q = $("#q").value.trim();
   if (!q || needOC()) return;
   const r = await call("search", [OC, q], "찾는 중…");
+  if (r.open) { try { await openByName(r.open.name, r.open.key || undefined); return; } catch (e) { toast(String(e && e.message || e)); } }
   hits = r.hits; setTab("r");
-  if (!hits.length) $("#list").innerHTML = '<div class="empty">찾은 것이 없습니다.</div>';
+  if (!hits.length) $("#list").innerHTML = '<div class="empty">' + esc(r.msg || "찾은 것이 없습니다.") + "</div>";
 }
 function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 function paintHits() {
