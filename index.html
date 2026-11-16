@@ -331,7 +331,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "7.2";
+const VERSION = "7.3";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -869,7 +869,8 @@ function layoutPanes() {
 }
 async function openCite(c, n, noPush) {
   if (needOC()) return;
-  if (c.kind === "x" || c.kind === "c") return openJump(c);
+  if (c.kind === "c") return openCodePane(c, n, noPush);
+  if (c.kind === "x") return openJump(c);
   if (c.kind) return openList(c);
   n = isDT() ? (n || 1) : 1;
   const pn = PN[n];
@@ -955,6 +956,16 @@ async function openList(c) {
   hits = r.hits; hitNote = r.total + "건 · " + (r.note || ""); hitToks = []; setTab("r");
   if (c.kind !== "a") await openHitArt(r.hits[0]);                      // 위임·조례: 맨 위 조문을 새 탭(본문)으로 — 보던 법은 탭에 그대로 남음
   else if (!isDT()) show("home");
+}
+async function openCodePane(c, n, noPush) {      // 지침 안의 '3-2-3' 같은 번호 링크: 본문을 옮기지 않고 아래 미리보기 창에 그 조항을 띄운다
+  let d = cur.doc;
+  if (c.ctx && (!d || d.mst !== c.ctx)) d = await call("open_cached", [c.ctx, ""], "여는 중…");
+  const a = d && d.arts[c.to];
+  if (!a) return toast("이 지침에서 " + (c.to || "") + " 을(를) 찾지 못했습니다", true);
+  n = isDT() ? (n || 1) : 1;
+  const pn = PN[n];
+  if (pn.now && !noPush) pn.hist.push(pn.now);
+  paintPane(n, { lawname: d.name, mst: d.mst, art: a, hl: [], summary: "", label: a.label });
 }
 async function openJump(c) {                 // 별표·서식 / 지침 번호 링크: 이 법령 안에서 그 자리로
   let d = cur.doc;
