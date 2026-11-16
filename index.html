@@ -17,6 +17,12 @@
 :root[data-theme=graphite]{--bg:#121214;--surf:#1b1b1f;--soft:#26262c;--line:#3a3a44;--text:#ececf1;--sub:#C7C7D0;--muted:#9a9aa8;--acc:#5eb1ff;--acc-d:#8cc8ff;--acc-soft:#32455A;--acc-t:#06213a;--hl:#76582C;--subhl:#4B3A22;--link:#8cc8ff;--danger:#ff7b7b}
 :root[data-theme=nord]{--bg:#2e3440;--surf:#3b4252;--soft:#434c5e;--line:#556074;--text:#eceff4;--sub:#CBD3DF;--muted:#a3b1c6;--acc:#88c0d0;--acc-d:#a9d4e0;--acc-soft:#526677;--acc-t:#1f2933;--hl:#7D7360;--subhl:#5B5852;--link:#a9d4e0;--danger:#e07a85}
 :root[data-theme=light]{--bg:#f4f6fa;--surf:#ffffff;--soft:#F2F5F9;--line:#c5d0e0;--text:#1c2a3f;--sub:#394961;--muted:#5c6f8a;--acc:#0b7dd0;--acc-d:#085A96;--acc-soft:#D8EAF7;--acc-t:#ffffff;--hl:#FFE57A;--subhl:#FFF0B3;--link:#0A70BB;--danger:#d33f3f}
+:root[data-theme=sage]{--bg:#eef2ea;--surf:#fff;--soft:#f3f6ef;--line:#cfd8c6;--text:#1f2a1c;--sub:#43523d;--muted:#6b7a63;--acc:#5a7d3a;--acc-d:#3f5c26;--acc-soft:#e0ebd3;--acc-t:#fff;--link:#3f6b1f}
+:root[data-theme=lavender]{--bg:#f1eff8;--surf:#fff;--soft:#f6f4fb;--line:#d6d0e8;--text:#231f33;--sub:#453f60;--muted:#6c6788;--acc:#6a4fc2;--acc-d:#4e37a0;--acc-soft:#e5defa;--acc-t:#fff;--link:#5a3fb5}
+:root[data-theme=rose]{--bg:#f8eff0;--surf:#fffafa;--soft:#f6e9ea;--line:#e3cdd0;--text:#301c20;--sub:#5a3a40;--muted:#80636a;--acc:#c0405a;--acc-d:#962e44;--acc-soft:#f6dbe0;--acc-t:#fff;--link:#a8324a}
+:root[data-theme=forest]{--bg:#101a14;--surf:#16241b;--soft:#1d2f23;--line:#2f4a39;--text:#e6f2e9;--sub:#bcd3c2;--muted:#86a38f;--acc:#5fd08a;--acc-d:#8be6aa;--acc-soft:#25402f;--acc-t:#06210f;--hl:#6b5f24;--subhl:#4a4524;--link:#8be6aa;--danger:#ff7b7b}
+:root[data-theme=midnight]{--bg:#000;--surf:#0b0b0d;--soft:#151518;--line:#2a2a30;--text:#e9e9ee;--sub:#c4c4cc;--muted:#8e8e9a;--acc:#ffb454;--acc-d:#ffcb85;--acc-soft:#3a2d18;--acc-t:#1c1200;--hl:#6b5624;--subhl:#463a22;--link:#ffcb85;--danger:#ff7b7b}
+:root[data-theme=solar]{--bg:#002b36;--surf:#073642;--soft:#0d4352;--line:#1f5a6a;--text:#eee8d5;--sub:#cfc9b5;--muted:#93a1a1;--acc:#d9a520;--acc-d:#f0c14a;--acc-soft:#1f4f5a;--acc-t:#002b36;--hl:#6b5f24;--subhl:#4a4524;--link:#6cc3d5;--danger:#ff7b7b}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;font-size:var(--fs);overscroll-behavior:none}
 button{font:inherit;color:inherit;border:0;background:none;padding:0}
@@ -55,7 +61,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .head{margin:26px 0 10px;text-align:left;font-weight:700;color:var(--acc-d);font-size:1.08em;border-left:3px solid var(--acc);padding:1px 0 1px 8px}
 .art{padding:10px 0;border-bottom:1px solid var(--line)}
 .art.cur{background:var(--acc-soft);margin:0 -14px;padding:10px 14px}
-.ln{line-height:1.75;margin:2px 0;word-break:keep-all;overflow-wrap:anywhere}
+.ln{line-height:var(--lh,1.75);margin:2px 0;word-break:keep-all;overflow-wrap:anywhere}
 .ln.l1{padding-left:1.1em}.ln.l2{padding-left:2.2em}.ln.l3{padding-left:3.3em}.ln.l4{padding-left:4.4em}
 .ln.hl{background:var(--hl);border-radius:4px}
 .ln b{font-weight:700}
@@ -107,6 +113,7 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
 .empty{text-align:center;color:var(--muted);padding:40px 16px;line-height:1.7}
 
 /* ===== PC 넓은 화면(1000px 이상): PC 프로그램 모양 — 왼쪽 목록 / 가운데 본문(위 탭, 아래 미리보기 두 칸) / 오른쪽 인용 정리 ===== */
+#gk{width:118px;margin-left:8px;border:1px solid var(--line);border-radius:5px;padding:3px 7px;font:inherit;font-size:.9em;background:var(--surf);color:var(--text)}
 #ltabs,#dbar,#dtEmpty,.dtonly,#side,#tT,#dropHint,#pgrip,#ctx,.gv{display:none}
 mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:#FFAE42;color:#1D2A27}
 #pbox{display:contents}
@@ -116,7 +123,9 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .sd-b{display:block;width:100%;text-align:left;padding:6px 8px;margin-bottom:4px;border:1px solid var(--line);border-radius:6px;background:var(--soft);color:var(--text);line-height:1.35}
 .sd-b:hover{background:var(--acc-soft)}
 .sd-b i{font-style:normal;color:var(--muted);font-size:.85em}
-.axl{display:block;margin:4px 0}
+.sd-b .ct{color:var(--sub);font-size:.92em}
+.sd-b .sl{color:var(--muted);font-size:.78em;margin-top:1px}
+.axl{display:block;margin:4px 0;color:var(--link)}
 @media (min-width:1000px){
   :root{--lw:250px;--rw:230px;--hh:34px;--th:26px;--bh:32px;--ph:36vh}
   body.hl{--lw:0px}
@@ -181,17 +190,28 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #doc .body{padding:0 2px 50px}
   .art{padding:4px 0}
   .art.cur{margin:0 -6px;padding:4px 6px}
-  .ln{line-height:1.5;margin:1px 0}
+  .ln{line-height:var(--lh,1.5);margin:1px 0}
+  #doc .body{max-width:var(--bw,none)}
   .fv{min-width:22px;height:22px;font-size:1em}
   .head{margin:12px 0 4px;font-size:1em}
   #ltabs{display:flex;position:fixed;top:var(--hh);left:var(--lw);right:var(--rw);height:var(--th);z-index:15;background:var(--soft);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap}
-  #ltabs .lt{display:flex;align-items:center;gap:4px;padding:0 3px 0 8px;border-right:1px solid var(--line);color:var(--sub);cursor:pointer;max-width:200px;font-size:.8em}
+  #ltabs .lt{display:flex;align-items:center;gap:4px;padding:0 3px 0 8px;border-right:1px solid var(--line);color:var(--sub);cursor:pointer;max-width:300px;font-size:.8em}
   #ltabs .lt span{overflow:hidden;text-overflow:ellipsis}
   #ltabs .lt.on{background:var(--surf);color:var(--acc-d);font-weight:700;box-shadow:inset 0 -3px 0 var(--acc)}
   #ltabs .lt b{font-weight:400;opacity:.6;padding:1px 5px;border-radius:5px}
   #ltabs .lt b:hover{background:var(--line);opacity:1}
   #dtEmpty{display:block;position:fixed;top:calc(var(--hh) + var(--th) + var(--bh));left:var(--lw);right:var(--rw);bottom:0;padding:90px 30px;text-align:center;color:var(--muted);line-height:1.8;z-index:1;pointer-events:none}
   #dtEmpty.off{display:none}
+  #list .card[data-ci]{padding:2px 4px 2px 7px;margin-bottom:1px;border-radius:4px}
+  #list .card[data-ci] .m{display:flex;align-items:baseline;gap:6px;overflow:hidden}
+  #list .card[data-ci] .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;font-weight:600;font-size:.88em}
+  #list .card[data-ci] .in:empty{display:none}
+  #list .card[data-ci] .in{white-space:nowrap;flex:0 0 auto;margin:0;font-size:.74em}
+  #list .card[data-ci] .sm{min-width:18px;height:18px;font-size:.72em;border:0;background:none;color:var(--muted);padding:0}
+  #list .card[data-ci] .sm:hover{color:var(--danger)}
+  #side .sd-b{font-size:1.04em;padding:5px 8px}
+  #side .sd-s{font-size:.96em}
+  #side .sd-h{font-size:1.04em}
   #side{display:block;position:fixed;top:var(--hh);right:0;bottom:0;width:var(--rw);padding:6px 8px;overflow-y:auto;background:var(--surf);border-left:1px solid var(--line);font-size:.88em}
   body.hr #side{display:none}
   #pbox{display:none;position:fixed;left:var(--lw);right:var(--rw);bottom:0;height:var(--ph);z-index:25;border-top:2px solid var(--acc);background:var(--surf)}
@@ -236,7 +256,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <button class="tb" id="bL" title="왼쪽 목록 접기/펴기 (F7)">◀ 목록</button>
   <span class="fbox"><span>🔍</span><input id="fq" placeholder="본문에서 찾기" autocomplete="off"></span>
   <button class="tb" id="fPrev" title="이전 (Shift+Enter)">▲</button><button class="tb" id="fNext" title="다음 (Enter)">▼</button>
-  <button class="tb" id="fClr">✕ 지우기</button><span id="fCnt" class="muted"></span>
+  <button class="tb" id="fClr">✕ 지우기</button><span id="fCnt" class="muted"></span><input id="gk" class="fq2" placeholder="조문 번호 (예: 52의2)" autocomplete="off" title="Ctrl+G · 조문 번호를 치고 Enter">
   <span class="sp"></span>
   <button class="tb" id="dbTT">3단 비교</button><button class="tb" id="dbFav">☆ 즐겨찾기</button><button class="tb" id="dbCopy">조문 복사</button><button class="tb" id="dbCite" title="「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">인용 복사</button><button class="tb" id="dbWeb" title="법제처 화면에서 열기">법제처 열기</button>
   <button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
@@ -262,9 +282,13 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <label>기본 자치단체 (조례 찾기)</label>
   <input id="city" placeholder="예) 고양시" autocomplete="off">
   <label>색상 테마</label>
-  <select id="theme"><option value="">기본 (청록)</option><option value="light">밝은 파랑</option><option value="paper">종이</option><option value="dark">남색 (어두움)</option><option value="graphite">차콜 (어두움)</option><option value="nord">노드 (어두움)</option></select>
+  <select id="theme"><option value="">기본 (청록)</option><option value="light">밝은 파랑</option><option value="paper">종이</option><option value="dark">남색 (어두움)</option><option value="graphite">차콜 (어두움)</option><option value="nord">노드 (어두움)</option><option value="sage">세이지 (연한 녹색)</option><option value="lavender">라벤더 (연보라)</option><option value="rose">로즈 (연분홍)</option><option value="forest">숲 (어두운 녹색)</option><option value="midnight">미드나이트 (검정)</option><option value="solar">솔라 (어두운 청록)</option></select>
   <label>글자 크기</label>
   <select id="fsz"><option value="12">아주 작게 (PC 기본)</option><option value="13">조밀</option><option value="14">작게</option><option value="16">보통</option><option value="18">크게</option><option value="20">아주 크게</option></select>
+  <label>줄 간격</label>
+  <select id="lhs"><option value="">기본</option><option value="1.3">좁게</option><option value="1.7">넓게</option><option value="2">아주 넓게</option></select>
+  <label>본문 폭 (PC 넓은 화면)</label>
+  <select id="bws"><option value="">꽉 채움</option><option value="1100">넓게</option><option value="900">보통</option><option value="720">좁게</option></select>
   <div style="display:flex;gap:8px;margin-top:16px"><button class="btn" style="flex:1" id="setOk">저장</button><button class="btn g" id="setNo">닫기</button></div>
   <div class="muted" id="ver" style="font-size:.75em;margin-top:12px"></div>
 </div></div>
@@ -273,7 +297,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "6.8";
+const VERSION = "7.0";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -338,11 +362,14 @@ function applyPrefs() {
   const th = LS.get("lv_theme", "");
   if (th) document.documentElement.dataset.theme = th; else delete document.documentElement.dataset.theme;
   document.documentElement.style.setProperty("--fs", LS.get(FSK(), FSD()) + "px");
+  const lh = LS.get("lv_lh", ""), bw = LS.get("lv_bw", "");
+  if (lh) document.documentElement.style.setProperty("--lh", lh); else document.documentElement.style.removeProperty("--lh");
+  if (bw) document.documentElement.style.setProperty("--bw", bw + "px"); else document.documentElement.style.removeProperty("--bw");
   const mc = document.querySelector('meta[name=theme-color]');
   if (mc) mc.content = getComputedStyle(document.documentElement).getPropertyValue("--acc").trim() || "#0E7C6B";
 }
 applyPrefs();
-$("#bSet").onclick = () => { $("#oc").value = OC; $("#syRepo").value = LS.get("lv_syrepo", ""); $("#syTok").value = LS.get("lv_sytok", ""); $("#theme").value = LS.get("lv_theme", ""); $("#fsz").value = LS.get(FSK(), FSD()); $("#city").value = LS.get("lv_city", "고양시"); $("#ver").textContent = "법령 뷰어 모바일 v" + VERSION + " · 법제처 국가법령정보센터 Open API"; $("#ovSet").classList.add("on"); };
+$("#bSet").onclick = () => { $("#oc").value = OC; $("#syRepo").value = LS.get("lv_syrepo", ""); $("#syTok").value = LS.get("lv_sytok", ""); $("#theme").value = LS.get("lv_theme", ""); $("#fsz").value = LS.get(FSK(), FSD()); $("#lhs").value = LS.get("lv_lh", ""); $("#bws").value = LS.get("lv_bw", ""); $("#city").value = LS.get("lv_city", "고양시"); $("#ver").textContent = "법령 뷰어 모바일 v" + VERSION + " · 법제처 국가법령정보센터 Open API"; $("#ovSet").classList.add("on"); };
 $("#syNow").onclick = () => { LS.set("lv_syrepo", $("#syRepo").value.trim()); LS.set("lv_sytok", $("#syTok").value.trim()); OC = $("#oc").value.trim() || OC; syncNow(true); };
 $("#setNo").onclick = () => $("#ovSet").classList.remove("on");
 $("#setOk").onclick = () => {
@@ -350,7 +377,7 @@ $("#setOk").onclick = () => {
   const sr = $("#syRepo").value.trim(), st = $("#syTok").value.trim(), had = LS.get("lv_syrepo", "") + LS.get("lv_sytok", "");
   LS.set("lv_syrepo", sr); LS.set("lv_sytok", st);
   if (sr && (st || isScript(sr)) && sr + st !== had) setTimeout(() => syncNow(true), 300);
-  LS.set("lv_theme", $("#theme").value); LS.set(FSK(), parseInt($("#fsz").value, 10)); LS.set("lv_city", $("#city").value.trim() || "고양시");
+  LS.set("lv_theme", $("#theme").value); LS.set(FSK(), parseInt($("#fsz").value, 10)); LS.set("lv_lh", $("#lhs").value); LS.set("lv_bw", $("#bws").value); LS.set("lv_city", $("#city").value.trim() || "고양시");
   applyPrefs(); $("#ovSet").classList.remove("on"); toast("저장했습니다");
 };
 function needOC() { if (!OC) { toast("먼저 ⚙ 설정에서 인증키(OC)를 넣어 주세요", true); return true; } return false; }
@@ -517,7 +544,7 @@ async function syncNow(manual) {
 function paintFavs() {
   const L = $("#list");
   if (!favs.length) { L.innerHTML = '<div class="empty">즐겨찾기가 없습니다.<br>법령 화면 위의 ☆(법령 전체)나<br>조문 옆의 ☆(조문)를 눌러 담으세요.</div>'; return; }
-  L.innerHTML = favs.map((f, i) => '<div class="card" draggable="true" data-ci="' + i + '"><div class="m" data-i="' + i + '"><div class="nm"><span class="tag ' + f.kind + '">' + KIND[f.kind][0] + "</span>" + esc(f.lawname) + '</div><div class="in">' + (f.key ? esc(f.label || "") : "법령 전체") + '</div></div><button class="sm" data-u="' + i + '">▲</button><button class="sm" data-d="' + i + '">▼</button><button class="sm" data-x="' + i + '">✕</button></div>').join("");
+  L.innerHTML = favs.map((f, i) => '<div class="card" draggable="true" data-ci="' + i + '" title="' + esc(f.lawname + (f.key ? " " + (f.label || "") : "")) + '"><div class="m" data-i="' + i + '"><div class="nm"><span class="tag ' + f.kind + '">' + KIND[f.kind][0] + "</span>" + esc(isDT() ? ltName(f.lawname) : f.lawname) + '</div><div class="in">' + (f.key ? esc(f.label || "") : (isDT() ? "" : "법령 전체")) + '</div></div><button class="sm" data-u="' + i + '">▲</button><button class="sm" data-d="' + i + '">▼</button><button class="sm" data-x="' + i + '">✕</button></div>').join("");
   L.querySelectorAll("[data-i]").forEach((c) => (c.onclick = () => { const f = favs[+c.dataset.i]; openDoc(f.kind, f.rawmst, f.lawname, f.date, f.key); }));
   L.querySelectorAll("[data-u]").forEach((c) => (c.onclick = () => mv(+c.dataset.u, -1)));
   L.querySelectorAll("[data-d]").forEach((c) => (c.onclick = () => mv(+c.dataset.d, 1)));
@@ -646,10 +673,11 @@ async function restoreTabs() {
     }
   } finally { tabRestoring = false; saveTabs(); }
 }
+const ltName = (n) => String(n).replace(/\s*시행령$/, "(령)").replace(/\s*시행규칙$/, "(칙)");
 function paintLTabs() {
   saveTabs();
   const bar = $("#ltabs");
-  bar.innerHTML = ltabs.map((t, i) => '<div class="lt' + (t.d === cur.doc ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><span>' + esc(t.d.name) + '</span><b data-x="' + i + '">✕</b></div>').join("");
+  bar.innerHTML = ltabs.map((t, i) => '<div class="lt' + (t.d === cur.doc ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><span>' + esc(ltName(t.d.name)) + '</span><b data-x="' + i + '">✕</b></div>').join("");
   bar.querySelectorAll(".lt").forEach((el) => (el.onclick = (e) => {
     const i = +el.dataset.i;
     if (e.target.dataset.x !== undefined) return closeLTab(i);
@@ -872,12 +900,27 @@ function setCurArt(key) {
   if (el) el.classList.add("cur");
   sideKey = key; paintSide();
 }
+const sameLaw = (a, b) => String(a || "").replace(/\s/g, "") === String(b || "").replace(/\s/g, "");
+async function fillCiteTitles(S, d, key) {            // 인용 조문 옆에 조문 제목을 붙인다(같은 법은 바로, 다른 법은 이미 받아 둔 것만)
+  const self = d.kind === "adm" && d.adm_base ? d.adm_base : d.name, ask = [], els = [];
+  S.querySelectorAll("button[data-c]").forEach((b) => {
+    const ct = b.querySelector(".ct"), c = CITES[+b.dataset.c]; if (!ct || !c || !c.n) return;
+    if (!c.law || sameLaw(c.law, self) || sameLaw(c.law, d.name)) {
+      const x = Object.values(d.arts).find((a) => a.n === c.n && String(a.b || 0) === String(c.b || 0));
+      if (x) ct.textContent = x.title;
+    } else { ask.push([c.law, c.n, c.b || 0]); els.push(ct); }
+  });
+  if (!ask.length) return;
+  const r = await callQuiet("cite_titles", [ask]);
+  if (!r || sideKey !== key) return;
+  els.forEach((el, i) => { if (r[i]) el.textContent = r[i]; });
+}
 function paintSide() {
   const S = $("#side"), d = cur.doc;
   if (!d || !sideKey || !d.arts[sideKey]) { S.innerHTML = '<div class="sd-h">인용 정리</div><div class="empty" style="padding:20px 4px;font-size:.9em">본문의 조문을 누르면 그 조문이 인용한 조문과<br>위임 조문이 여기에 정리됩니다.</div>'; return; }
   const a = d.arts[sideKey], self = d.kind === "adm" && d.adm_base ? d.adm_base : d.name;
   const seen = new Set(); let cs = "", ds = "";
-  const btn = (c, t, sub) => '<button class="sd-b" data-c="' + (CITES.push(c) - 1) + '">' + t + (sub ? " <i>" + esc(sub) + "</i>" : "") + "</button>";
+  const btn = (c, t, sub, wantT) => '<button class="sd-b" data-c="' + (CITES.push(c) - 1) + '">' + t + (wantT ? ' <i class="ct"></i>' : "") + (sub ? '<div class="sl">' + esc(sub) + "</div>" : "") + "</button>";
   a.lines.forEach((l) => { const hm = l[0] === 0 ? HEADRE.exec(l[1]) : null, he = hm ? hm[0].length : 0; (l[2] || []).forEach((s) => {
     if (s[0] < he) return;                                   // 조문 머리 '제N조(제목)' 자신은 인용이 아님
     const txt = l[1].slice(s[0], s[1]);
@@ -888,7 +931,7 @@ function paintSide() {
       ds += btn({ kind: kd, to: s[3], ctx: d.mst, akey: sideKey, line: l[1] }, kd === "d" ? esc(txt) + " → " + esc(s[3]) + " 조문 찾기" : kd === "a" ? "지침·고시 찾기" : "조례 찾기", "");
     } else {
       const k = [s[2], s[3], s[4], s[5]].join("|"); if (seen.has(k)) return; seen.add(k);
-      cs += btn({ law: s[2], n: s[3], b: s[4], sub: s[5], ctx: d.mst, self }, esc(txt), s[2] || "");
+      cs += btn({ law: s[2], n: s[3], b: s[4], sub: s[5], ctx: d.mst, self }, esc(txt), s[2] || "", true);
     }
   }); });
   const fav = favIdx(d.kind, d.rawmst, sideKey) >= 0;
@@ -899,6 +942,7 @@ function paintSide() {
     '<div class="sd-s">이 조문을 인용한 조문 (' + (a.inn || []).length + ")</div>" + (ins || '<div class="muted" style="font-size:.85em">없음</div>') +
     '<div class="sd-s">위임·관련 규정</div>' + (ds || '<div class="muted" style="font-size:.85em">없음</div>');
   S.querySelectorAll("button[data-c]").forEach((b) => (b.onclick = () => openCite(CITES[+b.dataset.c], 1)));
+  fillCiteTitles(S, d, sideKey);
   $("#sdFav").onclick = () => { toggleFav(d, sideKey); paintSide(); const f = document.querySelector('#docBody .fv[data-fk="' + sideKey + '"]'); if (f) { const on = favIdx(d.kind, d.rawmst, sideKey) >= 0; f.textContent = on ? "★" : "☆"; f.classList.toggle("on", on); } };
 }
 
@@ -942,6 +986,16 @@ $("#fq").addEventListener("keydown", (e) => {
   if (e.key === "Enter") { e.preventDefault(); if ($("#fq").value.trim() !== fLast || !fMarks.length) findRun(); else fStep(e.shiftKey ? -1 : 1); }
   else if (e.key === "Escape") { findClr(); $("#fq").blur(); }
 });
+function jumpArt() {
+  const d = cur.doc, q = $("#gk").value.replace(/\s/g, ""); if (!d || !q) return;
+  let key = "";
+  const m = /^제?(\d+)조?(?:의(\d+)|-(\d+))?조?$/.exec(q);
+  if (m) { const k = m[1] + ":" + (m[2] || m[3] || 0); if (d.arts[k]) key = k; }
+  if (!key) { const nq = q.replace(/^제/, "").replace(/조$/, ""); key = Object.keys(d.arts).find((k) => d.arts[k].label.replace(/\s/g, "").replace(/^제/, "").replace(/조$/, "").replace(/\.$/, "") === nq) || ""; }
+  if (!key) return toast("'" + $("#gk").value.trim() + "' 조문을 이 법령에서 찾지 못했습니다", true);
+  goKey(key); $("#gk").select();
+}
+$("#gk").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); jumpArt(); } else if (e.key === "Escape") $("#gk").blur(); });
 $("#fNext").onclick = () => ($("#fq").value.trim() !== fLast ? findRun() : fStep(1));
 $("#fPrev").onclick = () => ($("#fq").value.trim() !== fLast ? findRun() : fStep(-1));
 $("#fClr").onclick = () => { findClr(); $("#fq").value = ""; toast("강조를 지웠습니다"); };
@@ -1000,7 +1054,7 @@ function fsStep(d) { const k = "lv_fsd"; LS.set(k, Math.max(10, Math.min(20, LS.
 $("#fMinus").onclick = () => fsStep(-1); $("#fPlus").onclick = () => fsStep(1);
 $("#bTheme").onclick = (e) => {
   const r = e.currentTarget.getBoundingClientRect();
-  showMenu(r.left, r.bottom + 2, [["", "기본 (청록)"], ["light", "밝은 파랑"], ["paper", "종이"], ["dark", "남색"], ["graphite", "차콜"], ["nord", "노드"]].map(([v, t]) => [(LS.get("lv_theme", "") === v ? "✓ " : "   ") + t, () => { LS.set("lv_theme", v); applyPrefs(); }]));
+  showMenu(r.left, r.bottom + 2, [["", "기본 (청록)"], ["light", "밝은 파랑"], ["paper", "종이"], ["dark", "남색"], ["graphite", "차콜"], ["nord", "노드"], ["sage", "세이지"], ["lavender", "라벤더"], ["rose", "로즈"], ["forest", "숲"], ["midnight", "미드나이트"], ["solar", "솔라"]].map(([v, t]) => [(LS.get("lv_theme", "") === v ? "✓ " : "   ") + t, () => { LS.set("lv_theme", v); applyPrefs(); }]));
 };
 // ---- 왼쪽·오른쪽 칸 폭 끌어 조절(더블클릭=처음 폭)
 (function () {
@@ -1041,6 +1095,7 @@ document.addEventListener("keydown", (e) => {
   else if (e.ctrlKey && (k === "w" || k === "W") && ltabs.length) { e.preventDefault(); closeLTab(Math.max(0, ltabs.findIndex((t) => t.d === cur.doc))); }
   else if (e.ctrlKey && k === "Tab" && ltabs.length > 1) { e.preventDefault(); const i = ltabs.findIndex((t) => t.d === cur.doc); switchLTab((i + (e.shiftKey ? -1 : 1) + ltabs.length) % ltabs.length); }
   else if (e.ctrlKey && (k === "f" || k === "F")) { e.preventDefault(); $("#fq").focus(); $("#fq").select(); }
+  else if (e.ctrlKey && (k === "g" || k === "G") && isDT()) { e.preventDefault(); $("#gk").focus(); $("#gk").select(); }
   else if (e.ctrlKey && (k === "l" || k === "L")) { e.preventDefault(); if (document.body.classList.contains("hl")) setPane("l", false); $("#q").focus(); $("#q").select(); }
   else if (k === "Escape" && document.activeElement !== $("#q") && document.activeElement !== $("#fq")) { findClr(); closeSheet(); $("#ctx").classList.remove("on"); }
   else if (e.altKey && k === "ArrowLeft") { e.preventDefault(); navBack(); }

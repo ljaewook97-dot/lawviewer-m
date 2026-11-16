@@ -249,6 +249,24 @@ def open_cite(oc, lawname, n, b, subs, ctx_mst=""):
             "summary": L.cite_summary(a, subs), "label": a["label"]}
 
 
+def cite_titles(items):
+    """[[법령명, 조, 가지]…] -> 이미 받아 둔 법령에서 조문 제목을 찾아 같은 순서로 돌려준다(새로 내려받지 않음)"""
+    out = []
+    for name, n, b in items:
+        t = ""
+        for law in list(L._LAW_CACHE.values()):
+            try:
+                if L._nospace(law["name"]) == L._nospace(name) or L._nospace(law.get("refname") or "") == L._nospace(name):
+                    ar = _find_art(law, int(n), int(b or 0))
+                    if ar is not None:
+                        t = ar["title"]
+                        break
+            except Exception:
+                continue
+        out.append(t)
+    return out
+
+
 def tt_open(oc, base, cur_name, cur_mst, cur_key):
     """3단 비교표 줄 목록과 시작 줄"""
     tt = L.three_tier(oc, base, getter)
@@ -358,7 +376,7 @@ def web_url(kind, name, key=""):
     return L.web_url(L.parse_query(q))
 
 
-FUNCS = {"web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
+FUNCS = {"cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
          "tt_open": tt_open, "tt_row": tt_row, "set_api_base": set_api_base}
 
 
