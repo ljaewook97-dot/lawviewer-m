@@ -257,7 +257,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .modal .sg{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.modal .sg:first-of-type{margin-top:0;padding-top:0;border-top:0}
 .modal .sg h4{margin:0;font-size:.82em;letter-spacing:.02em;color:var(--acc-d);display:inline}.modal details.sg>summary{cursor:pointer;list-style:none}.modal details.sg>summary::before{content:"▸ ";color:var(--muted)}.modal details[open].sg>summary::before{content:"▾ "}
 .modal .hint{font-size:.78em;color:var(--muted);margin-top:4px;line-height:1.45}.modal .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.modal .g2 .btn{width:100%}
-.modal .mfoot{position:sticky;bottom:-16px;display:flex;gap:8px;margin:14px -16px -16px;padding:10px 16px 14px;background:var(--surf);border-top:1px solid var(--line)}
+#ovSet .modal{display:flex;flex-direction:column;padding:0;overflow:hidden}#ovSet .mbody{flex:1;min-height:0;overflow:auto;padding:16px}.modal .mfoot{flex:none;display:flex;gap:8px;padding:10px 16px 12px;background:var(--surf);border-top:1px solid var(--line)}
 #accGate{position:fixed;inset:0;z-index:99999;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto}#accGate .box{width:min(380px,100%);display:flex;flex-direction:column;gap:9px}#accGate h2{margin:0;font-size:22px}#accGate .sub{margin:0 0 4px;line-height:1.5;color:var(--sub)}
 #accGate input,#accList input{box-sizing:border-box;width:100%;font:inherit;font-size:14px;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--surf);color:var(--text)}#accGate details{margin-top:10px;font-size:.85em;color:var(--muted)}#accGate details summary{cursor:pointer;padding:6px 0}#accGate details input{margin:6px 0}
 #accSec summary{cursor:pointer;padding:8px 0;font-weight:700}#accList{display:flex;flex-direction:column;gap:6px}#accBadge{background:#e53935;color:#fff;border-radius:9px;padding:0 6px;font-size:.8em;margin-left:4px}
@@ -305,6 +305,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 
 <div class="over" id="ovToc"><div class="drawer" id="drawer"></div></div>
 <div class="over" id="ovSet"><div class="modal">
+  <div class="mbody">
   <h3>설정</h3>
   <section class="sg"><h4>조회</h4>
     <label>국가법령정보센터 인증키(OC)</label>
@@ -336,6 +337,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <details id="accSec" class="sg" hidden><summary><h4>접속 승인 (관리자) <span id="accBadge" hidden></span></h4></summary><div id="accList"></div></details>
   <div class="muted" id="ver" style="font-size:.75em;margin-top:12px"></div>
   <div class="muted" id="lastVisit" style="font-size:.75em;margin-top:4px"></div>
+  </div>
   <div class="mfoot"><button class="btn" style="flex:1" id="setOk">저장</button><button class="btn g" id="setNo">닫기 (Esc)</button></div>
 </div></div>
 
@@ -351,7 +353,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "7.7";
+const VERSION = "7.8";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
