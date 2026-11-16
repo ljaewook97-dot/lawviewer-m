@@ -152,6 +152,11 @@ def search(oc, q):
     return {"hits": _hits(r), "total": r["total"], "msg": msg or ("'%s' 이름의 법령·행정규칙·자치법규를 찾지 못했습니다." % q if not r["hits"] else "")}
 
 
+def suggest(oc, q):
+    """검색창 자동완성: 약칭 풀이 + 법제처 이름 검색 -> {q, items, tail}"""
+    return {"q": q, "items": L.suggest(oc, q, getter), "tail": L.suggest_split(q)[2]}
+
+
 def open_doc(oc, kind, rawmst, name, date=""):
     if kind == "ordin":
         law = L.load_ordin(oc, rawmst, name, getter)
@@ -225,7 +230,7 @@ def tt_row(base, i):
     return {"cols": cols}
 
 
-FUNCS = {"search": search, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
+FUNCS = {"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
          "tt_open": tt_open, "tt_row": tt_row, "set_api_base": set_api_base}
 
 

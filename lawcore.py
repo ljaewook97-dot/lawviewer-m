@@ -848,10 +848,76 @@ def deleg_spans(text, selfname, taken=()):
     return out
 
 
+def _as_list(v):
+    return v if isinstance(v, list) else ([] if v in (None, "") else [v])
+
+
+def _delegated_targets(oc, mst, n, b, to, getter=None):
+    """법제처 위임법령 조회(lsDelegated): 이 법령 제n조(의b)가 위임한 하위 법령 -> [(법령 이름, 일련번호, [조 번호…] 또는 None(모든 조문))].
+    '국토교통부령으로 정한다'가 '도시ㆍ군계획시설의 결정ㆍ구조 및 설치기준에 관한 규칙'처럼 시행규칙이 아닌 별도 부령을 가리키는 경우를 잡는다."""
+    try:
+        d = _get("lawService.do", {"OC": oc, "target": "lsDelegated", "type": "JSON", "MST": mst}, getter)
+    except Exception:  # noqa: BLE001
+        return []
+    rows = []
+    _dicts_with(d, "위임조문정보", rows)
+    items = []
+    for r in rows:
+        items += _as_list(r.get("위임조문정보"))
+    out = {}
+    for it in items:
+        jo = it.get("조정보") or {}
+        try:
+            if int(str(jo.get("조문번호") or 0)) != n or int(str(jo.get("조문가지번호") or 0)) != (b or 0):
+                continue
+        except ValueError:
+            continue
+        for w in _as_list(it.get("위임정보")):
+            if not isinstance(w, dict) or w.get("위임구분") != to or not w.get("위임법령일련번호"):
+                continue
+            k = (str(w.get("위임법령제목") or ""), str(w["위임법령일련번호"]))
+            arts = out.setdefault(k, [])
+            for x in _as_list(w.get("위임법령조문정보")):
+                if not isinstance(x, dict):
+                    continue
+                no = str(x.get("위임법령조문번호") or "0")
+                bb = str(x.get("위임법령조문가지번호") or "0")
+                arts.append(None if no == "0" else (int(no), int(bb)))
+    res = []
+    for (nm, ms), arts in out.items():
+        res.append((nm, ms, None if (not arts or None in arts) else sorted(set(arts))))
+    return res
+
+
 def deleg_lookup(oc, lawname, to, n, b, title="", getter=None):
     """lawname(법 또는 시행령)의 제n조(의b)를 위임받은 하위 법령(시행령·시행규칙)의 조문 -> 검색결과 꼴.
-    하위 법령 조문 중 '법 제n조'(시행규칙이면 '영 제n조')를 인용한 것을 먼저, 없으면 같은 제목 낱말이 든 조문."""
+    먼저 법제처 위임법령 정보(별도 부령 포함)를 쓰고, 없으면 하위 법령 조문 중 '법 제n조'(시행규칙이면 '영 제n조')를 인용한 것, 그것도 없으면 같은 제목 낱말이 든 조문."""
     base, sfx = _split_name(lawname)
+    try:
+        cur = _find_cached(oc, lawname, getter)
+        targets = _delegated_targets(oc, cur["mst"], n, b, to, getter)
+    except LawError:
+        targets = []
+    if targets:
+        hits, names, law0 = [], [], None
+        for nm, ms, arts in targets:
+            try:
+                lw = load_whole(oc, ms, nm, getter)
+            except Exception:  # noqa: BLE001
+                continue
+            lw["name"], lw["mst"] = nm, ms
+            _LAW_CACHE[ms] = lw
+            law0 = law0 or lw
+            names.append(nm)
+            for k in lw["order"]:
+                a = lw["arts"][k]
+                if arts is not None and (a["n"], a["b"] or 0) not in arts:
+                    continue
+                hits.append({"score": 100, "li": 0, "mst": ms, "lawname": nm, "key": k, "label": a["label"], "title": a["title"],
+                             "n": a["n"], "b": a["b"], "short": short_law(nm), "snippet": _snippet(a["scan"], [a["label"]])})
+        if hits:
+            return {"hits": hits[:80], "toks": [], "total": len(hits), "searched": names,
+                    "note": "%s %s 이(가) 위임한 %s" % (lawname, jo_label(n, b), " · ".join(names)), "ordname": names[0], "law": law0}
     f = _find_cached(oc, "%s %s" % (base, to), getter)
     law = load_whole(oc, f["mst"], f["name"], getter)
     cur_name = lawname
@@ -1991,3 +2057,82 @@ def prefetch(oc, scope=None):
             _load_adm_candidate(oc, c, None)
     except Exception:  # noqa: BLE001
         pass
+
+
+# ───────────────────────── 검색창 자동완성 ─────────────────────────
+_SUG_TAIL = re.compile(r"\s*제?\s*\d+\s*조.*$")
+
+
+def suggest_split(q):
+    """'국토계획법 시행령 71조' -> ('국토계획법', '시행령', ' 71조')  이름 부분 / 시행령·시행규칙 / 조 번호 이하."""
+    q = str(q or "")
+    m = _SUG_TAIL.search(q)
+    tail = q[m.start():] if m else ""
+    head = q[:m.start()] if m else q
+    h = head.strip()
+    sfx = ""
+    for s in SUFFIXES:
+        if _nospace(h).endswith(s):
+            sfx = s
+            h = re.sub(r"\s*" + s + r"\s*$", "", h)
+            break
+    return h.strip(), sfx, tail
+
+
+def suggest_local(q, limit=8):
+    """약칭·정식 이름에서 바로(접속 없이) 찾은 자동완성 -> [이름]. 앞에서부터 맞는 것을 먼저."""
+    h, sfx, tail = suggest_split(q)
+    nk = _nospace(h)
+    if len(nk) < 2 or nk.isdigit():
+        return []
+    first, rest, seen = [], [], set()
+    for ab, full in ALIASES.items():
+        fk = _nospace(full)
+        if nk in ab or nk in fk:
+            if full in seen:
+                continue
+            seen.add(full)
+            (first if (ab.startswith(nk) or fk.startswith(nk)) else rest).append(full)
+    out = first + rest
+    return [(n + (" " + sfx if sfx else "")) for n in out[:limit]]
+
+
+def suggest_remote(oc, q, getter=None, limit=8):
+    """법제처 이름 검색으로 찾은 자동완성(현행 법령 이름) -> [이름]. 시행령·시행규칙은 그렇게 쳤을 때만."""
+    h, sfx, tail = suggest_split(q)
+    nk = _nospace(h)
+    if len(nk) < 2 or nk.isdigit():
+        return []
+    full = ALIASES.get(nk, h)
+    d = _get("lawSearch.do", {"OC": oc, "target": "law", "type": "JSON", "query": full, "display": 20}, getter)
+    rows = []
+    _dicts_with(d, "법령명한글", rows)
+    out, seen = [], set()
+    for r in rows:
+        nm = str(r.get("법령명한글") or "").strip()
+        cur = str(r.get("현행연혁코드") or "")
+        if not nm or nm in seen or (cur and "현행" not in cur):
+            continue
+        base, s2 = _split_name(nm)
+        if sfx and s2 != sfx:
+            continue
+        if not sfx and s2:
+            continue
+        if nk not in _nospace(nm) and _nospace(full) not in _nospace(nm):
+            continue
+        seen.add(nm)
+        out.append(nm)
+    out.sort(key=lambda n: (0 if _nospace(n).startswith(_nospace(full)) else 1, len(n)))
+    return out[:limit]
+
+
+def suggest(oc, q, getter=None, limit=8):
+    """자동완성 후보(약칭 풀이 먼저, 법제처 검색 결과가 뒤) -> [이름]. 조 번호가 이미 붙어 있어도 이름 부분만으로 찾는다."""
+    res = suggest_local(q, limit)
+    try:
+        for n in suggest_remote(oc, q, getter, limit):
+            if n not in res:
+                res.append(n)
+    except Exception:  # noqa: BLE001
+        pass
+    return res[:limit]

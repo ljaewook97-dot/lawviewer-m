@@ -24,7 +24,14 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .view{display:none;position:fixed;inset:0;padding-top:calc(env(safe-area-inset-top) + 52px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .view.on{display:block}
 .pad{padding:12px}
-.sbox{display:flex;gap:6px;margin-bottom:8px}
+.sbox{display:flex;gap:6px;margin-bottom:8px;position:relative}
+#sug{display:none;position:absolute;left:0;right:0;top:100%;margin-top:-4px;z-index:20;background:var(--surf);border:1px solid var(--acc);border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.18);overflow:hidden;max-height:50vh;overflow-y:auto}
+#sug.on{display:block}
+#sug div{padding:12px 14px;border-bottom:1px solid var(--line);line-height:1.35}
+#sug div:last-child{border-bottom:0}
+#sug div:active{background:var(--acc-soft)}
+.sheet .sh{position:relative;touch-action:none;cursor:ns-resize}
+.sheet .sh::before{content:"";position:absolute;top:3px;left:50%;width:40px;height:4px;border-radius:2px;background:var(--muted);opacity:.5;transform:translateX(-50%)}
 .sbox input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;background:var(--surf);color:var(--text)}
 .btn{background:var(--acc);color:var(--acc-t);border-radius:10px;padding:0 16px;font-weight:700;min-height:44px}
 .btn.g{background:var(--soft);color:var(--sub);border:1px solid var(--line)}
@@ -101,7 +108,7 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
 </div>
 
 <div class="view on" id="home"><div class="pad">
-  <div class="sbox"><input id="q" placeholder="이름·조문  예) 국토계획법 시행령 71조 / 수립지침" enterkeyhint="search"><button class="btn" id="bGo">검색</button></div>
+  <div class="sbox"><input id="q" placeholder="이름·조문  예) 국토계획법 시행령 71조 / 수립지침" enterkeyhint="search" autocomplete="off"><button class="btn" id="bGo">검색</button><div id="sug"></div></div>
   <div class="tabs"><button id="tR" class="on">검색결과</button><button id="tF">즐겨찾기</button></div>
   <div id="list"><div class="empty">법령·행정규칙·자치법규 이름을 치면<br>목록이 나옵니다.<br><span style="font-size:.85em">처음에는 ⚙ 에서 국가법령정보센터 인증키(OC)를 넣어 주세요.</span></div></div>
 </div></div>
@@ -134,7 +141,7 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
 <div id="toast"></div>
 
 <script>
-const VERSION = "5.1";
+const VERSION = "5.2";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -226,7 +233,33 @@ history.pushState(null, "");
 // ---------------------------------------------------------------- 검색·즐겨찾기 목록
 let hits = [];
 $("#bGo").onclick = doSearch;
-$("#q").addEventListener("keydown", (e) => { if (e.key === "Enter") doSearch(); });
+$("#q").addEventListener("keydown", (e) => { if (e.key === "Enter") { sugHide(); doSearch(); } });
+// ---- 검색창 자동완성(법령 이름)
+let sugT = null, sugSeq = 0;
+function sugHide() { $("#sug").classList.remove("on"); $("#sug").innerHTML = ""; }
+function callQuiet(fn, args) {                                  // 화면을 막지 않고 조용히 부르는 호출(자동완성용)
+  return new Promise((resolve) => {
+    if (!worker) { startWorker(); }
+    const id = nid++;
+    pend[id] = (res) => resolve(res.err ? null : res.ok);
+    worker.postMessage({ id, fn, args });
+  });
+}
+$("#q").addEventListener("input", () => {
+  clearTimeout(sugT);
+  const q = $("#q").value;
+  if (q.replace(/\s/g, "").length < 2 || !OC) return sugHide();
+  const my = ++sugSeq;
+  sugT = setTimeout(async () => {
+    const r = await callQuiet("suggest", [OC, q]);
+    if (!r || my !== sugSeq || $("#q").value !== q) return;
+    if (!r.items.length) return sugHide();
+    $("#sug").innerHTML = r.items.map((n, i) => '<div data-i="' + i + '">' + esc(n) + "</div>").join("");
+    $("#sug").classList.add("on");
+    $("#sug").querySelectorAll("div").forEach((d) => (d.onclick = () => { $("#q").value = r.items[+d.dataset.i] + r.tail; sugHide(); doSearch(); }));
+  }, 250);
+});
+document.addEventListener("click", (e) => { if (!e.target.closest("#sug") && e.target.id !== "q") sugHide(); });
 $("#tR").onclick = () => { setTab("r"); };
 $("#tF").onclick = () => { setTab("f"); };
 let tab = "r";
@@ -400,10 +433,30 @@ function paintSheet(r) {
   $("#shC").scrollTop = 0;
   const f = $("#shC .ln.hl");
   if (f) setTimeout(() => { $("#shC").scrollTop = Math.max(0, f.offsetTop - 70); }, 30);
-  $("#doc").style.paddingBottom = "58%";
+  setSheetH(sheetH);
 }
 function closeSheet() { $("#sheet").classList.remove("on"); $("#doc").style.paddingBottom = ""; prevNow = null; prevHist.length = 0; }
 $("#shX").onclick = closeSheet;
+// ---- 조문 창 제목줄을 위아래로 끌어 크기 조절(크게 보기)
+let sheetH = LS.get("lv_sheet", 58);
+function setSheetH(p) {
+  sheetH = Math.max(25, Math.min(92, p));
+  $("#sheet").style.height = sheetH + "%";
+  if ($("#sheet").classList.contains("on")) $("#doc").style.paddingBottom = sheetH + "%";
+}
+(function () {
+  const sh = $("#sheet").querySelector(".sh");
+  let y0 = null, h0 = 0, moved = false;
+  sh.addEventListener("pointerdown", (e) => { if (e.target.closest("button")) return; y0 = e.clientY; h0 = $("#sheet").getBoundingClientRect().height; moved = false; sh.setPointerCapture(e.pointerId); });
+  sh.addEventListener("pointermove", (e) => {
+    if (y0 === null) return;
+    moved = true;
+    setSheetH(((h0 + (y0 - e.clientY)) / innerHeight) * 100);
+  });
+  const end = () => { if (y0 !== null && moved) LS.set("lv_sheet", Math.round(sheetH)); y0 = null; };
+  sh.addEventListener("pointerup", end); sh.addEventListener("pointercancel", end);
+  sh.addEventListener("dblclick", () => setSheetH(sheetH > 80 ? 58 : 92));        // 두 번 누르면 크게/원래대로
+})();
 $("#shBack").onclick = () => { const p = prevHist.pop(); if (!p) return toast("이전에 본 인용 조문이 없습니다"); paintSheet(p); };
 $("#shOpen").onclick = async () => {
   if (!prevNow || !prevNow.art) return;
