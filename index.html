@@ -101,7 +101,7 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
 .empty{text-align:center;color:var(--muted);padding:40px 16px;line-height:1.7}
 
 /* ===== PC 넓은 화면(1000px 이상): PC 프로그램 모양 — 왼쪽 목록 / 가운데 본문(위 탭, 아래 미리보기 두 칸) / 오른쪽 인용 정리 ===== */
-#ltabs,#dbar,#dtEmpty,.dtonly,#side,#tT,#dropHint,#pgrip,#ctx{display:none}
+#ltabs,#dbar,#dtEmpty,.dtonly,#side,#tT,#dropHint,#pgrip,#ctx,.gv{display:none}
 mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:#FFAE42;color:#1D2A27}
 #pbox{display:contents}
 #sheet2{display:none!important}
@@ -148,6 +148,11 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #dropHint.show{display:block}
   #dropHint.ov2{background:var(--hl)}
   body.pv #pgrip{display:block;position:fixed;left:var(--lw);right:var(--rw);bottom:var(--ph);height:8px;margin-bottom:-4px;cursor:ns-resize;z-index:27;touch-action:none}
+  .gv{display:block;position:fixed;top:var(--hh);bottom:0;width:9px;cursor:ew-resize;z-index:28;touch-action:none}
+  .gv:hover,.gv.on{background:var(--acc);opacity:.35}
+  #gripL{left:calc(var(--lw) - 4px)}
+  #gripR{right:calc(var(--rw) - 4px)}
+  body.hl #gripL,body.hr #gripR{display:none}
   #ctx{position:fixed;z-index:80;min-width:150px;background:var(--surf);border:1px solid var(--line);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.25);padding:3px 0}
   #ctx.on{display:block}
   #ctx div{padding:5px 14px;font-size:.88em;cursor:pointer}
@@ -218,7 +223,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <button class="tb" id="dbTT">3단 비교</button><button class="tb" id="dbFav">☆ 즐겨찾기</button><button class="tb" id="dbCopy">조문 복사</button><button class="tb" id="dbWeb">법제처에서 열기</button>
   <button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
 </div>
-<div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="ctx"></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
+<div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="ctx"></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
 <div class="view" id="doc"><div class="body" id="docBody"></div></div>
 <div class="view tt" id="tt"></div>
 
@@ -250,7 +255,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "6.3";
+const VERSION = "6.4";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -920,6 +925,20 @@ $("#bTheme").onclick = (e) => {
   const r = e.currentTarget.getBoundingClientRect();
   showMenu(r.left, r.bottom + 2, [["", "기본 (청록)"], ["light", "밝은 파랑"], ["paper", "종이"], ["dark", "남색"], ["graphite", "차콜"], ["nord", "노드"]].map(([v, t]) => [(LS.get("lv_theme", "") === v ? "✓ " : "   ") + t, () => { LS.set("lv_theme", v); applyPrefs(); }]));
 };
+// ---- 왼쪽·오른쪽 칸 폭 끌어 조절(더블클릭=처음 폭)
+(function () {
+  const root = document.documentElement.style;
+  const apply = () => { root.setProperty("--lw", LS.get("lv_lw", 250) + "px"); root.setProperty("--rw", LS.get("lv_rw", 230) + "px"); };
+  apply();
+  [["#gripL", "lv_lw", 250, (e) => e.clientX], ["#gripR", "lv_rw", 230, (e) => innerWidth - e.clientX]].forEach(([id, key, def, f]) => {
+    const g = $(id); let on = false;
+    g.addEventListener("pointerdown", (e) => { on = true; g.classList.add("on"); g.setPointerCapture(e.pointerId); });
+    g.addEventListener("pointermove", (e) => { if (on) { LS.set(key, Math.round(Math.max(160, Math.min(innerWidth * 0.45, f(e))))); apply(); } });
+    const end = () => { on = false; g.classList.remove("on"); };
+    g.addEventListener("pointerup", end); g.addEventListener("pointercancel", end);
+    g.addEventListener("dblclick", () => { LS.set(key, def); apply(); });
+  });
+})();
 // ---- 미리보기 칸 높이 끌기
 (function () {
   const g = $("#pgrip"); let on = false;
