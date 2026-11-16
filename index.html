@@ -156,6 +156,13 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .hr{padding:7px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}.hr:hover{background:var(--acc-soft)}
 .hr .h1{font-weight:700;line-height:1.3;font-size:.92em}.hr .h1 span{font-weight:600;color:var(--sub)}
 .hr .hs{color:var(--muted);font-size:.8em;margin-top:2px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.hs mark{background:var(--hl);color:inherit;border-radius:2px}
+.sumbox:empty{display:none}
+.sumbox{position:sticky;top:0;z-index:6;margin:0 0 8px;background:var(--surf);border:1px solid var(--acc);border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.12);max-height:42vh;overflow:auto;font-size:.92em;line-height:1.55}
+.sumbox .sh{display:flex;align-items:center;gap:8px;padding:8px 12px;font-weight:800;color:var(--acc-d);cursor:pointer;position:sticky;top:0;background:var(--surf)}
+.sumbox .sh .sx{margin-left:auto;font-weight:600;color:var(--muted);padding:0 6px}
+.sumbox .sb{padding:0 12px 10px}.sumbox.c .sb{display:none}
+.sumbox .sl{margin:6px 0 0;color:var(--sub)}.sumbox .sg2{margin:8px 0 0;padding-top:6px;border-top:1px dashed var(--line)}
+.sumbox .sg2 b{color:var(--text)}.sumbox a.sc{display:inline-block;margin:2px 4px 0 0;padding:0 7px;border-radius:10px;background:var(--soft);border:1px solid var(--line);color:var(--acc-d);cursor:pointer;font-size:.92em}
 .lgt.cat button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 .lgt{display:flex;gap:6px;margin:6px 0 0}.lgt button{flex:1;padding:5px;border:1px solid var(--line);border-radius:6px;background:var(--surf);color:var(--sub);font-size:.8em;font-weight:600}
 .nsub{margin:8px 2px 2px;font-size:.8em;font-weight:700;color:var(--sub);line-height:1.3}.nr{display:flex;gap:6px;align-items:flex-start;padding:5px 6px;border-radius:6px;cursor:pointer}.nr:hover{background:var(--acc-soft)}.nr .nrt{flex:1;min-width:0;font-size:.88em;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere}.nr .sm{flex:none;min-width:24px;height:24px;font-size:.8em;padding:0}
@@ -322,7 +329,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
 </div>
 <div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="ctx"></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
-<div class="view" id="doc"><div class="body" id="docBody"></div></div>
+<div class="view" id="doc"><div id="sumBox" class="sumbox"></div><div class="body" id="docBody"></div></div>
 <div class="view tt" id="tt"></div>
 
 <div id="pbox"><div class="sheet" id="sheet"></div><div class="sheet" id="sheet2"></div></div>
@@ -385,7 +392,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "8.9";
+const VERSION = "9.1";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -474,12 +481,12 @@ function needOC() { if (!OC) { toast("먼저 ⚙ 설정에서 인증키(OC)를 �
 const stack = [];          // 화면 이력
 function show(name, title) {
   const dt = isDT();
-  ["home", "doc", "tt"].forEach((v) => $("#" + v).classList.toggle("on", dt ? (v === "home" || v === name || (v === "doc" && name === "home" && !!cur.doc)) : v === name));
-  if (dt && name === "home") $("#doc").classList.toggle("on", !!cur.doc);
+  ["home", "doc", "tt"].forEach((v) => $("#" + v).classList.toggle("on", dt ? (v === "home" || v === name || (v === "doc" && name === "home" && (!!cur.doc || SUMON))) : v === name));
+  if (dt && name === "home") $("#doc").classList.toggle("on", !!cur.doc || SUMON);
   $("#hTitle").textContent = title || "법령 뷰어";
   const isDoc = name === "doc", isHome = name === "home", isTT = name === "tt";
   $("#bBack").style.display = isHome ? "none" : "";
-  $("#dtEmpty").classList.toggle("off", !!cur.doc);
+  $("#dtEmpty").classList.toggle("off", !!cur.doc || SUMON);
   if (dt && !isHome) paintLTabs();
   $("#bToc").style.display = isDoc ? "" : "none";
   $("#bFav").style.display = isDoc ? "" : "none";
@@ -564,15 +571,51 @@ function grpBind(root, repaint) {
   root.querySelectorAll(".lgh").forEach((b) => (b.onclick = () => { const g = b.parentNode, k = g.dataset.g; if (COLL.has(k)) COLL.delete(k); else COLL.add(k); colSave(); g.classList.toggle("c", COLL.has(k)); }));
   root.querySelectorAll("[data-all]").forEach((b) => (b.onclick = () => { root.querySelectorAll(".lg").forEach((g) => { if (b.dataset.all === "c") COLL.add(g.dataset.g); else COLL.delete(g.dataset.g); g.classList.toggle("c", b.dataset.all === "c"); }); colSave(); }));
 }
-let hitCat = "", hitCatSig = "";
+let hitCat = "", hitCatSig = "", SUMON = false, SUMOFF = false;
+const HOPEN = new Set();                                         // 검색 결과 법령 묶음은 기본 접힘, 펼친 것만 기억(이번 화면에서만)
+function sumHTML(order, by) {                                    // 검색 결과 요약: 어느 법령·조문에서 언급하는지
+  if (!hitToks.length || !order.length) return "";
+  const q = hitToks.join(" "), tot = order.reduce((n, k) => n + by[k].rows.length, 0);
+  const kc = { law: 0, adm: 0, ordin: 0 }; order.forEach((k) => { kc[by[k].x.kind] += by[k].rows.length; });
+  const parts = ["law", "adm", "ordin"].filter((k) => kc[k]).map((k) => KIND[k][0] + " " + kc[k] + "건");
+  const top = order.slice().sort((a, b) => by[b].rows.length - by[a].rows.length).slice(0, 3).map((k) => by[k].x.lawname + "(" + by[k].rows.length + ")");
+  let h = '<div class="sh"><span>🔎 ‘' + esc(q) + '’ 검색 요약</span><span class="muted" style="font-weight:600">' + tot + '건</span><span class="sx" title="닫기">✕</span></div><div class="sb">';
+  h += '<div class="sl">' + esc(parts.join(" · ")) + " — 주로 " + esc(top.join(", ")) + " 에서 언급합니다.</div>";
+  const show = order.slice(0, 8);
+  show.forEach((k) => {
+    const g = by[k], rows = g.rows.slice().sort((a, b) => (hitToks.some((t) => (a[0].title || "").indexOf(t) >= 0) ? 0 : 1) - (hitToks.some((t) => (b[0].title || "").indexOf(t) >= 0) ? 0 : 1));
+    h += '<div class="sg2"><b>' + esc(g.x.lawname) + "</b> " + g.rows.length + "건 — ";
+    rows.slice(0, 5).forEach(([x, i]) => { h += '<a class="sc" data-hi="' + i + '">' + esc((x.label || "") + (x.title ? " " + x.title : "")) + "</a>"; });
+    if (rows.length > 5) h += ' <span class="muted">외 ' + (rows.length - 5) + "곳</span>";
+    h += "</div>";
+  });
+  if (order.length > show.length) h += '<div class="sl muted">그 밖에 ' + (order.length - show.length) + "개 법령·규칙에서도 언급합니다 (왼쪽 목록 참고).</div>";
+  return h + "</div>";
+}
+document.addEventListener("click", (e) => {                      // 검색 요약 상자(본문 영역·목록 안 모두)
+  const c = e.target.closest && e.target.closest("[data-hi]");
+  if (c) { e.stopPropagation(); return void openHitArt(hits[+c.dataset.hi]); }
+  const h = e.target.closest && e.target.closest(".sumbox .sh"); if (!h) return;
+  if (e.target.closest(".sx")) { SUMOFF = true; paintSum(""); const m = h.closest(".sumbox"); if (m && m.id !== "sumBox") m.remove(); return; }
+  h.parentNode.classList.toggle("c");
+});
+function paintSum(sum) {                                         // PC 넓은 화면: 본문 영역 위에 요약을 띄운다(폰은 목록 맨 위)
+  if (!isDT()) { SUMON = false; return; }
+  const box = $("#sumBox"); if (!box) return;
+  if (SUMOFF) sum = "";
+  box.innerHTML = sum; box.classList.remove("c");
+  SUMON = !!sum;
+  $("#doc").classList.toggle("on", !!cur.doc || SUMON); $("#dtEmpty").classList.toggle("off", !!cur.doc || SUMON);
+}
 function paintHits() {
   const L = $("#list");
-  if (!hits.length) { L.innerHTML = '<div class="empty">이름을 치고 검색을 누르세요.</div>'; return; }
+  if (!hits.length) { L.innerHTML = '<div class="empty">이름을 치고 검색을 누르세요.</div>'; paintSum(""); return; }
   let h = hitNote ? '<div class="muted" style="font-size:.8em;margin:0 2px 6px;line-height:1.4">' + esc(hitNote) + "</div>" : "", last = "";
   const art = hits.some((x) => x.key);
+  const noteLen = h.length;
   if (art) {                                                    // 조문 결과: 법령·행정규칙·자치법규로 나누고, 법령별로 묶어 항상 펼쳐 보여 준다
     const sig = hits.length + "|" + (hits[0] || {}).lawname + "|" + (hitToks || []).join(",");
-    if (sig !== hitCatSig) { hitCatSig = sig; hitCat = ""; }
+    if (sig !== hitCatSig) { hitCatSig = sig; hitCat = ""; SUMOFF = false; HOPEN.clear(); }
     const cnt = { law: 0, adm: 0, ordin: 0 };
     hits.forEach((x) => { cnt[x.kind] = (cnt[x.kind] || 0) + 1; });
     const kinds = ["law", "adm", "ordin"].filter((k) => cnt[k]);
@@ -582,17 +625,24 @@ function paintHits() {
     hits.forEach((x, i) => { if (hitCat && x.kind !== hitCat) return; const k = "h:" + x.lawname; if (!by[k]) { by[k] = { x, rows: [] }; order.push(k); } by[k].rows.push([x, i]); });
     const nameHit = (k) => (hitToks || []).some((t) => t.length >= 2 && by[k].x.lawname.indexOf(t) >= 0) ? 0 : 1;
     order.sort((a, b) => nameHit(a) - nameHit(b));          // 이름에 검색어가 든 법령(예: 산지 -> 산지관리법)을 위로
+    if (order.length > 1) h += '<div class="lgt"><button data-all="c">모두 접기</button><button data-all="o">모두 펴기</button></div>';
     order.forEach((k) => {
       const g = by[k];
-      h += '<div class="lg" data-g="' + esc(k) + '"><div class="lgh" style="cursor:default"><span class="tag ' + g.x.kind + '">' + KIND[g.x.kind][0] + '</span><span class="lgn">' + esc(g.x.lawname) + '</span><span class="cnt">' + g.rows.length + '건</span></div><div class="lgb">';
+      h += '<div class="lg' + (HOPEN.has(k) ? "" : " c") + '" data-g="' + esc(k) + '"><button class="lgh"><span class="car">▾</span><span class="tag ' + g.x.kind + '">' + KIND[g.x.kind][0] + '</span><span class="lgn">' + esc(g.x.lawname) + '</span><span class="cnt">' + g.rows.length + '건</span></button><div class="lgb">';
       g.rows.forEach(([x, i]) => { h += '<div class="hr" data-i="' + i + '"><div class="h1">' + esc(x.label || "") + " <span>" + esc(x.title || "") + "</span></div>" + (x.snippet ? '<div class="hs">' + hlTok(x.snippet, hitToks) + "</div>" : "") + "</div>"; });
       h += "</div></div>";
     });
+    const sum = sumHTML(order, by);
+    if (!isDT() && sum) h = h.slice(0, noteLen) + '<div class="sumbox" style="position:static;max-height:none">' + sum + "</div>" + h.slice(noteLen);
     L.innerHTML = h;
+    paintSum(sum);
+    L.querySelectorAll(".lgh").forEach((b) => (b.onclick = () => { const g = b.parentNode, k = g.dataset.g; if (HOPEN.has(k)) HOPEN.delete(k); else HOPEN.add(k); g.classList.toggle("c", !HOPEN.has(k)); }));
+    L.querySelectorAll("[data-all]").forEach((b) => (b.onclick = () => { L.querySelectorAll(".lg").forEach((g) => { if (b.dataset.all === "o") HOPEN.add(g.dataset.g); else HOPEN.delete(g.dataset.g); g.classList.toggle("c", b.dataset.all !== "o"); }); }));
     L.querySelectorAll("[data-cat]").forEach((b) => (b.onclick = () => { hitCat = b.dataset.cat; paintHits(); }));
     L.querySelectorAll(".hr").forEach((c) => (c.onclick = () => openHitArt(hits[+c.dataset.i])));
     return;
   }
+  paintSum("");
   hits.forEach((x, i) => {
     if (x.kind !== last) { h += '<div class="grp">' + KIND[x.kind][0] + "</div>"; last = x.kind; }
     h += '<div class="card" data-i="' + i + '"><div class="m"><div class="nm"><span class="tag ' + x.kind + '">' + KIND[x.kind][0] + "</span>" + esc(x.lawname) + (x.key ? " " + esc(x.label + " " + x.title) : "") + '</div><div class="in">' + esc((x.short || "").replace(/^[^·]*· ?/, "")) + (x.info || x.snippet ? " · " + esc(x.info || x.snippet) : "") + "</div></div></div>";
@@ -801,7 +851,7 @@ function lineHTML(text, spans, lv, ctx, self, akey) {
 }
 function artHTML(a, ctx, opt) {
   opt = opt || {};
-  const FOLD = 6, fold = opt.fav && !opt.hl && a.lines.length > 10;   // 긴 조문은 앞 6줄만 보이고 나머지는 접는다
+  const FOLD = 6, fold = false;   // 본문은 항상 펼쳐 보여 준다(긴 조문 접기는 쓰지 않음)   // 긴 조문은 앞 6줄만 보이고 나머지는 접는다
   let h = '<div class="art' + (fold ? " fold" : "") + '" id="' + (opt.idp || "a-") + a.key + '">';
   a.lines.forEach((l, i) => {
     if (fold && i === FOLD) h += '<div class="more">';
