@@ -142,6 +142,11 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .nfil select{flex:1;min-width:0;border:1px solid var(--line);border-radius:6px;padding:4px;font:inherit;font-size:.85em;background:var(--surf);color:var(--text)}
 #audOut{white-space:pre-wrap;max-height:48vh;overflow:auto;font-size:.8em;margin:10px 0 0;line-height:1.5;background:var(--soft);border-radius:8px;padding:8px}
 #audNames{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px;font:inherit;background:var(--surf);color:var(--text)}
+#updBar{position:fixed;z-index:95;right:14px;bottom:14px;width:340px;max-width:calc(100% - 28px);background:var(--surf);color:var(--text);border:2px solid var(--acc);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.35);padding:12px 14px;display:none}
+#updBar.on{display:block}
+#updBar .ut{font-weight:800;color:var(--acc-d);margin-bottom:6px}
+#updBar .un{white-space:pre-wrap;font-size:.85em;line-height:1.5;color:var(--sub);margin-bottom:8px;max-height:30vh;overflow:auto}
+#updBar .ub{display:flex;gap:8px}#updBar .ub .btn{flex:1;min-height:34px}
 .sd-b .ct{color:var(--sub);font-size:.92em}
 .sd-b .sl{color:var(--muted);font-size:.78em;margin-top:1px}
 .axl{display:block;margin:4px 0;color:var(--link)}
@@ -311,6 +316,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <button class="btn g" id="audOpen" style="width:100%;margin-top:14px">지침 본문 점검 (붙어 버린 줄 찾기)</button>
   <div style="display:flex;gap:8px;margin-top:16px"><button class="btn" style="flex:1" id="setOk">저장</button><button class="btn g" id="setNo">닫기</button></div>
   <div class="muted" id="ver" style="font-size:.75em;margin-top:12px"></div>
+  <button class="btn g" id="updChk" style="width:100%;margin-top:6px">업데이트 확인</button>
 </div></div>
 
 <div id="npal"><button data-c="h1" class="hb" style="background:rgba(255,214,0,.75)" title="노랑 형광펜"></button><button data-c="h2" class="hb" style="background:rgba(76,200,110,.7)" title="초록 형광펜"></button><button data-c="h3" class="hb" style="background:rgba(255,105,140,.65)" title="분홍 형광펜"></button><button data-c="h4" class="hb" style="background:rgba(70,160,255,.65)" title="파랑 형광펜"></button><button data-c="h5" class="hb" style="background:rgba(255,150,40,.7)" title="주황 형광펜"></button><span class="sep"></span><button data-c="f1" style="color:#D32F2F" title="글자색 빨강">A</button><button data-c="f2" style="color:#1565C0" title="글자색 파랑">A</button><button data-c="f3" style="color:#2E7D32" title="글자색 초록">A</button><button data-c="f4" style="color:#7B1FA2" title="글자색 보라">A</button><span class="sep"></span><button data-c="x" title="선택한 곳의 표시 지우기">✕</button></div>
@@ -325,7 +331,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "7.1";
+const VERSION = "7.2";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -398,13 +404,13 @@ function applyPrefs() {
 }
 applyPrefs();
 $("#bSet").onclick = () => { $("#oc").value = OC; $("#syRepo").value = LS.get("lv_syrepo", ""); $("#syTok").value = LS.get("lv_sytok", ""); $("#theme").value = LS.get("lv_theme", ""); $("#fsz").value = LS.get(FSK(), FSD()); $("#lhs").value = LS.get("lv_lh", ""); $("#bws").value = LS.get("lv_bw", ""); $("#city").value = LS.get("lv_city", "고양시"); $("#ver").textContent = "법령 뷰어 모바일 v" + VERSION + " · 법제처 국가법령정보센터 Open API"; $("#ovSet").classList.add("on"); };
-$("#syNow").onclick = () => { LS.set("lv_syrepo", $("#syRepo").value.trim()); LS.set("lv_sytok", $("#syTok").value.trim()); OC = $("#oc").value.trim() || OC; syncNow(true); };
+$("#syNow").onclick = () => { LS.set("lv_syrepo", $("#syRepo").value.trim()); LS.set("lv_sytok", $("#syTok").value.trim()); OC = $("#oc").value.trim() || OC; syncNow(true).then(() => syncNotes(true)); };
 $("#setNo").onclick = () => $("#ovSet").classList.remove("on");
 $("#setOk").onclick = () => {
   OC = $("#oc").value.trim(); LS.set("lv_oc", OC);
   const sr = $("#syRepo").value.trim(), st = $("#syTok").value.trim(), had = LS.get("lv_syrepo", "") + LS.get("lv_sytok", "");
   LS.set("lv_syrepo", sr); LS.set("lv_sytok", st);
-  if (sr && (st || isScript(sr)) && sr + st !== had) setTimeout(() => syncNow(true), 300);
+  if (sr && (st || isScript(sr)) && sr + st !== had) setTimeout(() => syncNow(true).then(() => syncNotes(true)), 300);
   LS.set("lv_theme", $("#theme").value); LS.set(FSK(), parseInt($("#fsz").value, 10)); LS.set("lv_lh", $("#lhs").value); LS.set("lv_bw", $("#bws").value); LS.set("lv_city", $("#city").value.trim() || "고양시");
   applyPrefs(); $("#ovSet").classList.remove("on"); toast("저장했습니다");
 };
@@ -569,6 +575,50 @@ async function syncNow(manual) {
     }
     throw new Error("동기화가 겹쳤습니다 — 잠시 뒤 다시 시도하세요");
   } catch (e) { toast("즐겨찾기 공유 실패 — " + (e.message || e), true); } finally { syncing = false; }
+}
+// ---- 표시(글자색·형광펜) 공유: 즐겨찾기와 같은 저장소·같은 설정, 파일만 따로. 번호로 합치고 지운 것은 '지움 기록'으로 되살아나지 않게 한다
+async function nPath() {
+  const b = await crypto.subtle.digest("SHA-1", new TextEncoder().encode("lawviewer-notes:" + OC));
+  return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("").slice(0, 12);
+}
+function mergeNotes(local, ldel, rn, rdel) {
+  const del = { ...(rdel || {}), ...(ldel || {}) }, cut = Date.now() - 400 * 864e5;
+  Object.keys(del).forEach((k) => { if (del[k] < cut) delete del[k]; });
+  const seen = new Set(), out = [];
+  [...(rn || []), ...local].forEach((n) => { if (n && n.id && !del[n.id] && !seen.has(n.id)) { seen.add(n.id); out.push(n); } });
+  return { notes: out, del };
+}
+const nSig = (notes, del) => notes.map((n) => n.id).sort().join(",") + "|" + Object.keys(del).sort().join(",");
+let nSyncing = false, nSyT = null;
+function syncNotesSoon() { clearTimeout(nSyT); const r = LS.get("lv_syrepo", ""); if (r && (LS.get("lv_sytok", "") || isScript(r))) nSyT = setTimeout(() => syncNotes(false), 2000); }
+async function syncNotes(manual) {
+  const repo = LS.get("lv_syrepo", ""), tok = LS.get("lv_sytok", "");
+  if (!repo || (!tok && !isScript(repo)) || !OC || nSyncing) return;
+  nSyncing = true;
+  try {
+    const sc = isScript(repo), k = await nPath();
+    const url = sc ? repo : GHAPI + "/repos/" + repo + "/contents/favs/" + k + ".json";
+    for (let t = 0; t < 3; t++) {
+      let j = null, data = null;
+      if (sc) { const r = await fetch(url + (url.includes("?") ? "&" : "?") + "k=" + k); try { data = await r.json(); } catch (e) { throw new Error("공유 서버가 이상한 답을 줬습니다"); } if (!data || data.ts == null) data = null; }
+      else { j = await ghReq("GET", url, tok); if (j) { try { data = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\n/g, "")), (c) => c.charCodeAt(0)))); } catch (e) { throw new Error("저장소의 표시 파일을 읽지 못했습니다"); } } }
+      const m = mergeNotes(NOTES, NDEL, data && data.notes, data && data.del);
+      const same = data && nSig(m.notes, m.del) === nSig(data.notes || [], data.del || {});
+      if (!same && (m.notes.length || Object.keys(m.del).length)) {
+        const obj = { ts: Date.now(), notes: m.notes, del: m.del };
+        try {
+          if (sc) { const r = await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ k, data: obj }) }); const d = await r.json().catch(() => ({})); if (!d.ok) throw new Error("공유 서버가 저장을 거절했습니다"); }
+          else await ghReq("PUT", url, tok, { message: "notes", content: btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(obj)))), ...(j ? { sha: j.sha } : {}) });
+        } catch (e) { if (t < 2 && !sc) continue; throw e; }
+      }
+      if (nSig(m.notes, m.del) !== nSig(NOTES, NDEL)) {
+        NOTES = m.notes; NDEL = m.del; LS.set("lv_notes", NOTES); LS.set("lv_ndel", NDEL);
+        if (cur.doc) applyNotes(); if (tab === "n") paintNotesList();
+        toast("표시를 공유 저장소와 맞췄습니다 (" + NOTES.length + "개)");
+      } else if (manual) toast("표시가 이미 같습니다 (" + NOTES.length + "개)");
+      return;
+    }
+  } catch (e) { toast("표시 공유 실패 — " + (e.message || e), true); } finally { nSyncing = false; }
 }
 function paintFavs() {
   const L = $("#list");
@@ -1134,7 +1184,9 @@ addEventListener("resize", () => { applyPrefs(); layoutPanes(); });
 // ---------------------------------------------------------------- 내 표시(글자색·형광펜) + 모아보기
 let NOTES = LS.get("lv_notes", []);
 const NCOL = { h1: "노랑 형광펜", h2: "초록 형광펜", h3: "분홍 형광펜", h4: "파랑 형광펜", h5: "주황 형광펜", f1: "빨강 글자", f2: "파랑 글자", f3: "초록 글자", f4: "보라 글자" };
-const saveNotes = () => LS.set("lv_notes", NOTES);
+let NDEL = LS.get("lv_ndel", {});                        // 지운 표시의 번호 -> 지운 시각(공유할 때 되살아나지 않게)
+const saveNotes = () => { LS.set("lv_notes", NOTES); LS.set("lv_ndel", NDEL); syncNotesSoon(); };
+function dropNotes(pred) { const now = Date.now(); const gone = NOTES.filter(pred); NOTES = NOTES.filter((n) => !pred(n)); gone.forEach((n) => (NDEL[n.id] = now)); return gone.length; }
 function unwrapNotes(root) { root.querySelectorAll("span.nt").forEach((s) => { const p = s.parentNode; while (s.firstChild) p.insertBefore(s.firstChild, s); p.removeChild(s); p.normalize(); }); }
 function wrapRange(ln, s, e, n) {
   const w = document.createTreeWalker(ln, NodeFilter.SHOW_TEXT), hit = []; let pos = 0;
@@ -1194,12 +1246,11 @@ $("#npal").addEventListener("click", (e) => {
   const c = b.dataset.c;
   const touch = (n, p) => n.law === d.name && n.kind === d.kind && n.key === p.key && n.li === p.li && n.s < p.e && n.e > p.s;
   if (c === "x") {
-    const before = NOTES.length; NOTES = NOTES.filter((n) => !parts.some((p) => touch(n, p)));
-    toast(before - NOTES.length ? "표시를 지웠습니다" : "지울 표시가 없습니다");
+    toast(dropNotes((n) => parts.some((p) => touch(n, p))) ? "표시를 지웠습니다" : "지울 표시가 없습니다");
   } else {
     const fam = c.charAt(0);
     parts.forEach((p) => {                                // 같은 종류(형광펜끼리·글자색끼리)는 겹치면 새 것으로 바꾼다
-      NOTES = NOTES.filter((n) => !(touch(n, p) && n.c.charAt(0) === fam && n.s >= p.s && n.e <= p.e));
+      dropNotes((n) => touch(n, p) && n.c.charAt(0) === fam && n.s >= p.s && n.e <= p.e);
       const a = d.arts[p.key];
       NOTES.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), kind: d.kind, rawmst: d.rawmst, date: d.date || "", law: d.name, key: p.key, li: p.li, s: p.s, e: p.e, t: p.t, c, lab: a ? (a.label + (a.title ? " " + a.title : "")) : "", ts: Date.now() });
     });
@@ -1208,7 +1259,7 @@ $("#npal").addEventListener("click", (e) => {
   saveNotes(); getSelection().removeAllRanges(); $("#npal").classList.remove("on"); applyNotes();
   if (tab === "n") paintNotesList();
 });
-function delNote(id) { NOTES = NOTES.filter((n) => n.id !== id); saveNotes(); applyNotes(); if (tab === "n") paintNotesList(); }
+function delNote(id) { dropNotes((n) => n.id === id); saveNotes(); applyNotes(); if (tab === "n") paintNotesList(); }
 (function () {
   const b = $("#docBody");
   const menu = (e, nt) => { e.preventDefault(); const id = nt.dataset.id; showMenu(e.clientX, e.clientY, [["이 표시 지우기", () => delNote(id)], ["표시 모아보기 열기", () => { setTab("n"); if (!isDT()) show("home"); }]]); };
@@ -1281,6 +1332,7 @@ async function runAudit() {
   }
   $("#audOut").textContent = out.join("\n\n") || "점검할 이름이 없습니다."; busy(false);
 }
+$("#updChk").onclick = checkUpdateNow;
 $("#audOpen").onclick = () => { $("#ovSet").classList.remove("on"); $("#audNames").value = LS.get("lv_audit", AUD_DEF); $("#audOut").textContent = ""; $("#ovAud").classList.add("on"); };
 $("#audNo").onclick = () => $("#ovAud").classList.remove("on");
 $("#audGo").onclick = runAudit;
@@ -1322,11 +1374,46 @@ async function ttShow(i) {
 
 // ---------------------------------------------------------------- 시작
 $("#ver").textContent = "버전 v" + VERSION; $("#hVer").textContent = "v" + VERSION;
-if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});   // 앱으로 설치(PC·폰)·오프라인 시작
+// ---- 새 버전 알림: 새 버전은 뒤에서 받아 두고, 사용자가 '업데이트'를 누르면 그때 바꿔 끼운다
+let swReg = null, swApproved = false, updShown = "";
+const verGt = (a, b) => { const x = String(a).split(".").map(Number), y = String(b).split(".").map(Number); for (let i = 0; i < Math.max(x.length, y.length); i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d > 0; } return false; };
+function swVer(w) { return new Promise((res) => { try { const ch = new MessageChannel(); ch.port1.onmessage = (e) => res(e.data && e.data.v); w.postMessage({ t: "ver" }, [ch.port2]); } catch (e) { res(""); } setTimeout(() => res(""), 1500); }); }
+async function checkWaiting() {                         // 새 버전이 기다리고 있으면 알림(같은 버전이면 조용히 바꿔 끼움)
+  const w = swReg && swReg.waiting; if (!w) return false;
+  const v = await swVer(w);
+  if (v === VERSION) { w.postMessage({ t: "skip" }); return false; }
+  showUpdate(v || ""); return true;
+}
+async function showUpdate(v) {
+  if (updShown === v && $("#updBar")) return; updShown = v;
+  let notes = "";
+  try { const t = await (await fetch("changes.txt?nc=" + Date.now(), { cache: "no-store" })).text(); notes = t.split("\n").map((l) => /^v([\d.]+)\s+(.*)$/.exec(l.trim())).filter((m) => m && verGt(m[1], VERSION)).slice(0, 6).map((m) => "· v" + m[1] + "  " + m[2]).join("\n"); } catch (e) {}
+  let bar = $("#updBar"); if (!bar) { bar = document.createElement("div"); bar.id = "updBar"; document.body.appendChild(bar); }
+  bar.innerHTML = '<div class="ut">🔔 새 버전 ' + (v ? "v" + esc(v) + " " : "") + '이(가) 있습니다</div>' + (notes ? '<div class="un">' + esc(notes) + "</div>" : "") + '<div class="ub"><button class="btn" id="updGo">지금 업데이트</button><button class="btn g" id="updLater">나중에</button></div>';
+  bar.classList.add("on");
+  $("#updLater").onclick = () => bar.classList.remove("on");
+  $("#updGo").onclick = () => { swApproved = true; $("#updGo").textContent = "업데이트 중…"; if (swReg && swReg.waiting) swReg.waiting.postMessage({ t: "skip" }); setTimeout(() => location.reload(), 4000); };
+}
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  navigator.serviceWorker.register("sw.js").then((reg) => {   // 앱으로 설치(PC·폰)·오프라인 시작
+    swReg = reg; checkWaiting();
+    reg.addEventListener("updatefound", () => { const nw = reg.installing; if (nw) nw.addEventListener("statechange", () => { if (nw.state === "installed" && navigator.serviceWorker.controller) checkWaiting(); }); });
+    setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000);
+    let lastU = Date.now(); document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - lastU > 5 * 60 * 1000) { lastU = Date.now(); reg.update().catch(() => {}); } });
+  }).catch(() => {});
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (swApproved) location.reload(); });
+}
+async function checkUpdateNow() {
+  if (!swReg) return toast("이 화면에서는 업데이트를 확인할 수 없습니다(설치형 앱·인터넷 주소에서만)");
+  toast("새 버전을 확인하는 중…");
+  try { await swReg.update(); } catch (e) {}
+  await new Promise((r) => setTimeout(r, 2200));
+  if (!(await checkWaiting())) toast("최신 버전입니다 (v" + VERSION + ")");
+}
 if (P.get("oc")) { OC = P.get("oc"); LS.set("lv_oc", OC); history.replaceState(null, "", location.pathname); }
 setTab("r");
 if (!OC) { tabRestoring = false; setTimeout(() => $("#bSet").click(), 300); }
-else { setTimeout(startWorker, 400); setTimeout(restoreTabs, 700); setTimeout(() => syncNow(false), 1500); }        // 엔진은 미리 내려받아 둔다
+else { setTimeout(startWorker, 400); setTimeout(restoreTabs, 700); setTimeout(async () => { await syncNow(false); syncNotes(false); }, 1500); }        // 엔진은 미리 내려받아 둔다
 </script>
 </body>
 </html>
