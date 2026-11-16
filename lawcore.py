@@ -1117,7 +1117,7 @@ def adm_search(oc, title, lawname="", scan="", typed=None, line="", cite=None, g
 
 _HANG_CH = "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳"
 _MOK_CH = "가나다라마바사아자차카타파하"
-_MARK = re.compile(r"(?P<h>[①-⑳])|\((?P<p>\d{1,2})\)|(?<![0-9])(?P<o>\d{1,2})\.(?=\s*[^\s\d.])|(?<![가-힣0-9])(?P<m>[가나다라마바사아자차카타파하])\.(?=\s)|(?P<m2>[가나다라마바사아자차카타파하])\.(?=\s)")
+_MARK = re.compile(r"(?P<h>[①-⑳])|\((?P<p>\d{1,2})\)|(?<![0-9])(?P<o>\d{1,2})\.(?=\s*[^\s\d.])|(?<![가-힣0-9])(?P<m>[가나다라마바사아자차카타파하])\.(?=[\s「『(])|(?P<m2>[가나다라마바사아자차카타파하])\.(?=[\s「『(])")
 
 
 def split_flat_article(text):
@@ -1146,7 +1146,9 @@ def split_flat_article(text):
                 marks.append((m.start(), "o")); ho += 1; mok = 0
         elif m.group("m2") and not m.group("m"):             # 앞 글자와 붙어 버린 목('지방자치단체나. 한국토지주택공사다. …'): 바로 앞이 목이고 차례가 맞을 때만
             lt = m.group("m2")
-            if marks and marks[-1][1] == "m" and _MOK_CH.find(lt) == mok and m.start() - marks[-1][0] <= 60 and m.start() > 0 and "." not in text[marks[-1][0] + 2:m.start()] \
+            glued = text[m.end():m.end() + 1] in "「『("                         # 마침표 바로 뒤에 공백 없이 인용부호가 붙음 = 문장 끝이 아니라 붙어 버린 목
+            if marks and marks[-1][1] == "m" and _MOK_CH.find(lt) == mok and m.start() > 0 \
+                    and (glued or (m.start() - marks[-1][0] <= 60 and "." not in text[marks[-1][0] + 2:m.start()])) \
                     and not (lt == "다" and text[m.start() - 1] in "하한했할되된될는있없니"):
                 marks.append((m.start(), "m")); mok += 1
         else:

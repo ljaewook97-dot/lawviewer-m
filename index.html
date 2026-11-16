@@ -123,6 +123,25 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .sd-b{display:block;width:100%;text-align:left;padding:6px 8px;margin-bottom:4px;border:1px solid var(--line);border-radius:6px;background:var(--soft);color:var(--text);line-height:1.35}
 .sd-b:hover{background:var(--acc-soft)}
 .sd-b i{font-style:normal;color:var(--muted);font-size:.85em}
+.nt.h1{background:rgba(255,214,0,.5)}.nt.h2{background:rgba(76,200,110,.45)}.nt.h3{background:rgba(255,105,140,.4)}.nt.h4{background:rgba(70,160,255,.4)}.nt.h5{background:rgba(255,150,40,.45)}
+.nt.f1{color:#D32F2F}.nt.f2{color:#1565C0}.nt.f3{color:#2E7D32}.nt.f4{color:#7B1FA2}
+:root[data-theme=dark] .nt.f1,:root[data-theme=graphite] .nt.f1,:root[data-theme=nord] .nt.f1,:root[data-theme=forest] .nt.f1,:root[data-theme=midnight] .nt.f1,:root[data-theme=solar] .nt.f1{color:#FF8A80}
+:root[data-theme=dark] .nt.f2,:root[data-theme=graphite] .nt.f2,:root[data-theme=nord] .nt.f2,:root[data-theme=forest] .nt.f2,:root[data-theme=midnight] .nt.f2,:root[data-theme=solar] .nt.f2{color:#82B1FF}
+:root[data-theme=dark] .nt.f3,:root[data-theme=graphite] .nt.f3,:root[data-theme=nord] .nt.f3,:root[data-theme=forest] .nt.f3,:root[data-theme=midnight] .nt.f3,:root[data-theme=solar] .nt.f3{color:#8BE59B}
+:root[data-theme=dark] .nt.f4,:root[data-theme=graphite] .nt.f4,:root[data-theme=nord] .nt.f4,:root[data-theme=forest] .nt.f4,:root[data-theme=midnight] .nt.f4,:root[data-theme=solar] .nt.f4{color:#D6A5FF}
+.nt{border-radius:2px;cursor:pointer}
+.nt.flash{outline:2px solid var(--acc);outline-offset:1px}
+#npal{position:fixed;z-index:75;display:none;align-items:center;gap:3px;padding:4px 6px;background:var(--surf);border:1px solid var(--line);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.28);user-select:none;-webkit-user-select:none}
+#npal.on{display:flex}
+#npal button{min-width:26px;height:26px;border-radius:6px;border:1px solid var(--line);background:var(--soft);color:var(--text);font-weight:800;line-height:1;padding:0}
+#npal .sep{width:1px;height:18px;background:var(--line);margin:0 3px}
+#npal .hb{width:26px}
+.nc .in{font-size:.9em;color:var(--text);white-space:normal;margin-top:3px;line-height:1.4}
+.nc .nm{font-size:.82em;color:var(--sub)}
+.nfil{display:flex;gap:4px;margin:0 0 6px;flex-wrap:wrap}
+.nfil select{flex:1;min-width:0;border:1px solid var(--line);border-radius:6px;padding:4px;font:inherit;font-size:.85em;background:var(--surf);color:var(--text)}
+#audOut{white-space:pre-wrap;max-height:48vh;overflow:auto;font-size:.8em;margin:10px 0 0;line-height:1.5;background:var(--soft);border-radius:8px;padding:8px}
+#audNames{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px;font:inherit;background:var(--surf);color:var(--text)}
 .sd-b .ct{color:var(--sub);font-size:.92em}
 .sd-b .sl{color:var(--muted);font-size:.78em;margin-top:1px}
 .axl{display:block;margin:4px 0;color:var(--link)}
@@ -247,7 +266,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 
 <div class="view on" id="home"><div class="pad">
   <div class="sbox"><select id="qm" style="border:1px solid var(--line);border-radius:8px;background:var(--surf);color:var(--text);font:inherit"><option value="name">이름</option><option value="kw">키워드</option></select><input id="q" placeholder="이름·조문  예) 국토계획법 시행령 71조 / 수립지침" enterkeyhint="search" autocomplete="off"><button class="btn" id="bGo">검색</button><div id="sug"></div></div>
-  <div class="tabs"><button id="tR" class="on">검색결과</button><button id="tF">즐겨찾기</button><button id="tT">목차</button></div>
+  <div class="tabs"><button id="tR" class="on">검색결과</button><button id="tF">즐겨찾기</button><button id="tT">목차</button><button id="tN">표시</button></div>
   <div id="list"><div class="empty">법령·행정규칙·자치법규 이름을 치면<br>목록이 나옵니다.<br><span style="font-size:.85em">처음에는 ⚙ 에서 국가법령정보센터 인증키(OC)를 넣어 주세요.</span></div></div>
 </div></div>
 
@@ -289,15 +308,24 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <select id="lhs"><option value="">기본</option><option value="1.3">좁게</option><option value="1.7">넓게</option><option value="2">아주 넓게</option></select>
   <label>본문 폭 (PC 넓은 화면)</label>
   <select id="bws"><option value="">꽉 채움</option><option value="1100">넓게</option><option value="900">보통</option><option value="720">좁게</option></select>
+  <button class="btn g" id="audOpen" style="width:100%;margin-top:14px">지침 본문 점검 (붙어 버린 줄 찾기)</button>
   <div style="display:flex;gap:8px;margin-top:16px"><button class="btn" style="flex:1" id="setOk">저장</button><button class="btn g" id="setNo">닫기</button></div>
   <div class="muted" id="ver" style="font-size:.75em;margin-top:12px"></div>
 </div></div>
 
+<div id="npal"><button data-c="h1" class="hb" style="background:rgba(255,214,0,.75)" title="노랑 형광펜"></button><button data-c="h2" class="hb" style="background:rgba(76,200,110,.7)" title="초록 형광펜"></button><button data-c="h3" class="hb" style="background:rgba(255,105,140,.65)" title="분홍 형광펜"></button><button data-c="h4" class="hb" style="background:rgba(70,160,255,.65)" title="파랑 형광펜"></button><button data-c="h5" class="hb" style="background:rgba(255,150,40,.7)" title="주황 형광펜"></button><span class="sep"></span><button data-c="f1" style="color:#D32F2F" title="글자색 빨강">A</button><button data-c="f2" style="color:#1565C0" title="글자색 파랑">A</button><button data-c="f3" style="color:#2E7D32" title="글자색 초록">A</button><button data-c="f4" style="color:#7B1FA2" title="글자색 보라">A</button><span class="sep"></span><button data-c="x" title="선택한 곳의 표시 지우기">✕</button></div>
+<div class="over" id="ovAud"><div class="modal">
+  <h3>지침 본문 점검</h3>
+  <div class="muted" style="font-size:.82em;line-height:1.5;margin-bottom:6px">점검할 지침 이름을 한 줄에 하나씩 적고 시작을 누르세요. 항·호·목이 한 줄로 붙어 보이는 곳을 찾아 줍니다.</div>
+  <textarea id="audNames" rows="4"></textarea>
+  <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" style="flex:1" id="audGo">점검 시작</button><button class="btn g" id="audCopy">결과 복사</button><button class="btn g" id="audNo">닫기</button></div>
+  <pre id="audOut"></pre>
+</div></div>
 <div id="busy"><div class="bx"><div class="spin"></div><div id="busyT">불러오는 중…</div></div></div>
 <div id="toast"></div>
 
 <script>
-const VERSION = "7.0";
+const VERSION = "7.1";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -441,7 +469,8 @@ document.addEventListener("click", (e) => { if (!e.target.closest("#sug") && e.t
 $("#tR").onclick = () => { setTab("r"); };
 $("#tF").onclick = () => { setTab("f"); };
 let tab = "r";
-function setTab(t) { tab = t; $("#tR").classList.toggle("on", t === "r"); $("#tF").classList.toggle("on", t === "f"); $("#tT").classList.toggle("on", t === "t"); t === "r" ? paintHits() : t === "f" ? paintFavs() : paintToc(); }
+function setTab(t) { tab = t; $("#tR").classList.toggle("on", t === "r"); $("#tF").classList.toggle("on", t === "f"); $("#tT").classList.toggle("on", t === "t"); $("#tN").classList.toggle("on", t === "n"); t === "r" ? paintHits() : t === "f" ? paintFavs() : t === "n" ? paintNotesList() : paintToc(); }
+$("#tN").onclick = () => setTab("n");
 $("#tT").onclick = () => setTab("t");
 function paintToc() {
   const L = $("#list");
@@ -618,7 +647,7 @@ function artHTML(a, ctx, opt) {
   let h = '<div class="art" id="' + (opt.idp || "a-") + a.key + '">';
   a.lines.forEach((l, i) => {
     const hl = opt.hl && opt.hl.some((r) => i >= r[0] && i < r[1]);
-    const body = '<div class="ln l' + Math.min(l[0], 4) + (hl ? " hl" : "") + '">' + lineHTML(l[1], l[2], l[0], ctx, opt.self, a.key) + "</div>";
+    const body = '<div class="ln l' + Math.min(l[0], 4) + (hl ? " hl" : "") + '" data-k="' + a.key + '" data-i="' + i + '">' + lineHTML(l[1], l[2], l[0], ctx, opt.self, a.key) + "</div>";
     h += i === 0 && opt.fav ? '<div class="ah">' + body + '<button class="fv' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? " on" : "") + '" data-fk="' + a.key + '">' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? "★" : "☆") + "</button></div>" : body;
   });
   return h + "</div>";
@@ -722,7 +751,7 @@ function showDoc(d, kind, rawmst, key, fromTab) {
   }
   const b = $("#docBody"); b.innerHTML = h;
   b.onclick = (e) => { if (!isDT() || e.target.closest("a,button")) return; const art = e.target.closest(".art"); if (art && art.id.startsWith("a-")) setCurArt(art.id.slice(2)); };
-  bindCites(b);
+  bindCites(b); applyNotes();
   b.querySelectorAll(".fv").forEach((f) => (f.onclick = () => { toggleFav(d, f.dataset.fk); const on = favIdx(kind, rawmst, f.dataset.fk) >= 0; f.textContent = on ? "★" : "☆"; f.classList.toggle("on", on); }));
   show("doc", d.name);
   paintDocFav();
@@ -1101,6 +1130,161 @@ document.addEventListener("keydown", (e) => {
   else if (e.altKey && k === "ArrowLeft") { e.preventDefault(); navBack(); }
 });
 addEventListener("resize", () => { applyPrefs(); layoutPanes(); });
+
+// ---------------------------------------------------------------- 내 표시(글자색·형광펜) + 모아보기
+let NOTES = LS.get("lv_notes", []);
+const NCOL = { h1: "노랑 형광펜", h2: "초록 형광펜", h3: "분홍 형광펜", h4: "파랑 형광펜", h5: "주황 형광펜", f1: "빨강 글자", f2: "파랑 글자", f3: "초록 글자", f4: "보라 글자" };
+const saveNotes = () => LS.set("lv_notes", NOTES);
+function unwrapNotes(root) { root.querySelectorAll("span.nt").forEach((s) => { const p = s.parentNode; while (s.firstChild) p.insertBefore(s.firstChild, s); p.removeChild(s); p.normalize(); }); }
+function wrapRange(ln, s, e, n) {
+  const w = document.createTreeWalker(ln, NodeFilter.SHOW_TEXT), hit = []; let pos = 0;
+  while (w.nextNode()) { const t = w.currentNode, len = t.nodeValue.length; if (pos + len > s && pos < e) hit.push([t, Math.max(s - pos, 0), Math.min(e - pos, len)]); pos += len; if (pos >= e) break; }
+  hit.forEach(([t, a, b]) => {
+    let mid = t; if (a > 0) mid = t.splitText(a); if (b - a < mid.nodeValue.length) mid.splitText(b - a);
+    const sp = document.createElement("span"); sp.className = "nt " + n.c; sp.dataset.id = n.id; mid.parentNode.insertBefore(sp, mid); sp.appendChild(mid);
+  });
+}
+function applyNotes() {
+  const d = cur.doc, root = $("#docBody"); if (!d) return;
+  unwrapNotes(root);
+  NOTES.filter((n) => n.law === d.name && n.kind === d.kind).forEach((n) => {
+    const ln = root.querySelector('.ln[data-k="' + n.key + '"][data-i="' + n.li + '"]'); if (!ln) { n.lost = 1; return; }
+    const txt = ln.textContent; let s = n.s, e = n.e;
+    if (txt.slice(s, e) !== n.t) { const p = txt.indexOf(n.t); if (p < 0) { n.lost = 1; return; } s = p; e = p + n.t.length; }
+    n.lost = 0; wrapRange(ln, s, e, n);
+  });
+}
+function selParts() {                                    // 지금 드래그한 글을 줄 단위 조각으로
+  const sel = getSelection(); if (!sel || !sel.rangeCount || sel.isCollapsed || !cur.doc) return [];
+  const r = sel.getRangeAt(0), root = $("#docBody"); if (!root.contains(r.commonAncestorContainer)) return [];
+  const off = (ln, node, o) => { const q = document.createRange(); q.selectNodeContents(ln); q.setEnd(node, o); return q.toString().length; };
+  const out = [];
+  root.querySelectorAll(".ln[data-k]").forEach((ln) => {
+    if (!r.intersectsNode(ln)) return;
+    const full = ln.textContent.length;
+    let s = ln.contains(r.startContainer) ? off(ln, r.startContainer, r.startOffset) : 0;
+    let e = ln.contains(r.endContainer) ? off(ln, r.endContainer, r.endOffset) : full;
+    const txt = ln.textContent;
+    while (s < e && /\s/.test(txt[s])) s++;
+    while (e > s && /\s/.test(txt[e - 1])) e--;
+    if (e > s) out.push({ key: ln.dataset.k, li: +ln.dataset.i, s, e, t: txt.slice(s, e) });
+  });
+  return out;
+}
+let palTm = null;
+document.addEventListener("selectionchange", () => {
+  clearTimeout(palTm);
+  palTm = setTimeout(() => {
+    const pal = $("#npal"), parts = selParts();
+    if (!parts.length) return pal.classList.remove("on");
+    pal.classList.add("on");
+    const w = pal.offsetWidth, hh = pal.offsetHeight;
+    if (isDT()) {
+      const rc = getSelection().getRangeAt(0).getBoundingClientRect();
+      let top = rc.top - hh - 8; if (top < 40) top = rc.bottom + 8;
+      pal.style.left = Math.max(6, Math.min(innerWidth - w - 6, rc.left + rc.width / 2 - w / 2)) + "px"; pal.style.top = Math.max(6, Math.min(innerHeight - hh - 6, top)) + "px"; pal.style.bottom = "auto";
+    } else { pal.style.left = Math.max(6, (innerWidth - w) / 2) + "px"; pal.style.top = "auto"; pal.style.bottom = "calc(env(safe-area-inset-bottom) + 16px)"; }
+  }, isDT() ? 120 : 350);
+});
+$("#npal").addEventListener("pointerdown", (e) => e.preventDefault());
+$("#npal").addEventListener("mousedown", (e) => e.preventDefault());
+$("#npal").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-c]"); if (!b) return;
+  const d = cur.doc, parts = selParts(); if (!d || !parts.length) return;
+  const c = b.dataset.c;
+  const touch = (n, p) => n.law === d.name && n.kind === d.kind && n.key === p.key && n.li === p.li && n.s < p.e && n.e > p.s;
+  if (c === "x") {
+    const before = NOTES.length; NOTES = NOTES.filter((n) => !parts.some((p) => touch(n, p)));
+    toast(before - NOTES.length ? "표시를 지웠습니다" : "지울 표시가 없습니다");
+  } else {
+    const fam = c.charAt(0);
+    parts.forEach((p) => {                                // 같은 종류(형광펜끼리·글자색끼리)는 겹치면 새 것으로 바꾼다
+      NOTES = NOTES.filter((n) => !(touch(n, p) && n.c.charAt(0) === fam && n.s >= p.s && n.e <= p.e));
+      const a = d.arts[p.key];
+      NOTES.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), kind: d.kind, rawmst: d.rawmst, date: d.date || "", law: d.name, key: p.key, li: p.li, s: p.s, e: p.e, t: p.t, c, lab: a ? (a.label + (a.title ? " " + a.title : "")) : "", ts: Date.now() });
+    });
+    toast(NCOL[c] + " " + parts.length + "곳 표시했습니다");
+  }
+  saveNotes(); getSelection().removeAllRanges(); $("#npal").classList.remove("on"); applyNotes();
+  if (tab === "n") paintNotesList();
+});
+function delNote(id) { NOTES = NOTES.filter((n) => n.id !== id); saveNotes(); applyNotes(); if (tab === "n") paintNotesList(); }
+(function () {
+  const b = $("#docBody");
+  const menu = (e, nt) => { e.preventDefault(); const id = nt.dataset.id; showMenu(e.clientX, e.clientY, [["이 표시 지우기", () => delNote(id)], ["표시 모아보기 열기", () => { setTab("n"); if (!isDT()) show("home"); }]]); };
+  b.addEventListener("contextmenu", (e) => { const nt = e.target.closest(".nt"); if (nt) menu(e, nt); });
+  b.addEventListener("click", (e) => { if (isDT() || e.target.closest("a,button") || !getSelection().isCollapsed) return; const nt = e.target.closest(".nt"); if (nt) menu(e, nt); });
+})();
+async function jumpNote(n) {
+  if (!(cur.doc && cur.doc.name === n.law && cur.doc.kind === n.kind)) await openDoc(n.kind, n.rawmst, n.law, n.date, n.key);
+  else if (!isDT()) show("doc", cur.doc.name);
+  if (cur.doc && cur.doc.arts[n.key]) goKey(n.key);
+  setTimeout(() => { const el = $("#docBody").querySelector('.nt[data-id="' + n.id + '"]'); if (el) { el.scrollIntoView({ block: "center" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); } }, 120);
+}
+function notesView() {
+  const scope = LS.get("lv_nscope", "doc"), cf = LS.get("lv_ncf", "");
+  let L = NOTES.slice();
+  if (scope === "doc" && cur.doc) L = L.filter((n) => n.law === cur.doc.name && n.kind === cur.doc.kind);
+  if (cf) L = L.filter((n) => n.c.indexOf(cf) === 0);
+  const num = (k) => { const m = /^(\d+):(\d+)$/.exec(k); return m ? +m[1] * 1000 + +m[2] : 0; };
+  L.sort((a, b) => a.law.localeCompare(b.law) || num(a.key) - num(b.key) || String(a.key).localeCompare(String(b.key)) || a.li - b.li || a.s - b.s);
+  return L;
+}
+function paintNotesList() {
+  const L = $("#list"), v = notesView(), scope = LS.get("lv_nscope", "doc"), cf = LS.get("lv_ncf", "");
+  let h = '<div class="nfil"><select id="nsc"><option value="doc"' + (scope === "doc" ? " selected" : "") + '>이 법령만</option><option value="all"' + (scope === "all" ? " selected" : "") + '>모든 법령</option></select><select id="ncf"><option value="">모든 색</option><option value="h"' + (cf === "h" ? " selected" : "") + '>형광펜 전체</option><option value="f"' + (cf === "f" ? " selected" : "") + ">글자색 전체</option>" +
+    Object.keys(NCOL).map((k) => '<option value="' + k + '"' + (cf === k ? " selected" : "") + ">" + NCOL[k] + "</option>").join("") + '</select><button class="tb btn g" id="ncp" style="min-height:26px">모아 복사</button></div>';
+  if (!v.length) h += '<div class="empty">' + (NOTES.length ? "조건에 맞는 표시가 없습니다." : "표시한 곳이 없습니다.<br>본문의 글을 드래그하면<br>글자색·형광펜 도구가 나타납니다.") + "</div>";
+  else {
+    let last = "";
+    v.forEach((n) => {
+      if (n.law !== last) { h += '<div class="grp">' + esc(n.law) + "</div>"; last = n.law; }
+      h += '<div class="card nc" data-id="' + n.id + '"><div class="m"><div class="nm">' + esc(n.lab || n.key) + (n.lost ? " · (본문이 바뀌어 위치를 못 찾음)" : "") + '</div><div class="in"><span class="nt ' + n.c + '">' + esc(n.t) + '</span></div></div><button class="sm" data-x="' + n.id + '" title="지우기">✕</button></div>';
+    });
+  }
+  L.innerHTML = h;
+  $("#nsc").onchange = (e) => { LS.set("lv_nscope", e.target.value); paintNotesList(); };
+  $("#ncf").onchange = (e) => { LS.set("lv_ncf", e.target.value); paintNotesList(); };
+  $("#ncp").onclick = () => { const vv = notesView(); if (!vv.length) return toast("복사할 표시가 없습니다", true); copyText(vv.map((n) => "「" + n.law + "」 " + (n.lab || n.key) + "\n  " + n.t).join("\n"), vv.length + "건을 복사했습니다"); };
+  L.querySelectorAll(".card.nc").forEach((c) => (c.onclick = (e) => { if (e.target.closest("[data-x]")) return; const n = NOTES.find((x) => x.id === c.dataset.id); if (n) jumpNote(n); }));
+  L.querySelectorAll("[data-x]").forEach((b) => (b.onclick = () => delNote(b.dataset.x)));
+}
+
+// ---------------------------------------------------------------- 지침 본문 점검(붙어 버린 줄 찾기)
+const AUD_DEF = "도시·군관리계획수립지침\n개발제한구역의 지정 및 관리에 관한 계획 수립지침\n지구단위계획수립지침";
+function auditLine(t) {
+  const r = [];
+  const body = t.replace(/^\s*(?:[가-하]\.|\d+\.|\([0-9]+\)|[①-⑳])\s*/, "");
+  if (/^[가-하]\.\s/.test(t) && /[^.]{1,60}[가-힣][나-하]\.\s/.test(body)) r.push("목(가·나·다)이 한 줄에 붙음");
+  else if (/(?:^|\s)가\.\s.*\s나\.\s/.test(t)) r.push("목(가·나·다)이 한 줄에 붙음");
+  if (/(?:^|\s)가\.[\s「『(].*[^\s][나-하]\.[「『(]/.test(t)) r.push("목(가·나·다)이 한 줄에 붙음");
+  if ((t.match(/[①-⑳]/g) || []).length >= 2) r.push("항(①②)이 한 줄에 붙음");
+  if (/^1\.\s/.test(t) && /\s2\.\s*[가-힣「(]/.test(t)) r.push("호(1. 2.)가 한 줄에 붙음");
+  if (t.length > 500) r.push("줄이 매우 김(" + t.length + "자)");
+  return r;
+}
+async function runAudit() {
+  if (needOC()) return;
+  const names = $("#audNames").value.split("\n").map((x) => x.trim()).filter(Boolean); LS.set("lv_audit", $("#audNames").value);
+  const out = []; $("#audOut").textContent = "점검 중…";
+  for (const nm of names) {
+    try {
+      const r = await call("search", [OC, nm], "'" + nm + "' 찾는 중…");
+      const ns = (s) => String(s).replace(/\s/g, "");
+      let hit = (r.hits || []).find((x) => x.kind === "adm" && ns(x.lawname) === ns(nm)) || (r.hits || []).find((x) => x.kind === "adm" && ns(x.lawname).indexOf(ns(nm)) >= 0) || (r.hits || [])[0];
+      if (!hit) { out.push("■ " + nm + "\n  찾지 못했습니다."); continue; }
+      const d = await call("open_doc", [OC, hit.kind, hit.rawmst, hit.lawname, hit.date || ""], hit.lawname + " 받는 중…");
+      let nl = 0, bad = 0; const ex = [];
+      Object.keys(d.arts).forEach((k) => d.arts[k].lines.forEach((l) => { nl++; const w = auditLine(l[1]); if (w.length) { bad++; if (ex.length < 20) ex.push("  · " + d.arts[k].label + " — " + w.join(", ") + "\n    " + l[1].slice(0, 110).replace(/\n/g, " ")); } }));
+      out.push("■ " + hit.lawname + " (조문 " + Object.keys(d.arts).length + "건·줄 " + nl + "개) → 의심되는 줄 " + bad + "개" + (bad ? "\n" + ex.join("\n") + (bad > ex.length ? "\n  … 외 " + (bad - ex.length) + "개" : "") : " — 이상 없음"));
+    } catch (e) { out.push("■ " + nm + "\n  점검 실패: " + (e && e.message || e)); }
+  }
+  $("#audOut").textContent = out.join("\n\n") || "점검할 이름이 없습니다."; busy(false);
+}
+$("#audOpen").onclick = () => { $("#ovSet").classList.remove("on"); $("#audNames").value = LS.get("lv_audit", AUD_DEF); $("#audOut").textContent = ""; $("#ovAud").classList.add("on"); };
+$("#audNo").onclick = () => $("#ovAud").classList.remove("on");
+$("#audGo").onclick = runAudit;
+$("#audCopy").onclick = () => { const t = $("#audOut").textContent; if (t) copyText(t, "점검 결과를 복사했습니다"); };
 
 // ---------------------------------------------------------------- 3단 비교
 let TT = null, TTI = 0;
