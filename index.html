@@ -149,6 +149,15 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .nc .in{font-size:.9em;color:var(--text);white-space:normal;margin-top:3px;line-height:1.4}
 .nc .nm{font-size:.82em;color:var(--sub)}
 .nfil{display:flex;gap:4px;margin:0 0 6px;flex-wrap:wrap}
+.lg{margin-top:8px}.lgh{display:flex;align-items:center;gap:6px;width:100%;text-align:left;padding:8px 10px;background:var(--soft);border:1px solid var(--line);border-radius:8px;font-weight:700;color:var(--acc-d);line-height:1.3}
+.lgh .car{flex:none;width:.9em;font-size:.8em;transition:transform .12s}.lgh .lgn{flex:1;min-width:0}.lgh .cnt{flex:none;font-weight:600;color:var(--muted);font-size:.82em}
+.lg.c .car{transform:rotate(-90deg)}.lg.c .lgb{display:none}.lgb{margin:2px 0 0 8px;padding-left:6px;border-left:2px solid var(--line)}
+.hr{padding:7px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}.hr:hover{background:var(--acc-soft)}
+.hr .h1{font-weight:700;line-height:1.3;font-size:.92em}.hr .h1 span{font-weight:600;color:var(--sub)}
+.hr .hs{color:var(--muted);font-size:.8em;margin-top:2px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.hs mark{background:var(--hl);color:inherit;border-radius:2px}
+.lgt{display:flex;gap:6px;margin:6px 0 0}.lgt button{flex:1;padding:5px;border:1px solid var(--line);border-radius:6px;background:var(--surf);color:var(--sub);font-size:.8em;font-weight:600}
+.nsub{margin:8px 2px 2px;font-size:.8em;font-weight:700;color:var(--sub);line-height:1.3}.nr{display:flex;gap:6px;align-items:flex-start;padding:5px 6px;border-radius:6px;cursor:pointer}.nr:hover{background:var(--acc-soft)}.nr .nrt{flex:1;min-width:0;font-size:.88em;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere}.nr .sm{flex:none;min-width:24px;height:24px;font-size:.8em;padding:0}
+.nfil select{flex:1 1 40%}.nfil .btn{flex:1 1 100%}
 .nfil select{flex:1;min-width:0;border:1px solid var(--line);border-radius:6px;padding:4px;font:inherit;font-size:.85em;background:var(--surf);color:var(--text)}
 #audOut{white-space:pre-wrap;max-height:48vh;overflow:auto;font-size:.8em;margin:10px 0 0;line-height:1.5;background:var(--soft);border-radius:8px;padding:8px}
 #audNames{width:100%;border:1px solid var(--line);border-radius:10px;padding:8px;font:inherit;background:var(--surf);color:var(--text)}
@@ -363,7 +372,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "8.4";
+const VERSION = "8.5";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -535,10 +544,32 @@ async function doSearch() {
   if (!hits.length) $("#list").innerHTML = '<div class="empty">' + esc(r.msg || "찾은 것이 없습니다.") + "</div>";
 }
 function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+let COLL = new Set(LS.get("lv_col", []));
+const colSave = () => LS.set("lv_col", [...COLL]);
+const hlTok = (t, toks) => { let o = esc(t); (toks || []).filter((w) => w && w.length >= 2).forEach((w) => { try { o = o.replace(new RegExp(esc(w).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"), "<mark>$&</mark>"); } catch (e) {} }); return o; };
+function grpBind(root, repaint) {
+  root.querySelectorAll(".lgh").forEach((b) => (b.onclick = () => { const g = b.parentNode, k = g.dataset.g; if (COLL.has(k)) COLL.delete(k); else COLL.add(k); colSave(); g.classList.toggle("c", COLL.has(k)); }));
+  root.querySelectorAll("[data-all]").forEach((b) => (b.onclick = () => { root.querySelectorAll(".lg").forEach((g) => { if (b.dataset.all === "c") COLL.add(g.dataset.g); else COLL.delete(g.dataset.g); g.classList.toggle("c", b.dataset.all === "c"); }); colSave(); }));
+}
 function paintHits() {
   const L = $("#list");
   if (!hits.length) { L.innerHTML = '<div class="empty">이름을 치고 검색을 누르세요.</div>'; return; }
   let h = hitNote ? '<div class="muted" style="font-size:.8em;margin:0 2px 6px;line-height:1.4">' + esc(hitNote) + "</div>" : "", last = "";
+  const art = hits.some((x) => x.key);
+  if (art) {                                                    // 조문 결과: 법령별로 묶어 접었다 폈다
+    const order = [], by = {};
+    hits.forEach((x, i) => { const k = "h:" + x.lawname; if (!by[k]) { by[k] = { x, rows: [] }; order.push(k); } by[k].rows.push([x, i]); });
+    if (order.length > 1) h += '<div class="lgt"><button data-all="c">모두 접기</button><button data-all="o">모두 펴기</button></div>';
+    order.forEach((k) => {
+      const g = by[k];
+      h += '<div class="lg' + (COLL.has(k) ? " c" : "") + '" data-g="' + esc(k) + '"><button class="lgh"><span class="car">▾</span><span class="tag ' + g.x.kind + '">' + KIND[g.x.kind][0] + '</span><span class="lgn">' + esc(g.x.lawname) + '</span><span class="cnt">' + g.rows.length + '건</span></button><div class="lgb">';
+      g.rows.forEach(([x, i]) => { h += '<div class="hr" data-i="' + i + '"><div class="h1">' + esc(x.label || "") + " <span>" + esc(x.title || "") + "</span></div>" + (x.snippet ? '<div class="hs">' + hlTok(x.snippet, hitToks) + "</div>" : "") + "</div>"; });
+      h += "</div></div>";
+    });
+    L.innerHTML = h; grpBind(L);
+    L.querySelectorAll(".hr").forEach((c) => (c.onclick = () => openHitArt(hits[+c.dataset.i])));
+    return;
+  }
   hits.forEach((x, i) => {
     if (x.kind !== last) { h += '<div class="grp">' + KIND[x.kind][0] + "</div>"; last = x.kind; }
     h += '<div class="card" data-i="' + i + '"><div class="m"><div class="nm"><span class="tag ' + x.kind + '">' + KIND[x.kind][0] + "</span>" + esc(x.lawname) + (x.key ? " " + esc(x.label + " " + x.title) : "") + '</div><div class="in">' + esc((x.short || "").replace(/^[^·]*· ?/, "")) + (x.info || x.snippet ? " · " + esc(x.info || x.snippet) : "") + "</div></div></div>";
@@ -1348,17 +1379,24 @@ function paintNotesList() {
     Object.keys(NCOL).map((k) => '<option value="' + k + '"' + (cf === k ? " selected" : "") + ">" + NCOL[k] + "</option>").join("") + '</select><button class="tb btn g" id="ncp" style="min-height:26px">모아 복사</button></div>';
   if (!v.length) h += '<div class="empty">' + (NOTES.length ? "조건에 맞는 표시가 없습니다." : "표시한 곳이 없습니다.<br>본문의 글을 드래그하면<br>글자색·형광펜 도구가 나타납니다.") + "</div>";
   else {
-    let last = "";
-    v.forEach((n) => {
-      if (n.law !== last) { h += '<div class="grp">' + esc(n.law) + "</div>"; last = n.law; }
-      h += '<div class="card nc" data-id="' + n.id + '"><div class="m"><div class="nm">' + esc(n.lab || n.key) + (n.lost ? " · (본문이 바뀌어 위치를 못 찾음)" : "") + '</div><div class="in"><span class="nt ' + n.c + '">' + esc(n.t) + '</span></div></div><button class="sm" data-x="' + n.id + '" title="지우기">✕</button></div>';
+    const order = [], by = {};
+    v.forEach((n) => { const k = "n:" + n.law; if (!by[k]) { by[k] = { law: n.law, arts: {}, ord: [], cnt: 0 }; order.push(k); } const g = by[k], ak = n.key || n.lab; if (!g.arts[ak]) { g.arts[ak] = { lab: n.lab || n.key, items: [] }; g.ord.push(ak); } g.arts[ak].items.push(n); g.cnt++; });
+    if (order.length > 1) h += '<div class="lgt"><button data-all="c">모두 접기</button><button data-all="o">모두 펴기</button></div>';
+    order.forEach((k) => {
+      const g = by[k];
+      h += '<div class="lg' + (COLL.has(k) ? " c" : "") + '" data-g="' + esc(k) + '"><button class="lgh"><span class="car">▾</span><span class="lgn">' + esc(g.law) + '</span><span class="cnt">' + g.cnt + '건</span></button><div class="lgb">';
+      g.ord.forEach((ak) => {
+        const a2 = g.arts[ak]; h += '<div class="nsub">' + esc(a2.lab) + "</div>";
+        a2.items.forEach((n) => { h += '<div class="nr nc" data-id="' + n.id + '"><div class="nrt"><span class="nt ' + n.c + '">' + esc(n.t) + "</span>" + (n.lost ? ' <span class="muted">· (본문이 바뀌어 위치를 못 찾음)</span>' : "") + '</div><button class="sm" data-x="' + n.id + '" title="지우기">✕</button></div>'; });
+      });
+      h += "</div></div>";
     });
   }
-  L.innerHTML = h;
+  L.innerHTML = h; grpBind(L);
   $("#nsc").onchange = (e) => { LS.set("lv_nscope", e.target.value); paintNotesList(); };
   $("#ncf").onchange = (e) => { LS.set("lv_ncf", e.target.value); paintNotesList(); };
   $("#ncp").onclick = () => { const vv = notesView(); if (!vv.length) return toast("복사할 표시가 없습니다", true); copyText(vv.map((n) => "「" + n.law + "」 " + (n.lab || n.key) + "\n  " + n.t).join("\n"), vv.length + "건을 복사했습니다"); };
-  L.querySelectorAll(".card.nc").forEach((c) => (c.onclick = (e) => { if (e.target.closest("[data-x]")) return; const n = NOTES.find((x) => x.id === c.dataset.id); if (n) jumpNote(n); }));
+  L.querySelectorAll(".nc").forEach((c) => (c.onclick = (e) => { if (e.target.closest("[data-x]")) return; const n = NOTES.find((x) => x.id === c.dataset.id); if (n) jumpNote(n); }));
   L.querySelectorAll("[data-x]").forEach((b) => (b.onclick = () => delNote(b.dataset.x)));
 }
 
