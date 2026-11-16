@@ -123,12 +123,30 @@ def _spans(text, selfname, law=None, lv=0):
         for a, b, to in L.deleg_spans(text, selfname, taken):
             out.append([a, b, "@d", to, 0, None]); taken.append((a, b))
         for a, b in L.adm_spans(text, taken):
-            out.append([a, b, "@a", "", 0, None]); taken.append((a, b))
+            nm = _adm_name_before(text, a, b)           # '지구단위계획수립지침' 처럼 이름이 붙어 있으면 그 지침 자체를 연다
+            if nm and not any(a - len(nm) < e and b > s0 for s0, e in taken):
+                out.append([a - len(nm), b, "@n", nm + "지침", 0, None]); taken.append((a - len(nm), b))
+            else:
+                out.append([a, b, "@a", "", 0, None]); taken.append((a, b))
         for a, b in L.ordin_spans(text, taken):
             out.append([a, b, "@o", "", 0, None]); taken.append((a, b))
     except Exception:  # noqa: BLE001
         pass
     return out
+
+
+_ADM_NAME_BAD = ("이", "그", "같은", "해당", "다음", "관계", "관련", "각종", "동", "별도", "위", "아래", "각", "이하", "상기")
+
+
+def _adm_name_before(text, a, b):
+    """'지침' 글자(text[a:b]) 바로 앞에 공백 없이 붙은 이름 조각('지구단위계획수립') -> 있으면 그 글, 없으면 ''"""
+    import re as _re
+    if text[a:b] != "지침":
+        return ""
+    m = _re.search(r"([가-힣ㆍ·]{2,30})$", text[:a])
+    if not m or m.group(1) in _ADM_NAME_BAD:
+        return ""
+    return m.group(1)
 
 
 def _art_json(a, selfname, spans=True, law=None):
@@ -348,6 +366,18 @@ def list_adm(oc, mst, key, line=""):
     return _hitres(r)
 
 
+def find_adm(oc, name):
+    """본문에 이름이 적힌 지침('지구단위계획수립지침')을 이름으로 찾는다 -> 검색결과 꼴 + exact(이름이 같은 첫 건이면 그 건)"""
+    import re as _re
+    r = L.adm_search(oc, name, "", "", typed=name, getter=getter)
+    out = _hitres(r, "'%s' 을(를) 이름으로 찾은 행정규칙" % name)
+    want = _re.sub(r"[\sㆍ·]", "", name)
+    hs = out["hits"]
+    hs.sort(key=lambda h: 0 if _re.sub(r"[\sㆍ·]", "", str(h.get("lawname") or "")) == want else 1)
+    out["exact"] = bool(hs and _re.sub(r"[\sㆍ·]", "", str(hs[0].get("lawname") or "")) == want)
+    return out
+
+
 def list_ordin(oc, mst, key, city=""):
     """'조례'를 누르면: 기본 자치단체 조례에서 이 조문 제목 낱말이 든 조문"""
     import re as _re
@@ -376,7 +406,7 @@ def web_url(kind, name, key=""):
     return L.web_url(L.parse_query(q))
 
 
-FUNCS = {"cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
+FUNCS = {"cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
          "tt_open": tt_open, "tt_row": tt_row, "set_api_base": set_api_base}
 
 
