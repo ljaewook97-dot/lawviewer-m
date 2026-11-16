@@ -1117,7 +1117,7 @@ def adm_search(oc, title, lawname="", scan="", typed=None, line="", cite=None, g
 
 _HANG_CH = "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳"
 _MOK_CH = "가나다라마바사아자차카타파하"
-_MARK = re.compile(r"(?P<h>[①-⑳])|\((?P<p>\d{1,2})\)|(?<![0-9])(?P<o>\d{1,2})\.(?=\s*[^\s\d.])|(?<![가-힣0-9])(?P<m>[가나다라마바사아자차카타파하])\.(?=[\s「『(])|(?P<m2>[가나다라마바사아자차카타파하])\.(?=[\s「『(])")
+_MARK = re.compile(r"(?P<h>[①-⑳])|\((?P<p>\d{1,2})\)|(?<![0-9-])(?P<o>\d{1,2})\.(?=\s*[^\s\d.])|(?<![가-힣0-9])(?P<m>[가나다라마바사아자차카타파하])\.(?=[\s「『(])|(?P<m2>[가나다라마바사아자차카타파하])\.(?=[\s「『(])")
 
 
 def split_flat_article(text):
@@ -1125,22 +1125,25 @@ def split_flat_article(text):
     번호가 차례대로 이어지는 것만(항 ①②…, 호 1.2.…, 목 가.나.…) 표지로 받아들여 '제35조의2.' 같은 우연한 글자에 속지 않는다.
     -> {'조문내용': 머리글, '항': [{'항내용','호':[{'호내용','목':[{'목내용'}]}]}]} (항 없이 호만 있으면 '호')"""
     text = re.sub(r"\s+", " ", str(text or "")).strip()
-    marks, hang, ho, mok, par = [], 0, 1, 0, 1
+    marks, hang, ho, mok, par, sub = [], 0, 1, 0, 1, 1
     paren, circ, circ_used = False, 0, False                 # (1)(2)… 밑에서 ①②… 가 새로 시작하면 그 항의 호로 본다
     for m in _MARK.finditer(text):
         if m.group("p"):                                    # (1) (2) … 도 항처럼 차례대로 이어질 때만
-            if int(m.group("p")) == par:
-                marks.append((m.start(), "h")); par += 1; ho, mok = 1, 0
+            if int(m.group("p")) == par and not re.search(r"\d-\d+\.$", text[:m.start()]):        # '3-5-1.(1)' 같은 번호 인용 뒤의 (1)은 항이 아님
+                marks.append((m.start(), "h")); par += 1; ho, mok, sub = 1, 0, 1
                 paren, circ, circ_used = True, 0, False
         elif m.group("h"):
             idx = max(_HANG_CH.find(m.group("h")), 0)
             if paren and idx == circ:                       # (n) 밑의 ①②③ -> 호
-                marks.append((m.start(), "o")); circ = idx + 1; circ_used = True; mok = 0
+                marks.append((m.start(), "o")); circ = idx + 1; circ_used = True; mok = 0; sub = 1
             elif idx >= hang and not (paren and circ_used and idx < circ):    # ① 다음은 ②(삭제된 항이 있으면 건너뛸 수 있음)
                 marks.append((m.start(), "h")); hang = idx + 1; ho, mok = 1, 0
                 paren, circ, circ_used = False, 0, False
         elif m.group("o"):
-            if paren and circ_used:
+            if paren and circ_used:                         # (n) 밑 ①②… 호 안의 '1. 2. 3.' 은 그 호의 목으로(차례대로 이어지고 '2.'가 뒤에 있을 때만)
+                if int(m.group("o")) == sub and any(k == "o" for _, k in marks[-3:]) and not re.search(r"조의$", text[:m.start()]) \
+                        and (sub > 1 or re.search(r"(?<![0-9-])2\.", text[m.end():])):
+                    marks.append((m.start(), "m")); sub += 1
                 continue
             if int(m.group("o")) == ho and not re.search(r"조의$", text[:m.start()]):
                 marks.append((m.start(), "o")); ho += 1; mok = 0
