@@ -60,7 +60,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 #doc .body{padding:4px 14px 120px}
 .head{margin:26px 0 10px;text-align:left;font-weight:700;color:var(--acc-d);font-size:1.08em;border-left:3px solid var(--acc);padding:1px 0 1px 8px}
 .art{padding:10px 0;border-bottom:1px solid var(--line)}
-.art.cur{background:var(--acc-soft);margin:0 -14px;padding:10px 14px}
+.art.cur{background:color-mix(in srgb,var(--acc) 4%,transparent);box-shadow:inset 4px 0 0 var(--acc);margin:0 -14px;padding:10px 14px 10px 18px}
 .ln{line-height:var(--lh,1.75);margin:2px 0;word-break:keep-all;overflow-wrap:anywhere}
 .ln.l1{padding-left:1.1em}.ln.l2{padding-left:2.2em}.ln.l3{padding-left:3.3em}.ln.l4{padding-left:4.4em}
 .ln.hl{background:var(--hl);border-radius:4px}
@@ -213,7 +213,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   body.pv #doc,body.pv #tt{bottom:var(--ph)}
   #doc .body{padding:0 2px 50px}
   .art{padding:4px 0}
-  .art.cur{margin:0 -6px;padding:4px 6px}
+  .art.cur{margin:0 -6px;padding:4px 6px 4px 10px}
   .ln{line-height:var(--lh,1.5);margin:1px 0}
   #doc .body{max-width:var(--bw,none)}
   .fv{min-width:22px;height:22px;font-size:1em}
@@ -254,6 +254,10 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   .nav{padding:4px 6px}
   .tt .col{margin:6px 8px}
 }
+.modal .sg{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.modal .sg:first-of-type{margin-top:0;padding-top:0;border-top:0}
+.modal .sg h4{margin:0;font-size:.82em;letter-spacing:.02em;color:var(--acc-d);display:inline}.modal details.sg>summary{cursor:pointer;list-style:none}.modal details.sg>summary::before{content:"▸ ";color:var(--muted)}.modal details[open].sg>summary::before{content:"▾ "}
+.modal .hint{font-size:.78em;color:var(--muted);margin-top:4px;line-height:1.45}.modal .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.modal .g2 .btn{width:100%}
+.modal .mfoot{position:sticky;bottom:-16px;display:flex;gap:8px;margin:14px -16px -16px;padding:10px 16px 14px;background:var(--surf);border-top:1px solid var(--line)}
 #accGate{position:fixed;inset:0;z-index:99999;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto}#accGate .box{width:min(380px,100%);display:flex;flex-direction:column;gap:9px}#accGate h2{margin:0;font-size:22px}#accGate .sub{margin:0 0 4px;line-height:1.5;color:var(--sub)}
 #accGate input,#accList input{box-sizing:border-box;width:100%;font:inherit;font-size:14px;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--surf);color:var(--text)}#accGate details{margin-top:10px;font-size:.85em;color:var(--muted)}#accGate details summary{cursor:pointer;padding:6px 0}#accGate details input{margin:6px 0}
 #accSec summary{cursor:pointer;padding:8px 0;font-weight:700}#accList{display:flex;flex-direction:column;gap:6px}#accBadge{background:#e53935;color:#fff;border-radius:9px;padding:0 6px;font-size:.8em;margin-left:4px}
@@ -302,30 +306,37 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div class="over" id="ovToc"><div class="drawer" id="drawer"></div></div>
 <div class="over" id="ovSet"><div class="modal">
   <h3>설정</h3>
-  <label>국가법령정보센터 인증키(OC)</label>
-  <input id="oc" placeholder="open.law.go.kr 에서 신청한 OC" autocapitalize="off" autocomplete="off">
-  <div class="muted" style="font-size:.78em;margin-top:4px">이 폰의 브라우저에만 저장되고, 법제처로 조회할 때만 쓰입니다.</div>
-  <label>즐겨찾기 공유 (PC와 같은 인증키끼리)</label>
-  <input id="syRepo" placeholder="공유 주소(앱스크립트 웹앱 URL) 또는 GitHub 저장소" autocapitalize="off" autocomplete="off">
-  <input id="syTok" type="password" placeholder="GitHub 토큰 (웹앱 주소를 쓰면 비움)" autocapitalize="off" autocomplete="off" style="margin-top:6px">
-  <div class="muted" style="font-size:.78em;margin-top:4px">토큰은 이 폰에만 저장됩니다. 저장소가 공개면 즐겨찾기 목록도 공개되니 비공개를 권합니다. 비우면 공유를 끕니다.</div>
-  <button class="btn g" id="syNow" style="margin-top:8px;width:100%">지금 동기화</button>
-  <label>기본 자치단체 (조례 찾기)</label>
-  <input id="city" placeholder="예) 고양시" autocomplete="off">
-  <label>색상 테마</label>
-  <select id="theme"><option value="">기본 (청록)</option><option value="light">밝은 파랑</option><option value="paper">종이</option><option value="dark">남색 (어두움)</option><option value="graphite">차콜 (어두움)</option><option value="nord">노드 (어두움)</option><option value="sage">세이지 (연한 녹색)</option><option value="lavender">라벤더 (연보라)</option><option value="rose">로즈 (연분홍)</option><option value="forest">숲 (어두운 녹색)</option><option value="midnight">미드나이트 (검정)</option><option value="solar">솔라 (어두운 청록)</option></select>
-  <label>글자 크기</label>
-  <select id="fsz"><option value="12">아주 작게 (PC 기본)</option><option value="13">조밀</option><option value="14">작게</option><option value="16">보통</option><option value="18">크게</option><option value="20">아주 크게</option></select>
-  <label>줄 간격</label>
-  <select id="lhs"><option value="">기본</option><option value="1.3">좁게</option><option value="1.7">넓게</option><option value="2">아주 넓게</option></select>
-  <label>본문 폭 (PC 넓은 화면)</label>
-  <select id="bws"><option value="">꽉 채움</option><option value="1100">넓게</option><option value="900">보통</option><option value="720">좁게</option></select>
-  <button class="btn g" id="audOpen" style="width:100%;margin-top:14px">지침 본문 점검 (붙어 버린 줄 찾기)</button>
-  <div style="display:flex;gap:8px;margin-top:16px"><button class="btn" style="flex:1" id="setOk">저장</button><button class="btn g" id="setNo">닫기</button></div>
-  <details id="accSec" hidden style="margin-top:12px"><summary>접속 승인 (관리자) <span id="accBadge" hidden></span></summary><div id="accList"></div></details>
+  <section class="sg"><h4>조회</h4>
+    <label>국가법령정보센터 인증키(OC)</label>
+    <input id="oc" placeholder="open.law.go.kr 에서 신청한 OC" autocapitalize="off" autocomplete="off">
+    <div class="hint">이 기기의 브라우저에만 저장되고, 법제처로 조회할 때만 쓰입니다.</div>
+    <label>기본 자치단체 (조례 찾기)</label>
+    <input id="city" placeholder="예) 고양시" autocomplete="off">
+  </section>
+  <section class="sg"><h4>화면</h4>
+    <label>색상 테마</label>
+    <select id="theme"><option value="">기본 (청록)</option><option value="light">밝은 파랑</option><option value="paper">종이</option><option value="dark">남색 (어두움)</option><option value="graphite">차콜 (어두움)</option><option value="nord">노드 (어두움)</option><option value="sage">세이지 (연한 녹색)</option><option value="lavender">라벤더 (연보라)</option><option value="rose">로즈 (연분홍)</option><option value="forest">숲 (어두운 녹색)</option><option value="midnight">미드나이트 (검정)</option><option value="solar">솔라 (어두운 청록)</option></select>
+    <div class="g2">
+      <div><label>글자 크기</label><select id="fsz"><option value="12">아주 작게 (PC 기본)</option><option value="13">조밀</option><option value="14">작게</option><option value="16">보통</option><option value="18">크게</option><option value="20">아주 크게</option></select></div>
+      <div><label>줄 간격</label><select id="lhs"><option value="">기본</option><option value="1.3">좁게</option><option value="1.7">넓게</option><option value="2">아주 넓게</option></select></div>
+    </div>
+    <label>본문 폭 (PC 넓은 화면)</label>
+    <select id="bws"><option value="">꽉 채움</option><option value="1100">넓게</option><option value="900">보통</option><option value="720">좁게</option></select>
+  </section>
+  <details class="sg"><summary><h4>동기화 (즐겨찾기·표시)</h4></summary>
+    <div class="hint" style="margin-top:0">PC와 폰에서 같은 인증키끼리 즐겨찾기와 표시를 맞춥니다. 비우면 끕니다.</div>
+    <input id="syRepo" placeholder="공유 주소(앱스크립트 웹앱 URL) 또는 GitHub 저장소" autocapitalize="off" autocomplete="off" style="margin-top:6px">
+    <input id="syTok" type="password" placeholder="GitHub 토큰 (웹앱 주소를 쓰면 비움)" autocapitalize="off" autocomplete="off" style="margin-top:6px">
+    <div class="hint">토큰은 이 기기에만 저장됩니다. 저장소가 공개면 즐겨찾기 목록도 공개되니 비공개를 권합니다.</div>
+    <button class="btn g" id="syNow" style="margin-top:8px;width:100%">지금 동기화</button>
+  </details>
+  <section class="sg"><h4>도구</h4>
+    <div class="g2"><button class="btn g" id="audOpen">지침 본문 점검</button><button class="btn g" id="updChk">업데이트 확인</button></div>
+  </section>
+  <details id="accSec" class="sg" hidden><summary><h4>접속 승인 (관리자) <span id="accBadge" hidden></span></h4></summary><div id="accList"></div></details>
   <div class="muted" id="ver" style="font-size:.75em;margin-top:12px"></div>
   <div class="muted" id="lastVisit" style="font-size:.75em;margin-top:4px"></div>
-  <button class="btn g" id="updChk" style="width:100%;margin-top:6px">업데이트 확인</button>
+  <div class="mfoot"><button class="btn" style="flex:1" id="setOk">저장</button><button class="btn g" id="setNo">닫기 (Esc)</button></div>
 </div></div>
 
 <div id="npal"><button data-c="h1" class="hb" style="background:rgba(255,214,0,.75)" title="노랑 형광펜"></button><button data-c="h2" class="hb" style="background:rgba(76,200,110,.7)" title="초록 형광펜"></button><button data-c="h3" class="hb" style="background:rgba(255,105,140,.65)" title="분홍 형광펜"></button><button data-c="h4" class="hb" style="background:rgba(70,160,255,.65)" title="파랑 형광펜"></button><button data-c="h5" class="hb" style="background:rgba(255,150,40,.7)" title="주황 형광펜"></button><span class="sep"></span><button data-c="f1" style="color:#D32F2F" title="글자색 빨강">A</button><button data-c="f2" style="color:#1565C0" title="글자색 파랑">A</button><button data-c="f3" style="color:#2E7D32" title="글자색 초록">A</button><button data-c="f4" style="color:#7B1FA2" title="글자색 보라">A</button><span class="sep"></span><button data-c="x" title="선택한 곳의 표시 지우기">✕</button></div>
@@ -340,7 +351,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "7.5";
+const VERSION = "7.7";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1185,6 +1196,13 @@ $("#bR").onclick = () => setPane("r", !document.body.classList.contains("hr"));
 paintSide();
 if (LS.get("lv_hidel", 0)) setPane("l", true);
 if (LS.get("lv_hider", 0)) setPane("r", true);
+// Esc: 열려 있는 설정·점검·목차 창을 닫는다
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape" || document.getElementById("accGate")) return;
+  const ov = [...document.querySelectorAll(".over.on")].pop();
+  if (!ov) return;
+  e.preventDefault(); e.stopImmediatePropagation(); ov.classList.remove("on");
+}, true);
 document.addEventListener("keydown", (e) => {
   if (!isDT()) return;
   const k = e.key;
@@ -1413,7 +1431,7 @@ if (lastVisitPrev) setTimeout(() => toast(lvText), 1800);
   const ls = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
   const esc = (t) => String(t == null ? "" : t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const rid = () => { const a = new Uint8Array(16); crypto.getRandomValues(a); return Array.from(a, (x) => ("0" + x.toString(16)).slice(-2)).join(""); };
-  let ID = lg("accId"); if (!/^[a-f0-9]{32}$/.test(ID || "")) { ID = rid(); ls("accId", ID); }
+  let ID = lg("accIdLaw"); if (!/^[a-f0-9]{32}$/.test(ID || "")) { ID = rid(); ls("accIdLaw", ID); }
   function jp(q, ok, bad) {
     const n = "_a" + Math.random().toString(36).slice(2), sc = document.createElement("script"); let done = 0, tm;
     const end = () => { if (done) return; done = 1; clearTimeout(tm); try { delete window[n]; } catch (e) { window[n] = null; } sc.remove(); };
@@ -1423,15 +1441,16 @@ if (lastVisitPrev) setTimeout(() => toast(lvText), 1800);
     const s = []; for (const k in q) s.push(k + "=" + encodeURIComponent(q[k])); s.push("cb=" + n);
     sc.src = URL0 + "?" + s.join("&"); document.head.appendChild(sc);
   }
-  let gate = null, poll = 0, tmr = 0, lastP = -1, flt = "all", cf = null, lastRc = 0;
+  let gate = null, poll = 0, tmr = 0, lastP = -1, flt = "all", appF = "law", cf = null, lastRc = 0;
+  const isLaw = (x) => String(x.o || "").indexOf("[법령]") === 0, orgOf = (x) => String(x.o || "").replace(/^\[법령\]\s*/, "");
   const g = (i) => document.getElementById(i);
   const adm = () => lg("accAdm") || "";
   function unlock() { if (gate) { gate.remove(); gate = null; } clearInterval(poll); poll = 0; }
   function msg(t) { const e = g("accMsg"); if (e) e.textContent = t; }
   function showGate(m) {
-    if (gate) return; gate = document.createElement("div"); gate.id = "accGate"; let w = null; try { w = JSON.parse(lg("accWho") || "null"); } catch (e) {}
+    if (gate) return; gate = document.createElement("div"); gate.id = "accGate"; let w = null; try { w = JSON.parse(lg("accWhoLaw") || "null"); } catch (e) {}
     gate.innerHTML = '<div class="box"><h2>법령 뷰어</h2><p class="sub">사용하려면 관리자의 승인이 필요합니다.<br>소속과 이름을 적고 승인을 요청해 주세요.<br>승인이 되지 않으면 관리자(이재욱)에게 문의해 주세요.</p>' +
-      '<input id="accO" maxlength="30" placeholder="소속 (예: 선진엔지니어링)" autocomplete="organization" value="' + esc(w && w.o) + '"><input id="accN" maxlength="30" placeholder="이름" autocomplete="name" value="' + esc(w && w.n) + '">' +
+      '<input id="accO" maxlength="22" placeholder="소속 (예: 선진엔지니어링)" autocomplete="organization" value="' + esc(w && w.o) + '"><input id="accN" maxlength="30" placeholder="이름" autocomplete="name" value="' + esc(w && w.n) + '">' +
       '<button class="btn" id="accGo" type="button">승인 요청</button><div id="accMsg" class="sub" role="status">' + esc(m || "") + '</div>' +
       '<details id="accAd"><summary>관리자</summary><input id="accK" type="password" placeholder="관리자 키" autocomplete="off"><button class="btn g" id="accKo" type="button">관리자로 열기</button></details></div>';
     document.body.appendChild(gate);
@@ -1442,11 +1461,11 @@ if (lastVisitPrev) setTimeout(() => toast(lvText), 1800);
   function request() {
     const o = g("accO").value.trim(), n = g("accN").value.trim(); if (!o || !n) return msg("소속과 이름을 모두 적어 주세요");
     g("accGo").disabled = true; msg("요청을 보내는 중…");
-    jp({ a: "req", id: ID, o, n }, (d) => { g("accGo").disabled = false; if (d.e) return msg(d.e === "full" ? "요청이 가득 찼습니다. 관리자에게 문의하세요" : "요청하지 못했습니다"); ls("accWho", JSON.stringify({ o, n, s: d.s })); res(d.s); },
+    jp({ a: "req", id: ID, o: "[법령] " + o, n }, (d) => { g("accGo").disabled = false; if (d.e) return msg(d.e === "full" ? "요청이 가득 찼습니다. 관리자에게 문의하세요" : "요청하지 못했습니다"); ls("accWhoLaw", JSON.stringify({ o, n, s: d.s })); res(d.s); },
       () => { g("accGo").disabled = false; msg("서버에 연결하지 못했습니다. 인터넷 상태를 확인해 주세요"); });
   }
   function res(s) {
-    if (s === "ok") { ls("accOk", String(Date.now())); unlock(); toast("승인되었습니다"); return; }
+    if (s === "ok") { ls("accOkLaw", String(Date.now())); unlock(); toast("승인되었습니다"); return; }
     if (s === "no") return msg("승인이 거절되었습니다. 관리자에게 문의하세요");
     if (s === "none") return msg("요청 기록이 없습니다. 다시 요청해 주세요");
     msg("승인 대기 중입니다. 관리자가 승인하면 자동으로 열립니다. 승인이 되지 않으면 관리자(이재욱)에게 문의해 주세요."); wait();
@@ -1454,7 +1473,7 @@ if (lastVisitPrev) setTimeout(() => toast(lvText), 1800);
   function wait() { if (poll) return; poll = setInterval(() => { if (document.hidden || !gate) return; jp({ a: "st", id: ID }, (d) => { if (d.s === "ok") res("ok"); else if (d.s === "no") { clearInterval(poll); poll = 0; res("no"); } }); }, 4000); }
   function recheck() {
     lastRc = Date.now();
-    jp({ a: "st", id: ID }, (d) => { if (d.s === "ok") ls("accOk", String(Date.now())); else if (d.s === "no" || d.s === "none") { ls("accOk", null); showGate(d.s === "no" ? "이 기기의 접속이 차단되었습니다. 관리자에게 문의하세요" : "다시 승인을 요청해 주세요"); } });
+    jp({ a: "st", id: ID }, (d) => { if (d.s === "ok") ls("accOkLaw", String(Date.now())); else if (d.s === "no" || d.s === "none") { ls("accOkLaw", null); showGate(d.s === "no" ? "이 기기의 접속이 차단되었습니다. 관리자에게 문의하세요" : "다시 승인을 요청해 주세요"); } });
   }
   function adminLogin(k, cb) { jp({ a: "chk", k }, (d) => { if (d.ok) { ls("accAdm", k); unlock(); adminInit(); cb && cb(true); } else cb && cb(false); }, () => cb && cb(false)); }
   // ---- 관리자 화면
@@ -1467,39 +1486,44 @@ if (lastVisitPrev) setTimeout(() => toast(lvText), 1800);
     if (!adm()) { bx.innerHTML = '<div class="sub">관리자 키를 입력하면 승인 요청을 이 앱에서 승인할 수 있습니다.</div><div style="display:flex;gap:6px"><input id="accK2" type="password" placeholder="관리자 키" style="flex:1;min-width:0"><button class="btn" id="accK2o" type="button">확인</button></div>' + (err ? '<div class="sub">' + esc(err) + "</div>" : "");
       g("accK2o").onclick = () => { const k = g("accK2").value.trim(); if (k) adminLogin(k, (ok) => { if (ok) refresh(); else render(null, "관리자 키가 맞지 않거나 연결하지 못했습니다"); }); }; return; }
     if (list == null) { bx.innerHTML = '<div class="sub">' + esc(err || "") + '</div><button class="btn g" id="accRf" type="button">다시 불러오기</button>'; g("accRf").onclick = refresh; return; }
-    const pend = list.filter((x) => x.s === "p").length; badge(pend);
+    const all = list, lawN = all.filter(isLaw).length, mapN = all.length - lawN, pendLaw = all.filter((x) => isLaw(x) && x.s === "p").length, pendMap = all.filter((x) => !isLaw(x) && x.s === "p").length;
+    badge(pendLaw);
+    list = all.filter((x) => appF === "all" || (appF === "law") === isLaw(x));
+    const pend = list.filter((x) => x.s === "p").length;
     const cnt = { all: list.length, p: pend, ok: list.filter((x) => x.s === "ok").length, no: list.filter((x) => x.s === "no").length };
-    let h = '<div class="sub">' + (err ? esc(err) + " · " : "") + "승인 대기 <b>" + pend + "</b>건 · 승인 <b>" + cnt.ok + "</b>대</div>";
+    let h = '<div class="accF">' + [["law", "법령 뷰어 " + lawN + (pendLaw ? " (대기 " + pendLaw + ")" : "")], ["map", "딸깍 지도 " + mapN + (pendMap ? " (대기 " + pendMap + ")" : "")], ["all", "전체"]].map((f) => '<button type="button" class="' + (appF === f[0] ? "on" : "") + '" data-ap="' + f[0] + '">' + f[1] + "</button>").join("") + "</div>";
+    h += '<div class="sub">' + (err ? esc(err) + " · " : "") + "승인 대기 <b>" + pend + "</b>건 · 승인 <b>" + cnt.ok + "</b>대</div>";
     h += '<div class="accF">' + [["all", "전체"], ["p", "대기"], ["ok", "승인"], ["no", "차단"]].map((f) => '<button type="button" class="' + (flt === f[0] ? "on" : "") + '" data-f="' + f[0] + '">' + f[1] + " " + cnt[f[0]] + "</button>").join("") + "</div>";
     const last = (x) => x.ls || x.t2 || x.t || 0;
     const vis = list.filter((x) => flt === "all" || x.s === flt).sort((a, b) => last(b) - last(a));
     if (!vis.length) h += '<div class="sub">해당하는 기기가 없습니다</div>';
     vis.forEach((x) => {
       const st = x.s === "p" ? "대기" : x.s === "ok" ? "승인" : "차단", lt = x.s === "p" ? "요청 " + when(x.t) : (x.ls ? "마지막 접속 " + ago(x.ls) + " (" + when(x.ls) + ")" : "접속 기록 없음 · 승인 " + ago(x.t2 || x.t));
-      h += '<div class="accRow s' + x.s + '"><div class="who"><b>' + esc(x.n) + (x.id === ID ? ' <em class="accMe">이 기기</em>' : "") + "</b><small>" + esc(x.o) + '</small><small class="accSt">' + st + " · " + lt + '</small></div><div class="bt">' +
+      h += '<div class="accRow s' + x.s + '"><div class="who"><b>' + esc(x.n) + (x.id === ID ? ' <em class="accMe">이 기기</em>' : "") + "</b><small>" + (appF === "all" ? (isLaw(x) ? "법령 뷰어 · " : "딸깍 지도 · ") : "") + esc(orgOf(x)) + '</small><small class="accSt">' + st + " · " + lt + '</small></div><div class="bt">' +
         (cf && cf.i === x.id ? "" : (x.s !== "ok" ? '<button type="button" data-a="ok" data-i="' + x.id + '">승인</button>' : "") + (x.s === "p" ? '<button type="button" data-a="no" data-i="' + x.id + '">거절</button>' : "") + (x.s === "ok" ? '<button type="button" data-a="no" data-i="' + x.id + '">차단</button>' : "") + '<button type="button" data-a="del" data-i="' + x.id + '">삭제</button>') + "</div>" +
-        (cf && cf.i === x.id ? '<div class="accCf"><b>「' + esc(x.n) + "」 " + esc(x.o) + " 기기를 " + (cf.a === "del" ? "삭제" : x.s === "p" ? "거절" : "차단") + "할까요?</b>" + (x.id === ID ? " (지금 쓰는 기기입니다)" : "") + '<div><button type="button" class="btn" data-cf="y">확인</button><button type="button" class="btn g" data-cf="n">취소</button></div></div>' : "") + "</div>";
+        (cf && cf.i === x.id ? '<div class="accCf"><b>「' + esc(x.n) + "」 " + esc(orgOf(x)) + " 기기를 " + (cf.a === "del" ? "삭제" : x.s === "p" ? "거절" : "차단") + "할까요?</b>" + (x.id === ID ? " (지금 쓰는 기기입니다)" : "") + '<div><button type="button" class="btn" data-cf="y">확인</button><button type="button" class="btn g" data-cf="n">취소</button></div></div>' : "") + "</div>";
     });
     h += '<div style="display:flex;gap:6px;margin-top:8px"><button class="btn g" id="accRf" type="button">새로고침</button><button class="btn g" id="accOut" type="button">관리자 해제</button></div>';
     bx.innerHTML = h;
-    bx.querySelectorAll(".accRow button[data-a]").forEach((b) => (b.onclick = () => { if (b.dataset.a === "ok") { cf = null; setS(b.dataset.i, "ok"); return; } cf = { i: b.dataset.i, a: b.dataset.a }; render(list, err); }));
-    bx.querySelectorAll(".accRow button[data-cf]").forEach((b) => (b.onclick = () => { if (b.dataset.cf === "n") { cf = null; render(list, err); return; } const q = cf; cf = null; b.disabled = true; setS(q.i, q.a); }));
-    bx.querySelectorAll(".accF button").forEach((b) => (b.onclick = () => { flt = b.dataset.f; cf = null; render(list); }));
+    bx.querySelectorAll(".accRow button[data-a]").forEach((b) => (b.onclick = () => { if (b.dataset.a === "ok") { cf = null; setS(b.dataset.i, "ok"); return; } cf = { i: b.dataset.i, a: b.dataset.a }; render(all, err); }));
+    bx.querySelectorAll(".accRow button[data-cf]").forEach((b) => (b.onclick = () => { if (b.dataset.cf === "n") { cf = null; render(all, err); return; } const q = cf; cf = null; b.disabled = true; setS(q.i, q.a); }));
+    bx.querySelectorAll(".accF button[data-f]").forEach((b) => (b.onclick = () => { flt = b.dataset.f; cf = null; render(all); }));
+    bx.querySelectorAll(".accF button[data-ap]").forEach((b) => (b.onclick = () => { appF = b.dataset.ap; cf = null; render(all); }));
     g("accRf").onclick = refresh; g("accOut").onclick = () => { ls("accAdm", null); clearInterval(tmr); badge(0); g("accSec").hidden = true; render(null); };
   }
   function badge(n) { const b = g("bSet"); if (b) b.classList.toggle("accDot", n > 0); const s = g("accBadge"); if (s) { s.textContent = n; s.hidden = !n; } }
-  function refresh() { jp({ a: "st", id: ID }, () => go(), () => go()); function go() { load((l) => { const p = l.filter((x) => x.s === "p").length; badge(p); if ((p > lastP && lastP >= 0) || (lastP < 0 && p > 0)) toast("승인 요청 " + p + "건이 있습니다 · 설정 → 접속 승인"); lastP = p; render(l); }); } }
+  function refresh() { jp({ a: "st", id: ID }, () => go(), () => go()); function go() { load((l) => { const p = l.filter((x) => x.s === "p" && isLaw(x)).length; badge(p); if ((p > lastP && lastP >= 0) || (lastP < 0 && p > 0)) toast("승인 요청 " + p + "건이 있습니다 · 설정 → 접속 승인"); lastP = p; render(l); }); } }
   function adminInit() { g("accSec").hidden = false; refresh(); clearInterval(tmr); tmr = setInterval(() => { if (!document.hidden) refresh(); }, 30000); }
   // 설정 화면의 버전 글자를 5번 누르면 관리자 칸이 나타납니다(일반 사용자에겐 숨김)
   let taps = 0, tt = 0; g("ver").addEventListener("click", () => { taps++; clearTimeout(tt); tt = setTimeout(() => (taps = 0), 1500); if (taps >= 5) { taps = 0; g("accSec").hidden = false; g("accSec").open = true; render(null); } });
   // ---- 시작
   if (adm()) {
     g("accSec").hidden = false;
-    jp({ a: "chk", k: adm() }, (d) => { if (d.ok) adminInit(); else { ls("accAdm", null); render(null); if (!lg("accOk")) showGate(); } }, () => {});
+    jp({ a: "chk", k: adm() }, (d) => { if (d.ok) adminInit(); else { ls("accAdm", null); render(null); if (!lg("accOkLaw")) showGate(); } }, () => {});
   } else {
     let lp = 0; const ping = () => { if (document.hidden || Date.now() - lp < 3e5) return; lp = Date.now(); jp({ a: "st", id: ID }, () => {}); };
     ping(); document.addEventListener("visibilitychange", ping); setInterval(ping, 3e5 + 1e3);
-    if (lg("accOk")) { recheck(); document.addEventListener("visibilitychange", () => { if (!document.hidden && lg("accOk") && Date.now() - lastRc > 6e5) recheck(); }); setInterval(() => { if (!document.hidden && lg("accOk") && Date.now() - lastRc > 9e5) recheck(); }, 6e4); }
+    if (lg("accOkLaw")) { recheck(); document.addEventListener("visibilitychange", () => { if (!document.hidden && lg("accOkLaw") && Date.now() - lastRc > 6e5) recheck(); }); setInterval(() => { if (!document.hidden && lg("accOkLaw") && Date.now() - lastRc > 9e5) recheck(); }, 6e4); }
     else showGate();
   }
 })();
