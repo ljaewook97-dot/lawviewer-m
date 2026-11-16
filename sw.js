@@ -1,5 +1,5 @@
 // 법령 뷰어 서비스 워커: 앱 파일은 '인터넷이 되면 최신, 안 되면 저장본', 파이오다이드(큰 파일)는 한 번 받으면 저장본을 씀.
-const V = "lv-6.4";
+const V = "lv-6.6";
 const SHELL = ["./", "index.html", "worker.js", "lawcore.py", "mobile_api.py", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(V).then((c) => c.addAll(SHELL).catch(() => {})).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => {

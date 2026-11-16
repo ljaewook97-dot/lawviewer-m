@@ -79,6 +79,10 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
 .drawer .hd{padding:8px 16px;font-weight:700;color:var(--acc-d)}
 .drawer .it{display:block;width:100%;text-align:left;padding:11px 16px;border-bottom:1px solid var(--line);line-height:1.35}
 .drawer .it.h{font-weight:700;color:var(--acc-d);background:var(--soft)}
+#list .it{display:block;width:100%;text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);line-height:1.3;font-size:.92em}
+#list .it:hover{background:var(--acc-soft)}
+#list .it.h{font-weight:700;color:var(--acc-d);background:var(--soft)}
+#list .hd{padding:2px 4px 6px;font-weight:700;color:var(--acc-d)}
 .modal{position:absolute;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 60px);background:var(--surf);border-radius:14px;padding:16px;max-height:80%;overflow:auto}
 .modal h3{margin:0 0 10px}
 .modal label{display:block;margin:12px 0 4px;font-weight:700;font-size:.9em}
@@ -88,6 +92,7 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
 #busy .bx{background:var(--surf);border-radius:14px;padding:18px 22px;max-width:80%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.3)}
 .spin{width:30px;height:30px;border:4px solid var(--line);border-top-color:var(--acc);border-radius:50%;margin:0 auto 10px;animation:sp 0.9s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
+@keyframes bar{from{left:0}to{left:65%}}
 #toast{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 14px);z-index:70;background:#333;color:#fff;border-radius:10px;padding:12px 14px;display:none;font-size:.9em;line-height:1.4;white-space:pre-wrap}
 #toast.err{background:var(--danger)}
 #toast.on{display:block}
@@ -158,6 +163,18 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #ctx div{padding:5px 14px;font-size:.88em;cursor:pointer}
   #ctx div:hover{background:var(--acc-soft)}
   .card.dov{box-shadow:inset 0 3px 0 #E0A800}
+  #busy{inset:auto;left:0;bottom:0;width:max(var(--lw),270px);background:none;display:none;pointer-events:none;z-index:65}
+  #busy.on{display:block}
+  #busy .bx{max-width:none;width:100%;border-radius:0;padding:6px 10px 7px;text-align:left;box-shadow:0 -2px 10px rgba(0,0,0,.15);border-top:1px solid var(--line);position:relative;overflow:hidden}
+  #busy .bx::before{content:"";position:absolute;left:0;top:0;height:3px;width:35%;background:var(--acc);animation:bar 1.1s ease-in-out infinite alternate}
+  #busy .spin{display:none}
+  #busyT{font-weight:700;color:var(--acc-d);font-size:.84em;line-height:1.35;padding-top:2px}
+  .card .sm{min-width:24px;height:24px}
+  .ttg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:start}
+  .tt .col{margin:0}
+  #toast{left:auto;right:calc(var(--rw) + 12px);bottom:auto;top:calc(var(--hh) + 8px);max-width:420px;z-index:90}
+  #dbar{overflow-x:auto;scrollbar-width:none}
+  #dbar .tb,#dbar .fbox{flex:0 0 auto}
   .card [data-u],.card [data-d]{display:none}
   body.pv #doc,body.pv #tt{bottom:var(--ph)}
   #doc .body{padding:0 2px 50px}
@@ -220,7 +237,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <button class="tb" id="fPrev" title="이전 (Shift+Enter)">▲</button><button class="tb" id="fNext" title="다음 (Enter)">▼</button>
   <button class="tb" id="fClr">✕ 지우기</button><span id="fCnt" class="muted"></span>
   <span class="sp"></span>
-  <button class="tb" id="dbTT">3단 비교</button><button class="tb" id="dbFav">☆ 즐겨찾기</button><button class="tb" id="dbCopy">조문 복사</button><button class="tb" id="dbWeb">법제처에서 열기</button>
+  <button class="tb" id="dbTT">3단 비교</button><button class="tb" id="dbFav">☆ 즐겨찾기</button><button class="tb" id="dbCopy">조문 복사</button><button class="tb" id="dbWeb" title="법제처 화면에서 열기">법제처 열기</button>
   <button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
 </div>
 <div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="ctx"></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
@@ -255,7 +272,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "6.4";
+const VERSION = "6.6";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -298,8 +315,16 @@ function call(fn, args, label) {
     worker.postMessage({ id, fn, args });
   });
 }
-function busy(on, t) { $("#busy").classList.toggle("on", on); if (t) busyText(t); }
-function busyText(t) { $("#busyT").textContent = t; }
+let busyBase = "", busyT0 = 0, busyTm = null;
+function busyShow() { $("#busyT").textContent = isDT() ? "⏳ " + busyBase.replace(/\s*중?…?$/, "") + " 중…  (" + Math.floor((Date.now() - busyT0) / 1000) + "초 경과 · 멈춘 것이 아니라 찾는 중입니다)" : busyBase; }
+function busy(on, t) {
+  $("#busy").classList.toggle("on", on);
+  if (t) busyBase = t;
+  if (on && !busyTm) { busyT0 = Date.now(); busyTm = setInterval(busyShow, 500); }
+  if (!on && busyTm) { clearInterval(busyTm); busyTm = null; }
+  busyShow();
+}
+function busyText(t) { busyBase = t; busyShow(); }
 let tmr = null;
 function toast(t, err) {
   const e = $("#toast"); e.textContent = t; e.className = (err ? "err " : "") + "on";
@@ -988,6 +1013,7 @@ async function ttShow(i) {
   CITES = CITES.slice(0, 0);
   const row = TT.rows[i];
   let h = '<div class="nav"><button class="sm" id="tP">◀</button><div class="mid">' + esc(row.label + " " + row.title) + '<div class="muted" style="font-weight:400;font-size:.8em">' + (i + 1) + " / " + TT.rows.length + '</div></div><button class="sm" id="tN">▶</button><input id="tJ" inputmode="numeric" placeholder="조"><button class="sm" id="tG">이동</button></div>';
+  h += '<div class="ttg">';
   r.cols.forEach((c, ci) => {
     h += '<div class="col"><div class="ch" style="background:' + TTCOL[ci] + '">' + esc(c.name) + "</div><div class=\"cb\">";
     if (c.none) h += '<div class="muted" style="padding:8px 0">이 법령을 찾지 못했습니다</div>';
@@ -995,6 +1021,7 @@ async function ttShow(i) {
     else c.arts.forEach((a) => { h += '<div class="at" data-n="' + esc(c.name) + '" data-k="' + a.key + '">' + esc(a.label + " " + a.title) + " ↗</div>" + artHTML(a, c.mst, { idp: "t" + ci + "-", self: c.name }); });
     h += "</div></div>";
   });
+  h += "</div>";
   const v = $("#tt"); v.innerHTML = h; v.scrollTop = 0;
   bindCites(v);
   $("#tP").onclick = () => ttShow(TTI - 1); $("#tN").onclick = () => ttShow(TTI + 1);
