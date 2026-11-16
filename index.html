@@ -156,6 +156,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .hr{padding:7px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}.hr:hover{background:var(--acc-soft)}
 .hr .h1{font-weight:700;line-height:1.3;font-size:.92em}.hr .h1 span{font-weight:600;color:var(--sub)}
 .hr .hs{color:var(--muted);font-size:.8em;margin-top:2px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.hs mark{background:var(--hl);color:inherit;border-radius:2px}
+.lgt.cat button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 .lgt{display:flex;gap:6px;margin:6px 0 0}.lgt button{flex:1;padding:5px;border:1px solid var(--line);border-radius:6px;background:var(--surf);color:var(--sub);font-size:.8em;font-weight:600}
 .nsub{margin:8px 2px 2px;font-size:.8em;font-weight:700;color:var(--sub);line-height:1.3}.nr{display:flex;gap:6px;align-items:flex-start;padding:5px 6px;border-radius:6px;cursor:pointer}.nr:hover{background:var(--acc-soft)}.nr .nrt{flex:1;min-width:0;font-size:.88em;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere}.nr .sm{flex:none;min-width:24px;height:24px;font-size:.8em;padding:0}
 .nfil select{flex:1 1 40%}.nfil .btn{flex:1 1 100%}
@@ -384,7 +385,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "8.7";
+const VERSION = "8.9";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -563,25 +564,32 @@ function grpBind(root, repaint) {
   root.querySelectorAll(".lgh").forEach((b) => (b.onclick = () => { const g = b.parentNode, k = g.dataset.g; if (COLL.has(k)) COLL.delete(k); else COLL.add(k); colSave(); g.classList.toggle("c", COLL.has(k)); }));
   root.querySelectorAll("[data-all]").forEach((b) => (b.onclick = () => { root.querySelectorAll(".lg").forEach((g) => { if (b.dataset.all === "c") COLL.add(g.dataset.g); else COLL.delete(g.dataset.g); g.classList.toggle("c", b.dataset.all === "c"); }); colSave(); }));
 }
-const AUTOSEEN = new Set();
+let hitCat = "", hitCatSig = "";
 function paintHits() {
   const L = $("#list");
   if (!hits.length) { L.innerHTML = '<div class="empty">이름을 치고 검색을 누르세요.</div>'; return; }
   let h = hitNote ? '<div class="muted" style="font-size:.8em;margin:0 2px 6px;line-height:1.4">' + esc(hitNote) + "</div>" : "", last = "";
   const art = hits.some((x) => x.key);
-  if (art) {                                                    // 조문 결과: 법령별로 묶어 접었다 폈다
+  if (art) {                                                    // 조문 결과: 법령·행정규칙·자치법규로 나누고, 법령별로 묶어 항상 펼쳐 보여 준다
+    const sig = hits.length + "|" + (hits[0] || {}).lawname + "|" + (hitToks || []).join(",");
+    if (sig !== hitCatSig) { hitCatSig = sig; hitCat = ""; }
+    const cnt = { law: 0, adm: 0, ordin: 0 };
+    hits.forEach((x) => { cnt[x.kind] = (cnt[x.kind] || 0) + 1; });
+    const kinds = ["law", "adm", "ordin"].filter((k) => cnt[k]);
+    if (hitCat && !cnt[hitCat]) hitCat = "";
+    if (kinds.length > 1) h += '<div class="lgt cat"><button data-cat=""' + (hitCat === "" ? ' class="on"' : "") + ">전체 " + hits.length + "</button>" + kinds.map((k) => '<button data-cat="' + k + '"' + (hitCat === k ? ' class="on"' : "") + ">" + KIND[k][0] + " " + cnt[k] + "</button>").join("") + "</div>";
     const order = [], by = {};
-    hits.forEach((x, i) => { const k = "h:" + x.lawname; if (!by[k]) { by[k] = { x, rows: [] }; order.push(k); } by[k].rows.push([x, i]); });
-    const sig = hits.length + "|" + order[0] + "|" + (hitToks || []).join(",");
-    if (order.length > 3 && !AUTOSEEN.has(sig)) { AUTOSEEN.add(sig); order.slice(1).forEach((k) => COLL.add(k)); }   // 결과가 많으면 첫 법령만 펴고 시작
-    if (order.length > 1) h += '<div class="lgt"><button data-all="c">모두 접기</button><button data-all="o">모두 펴기</button></div>';
+    hits.forEach((x, i) => { if (hitCat && x.kind !== hitCat) return; const k = "h:" + x.lawname; if (!by[k]) { by[k] = { x, rows: [] }; order.push(k); } by[k].rows.push([x, i]); });
+    const nameHit = (k) => (hitToks || []).some((t) => t.length >= 2 && by[k].x.lawname.indexOf(t) >= 0) ? 0 : 1;
+    order.sort((a, b) => nameHit(a) - nameHit(b));          // 이름에 검색어가 든 법령(예: 산지 -> 산지관리법)을 위로
     order.forEach((k) => {
       const g = by[k];
-      h += '<div class="lg' + (COLL.has(k) ? " c" : "") + '" data-g="' + esc(k) + '"><button class="lgh"><span class="car">▾</span><span class="tag ' + g.x.kind + '">' + KIND[g.x.kind][0] + '</span><span class="lgn">' + esc(g.x.lawname) + '</span><span class="cnt">' + g.rows.length + '건</span></button><div class="lgb">';
+      h += '<div class="lg" data-g="' + esc(k) + '"><div class="lgh" style="cursor:default"><span class="tag ' + g.x.kind + '">' + KIND[g.x.kind][0] + '</span><span class="lgn">' + esc(g.x.lawname) + '</span><span class="cnt">' + g.rows.length + '건</span></div><div class="lgb">';
       g.rows.forEach(([x, i]) => { h += '<div class="hr" data-i="' + i + '"><div class="h1">' + esc(x.label || "") + " <span>" + esc(x.title || "") + "</span></div>" + (x.snippet ? '<div class="hs">' + hlTok(x.snippet, hitToks) + "</div>" : "") + "</div>"; });
       h += "</div></div>";
     });
-    L.innerHTML = h; grpBind(L);
+    L.innerHTML = h;
+    L.querySelectorAll("[data-cat]").forEach((b) => (b.onclick = () => { hitCat = b.dataset.cat; paintHits(); }));
     L.querySelectorAll(".hr").forEach((c) => (c.onclick = () => openHitArt(hits[+c.dataset.i])));
     return;
   }
@@ -841,7 +849,19 @@ function saveTabs() {
   } catch (e) {}
 }
 let saveTm = null;
-$("#doc").addEventListener("scroll", () => { clearTimeout(saveTm); saveTm = setTimeout(saveTabs, 600); });
+let POS = LS.get("lv_pos", {}), posTm = null;
+function savePos() {
+  const d = cur.doc, box = $("#doc"); if (!d || !box) return;
+  const top = box.scrollTop, id = d.kind + "|" + d.name;
+  if (top < 120) { if (POS[id]) { delete POS[id]; LS.set("lv_pos", POS); } return; }
+  let best = null;
+  box.querySelectorAll('.art[id^="a-"]').forEach((el) => { if (el.offsetTop <= top + 20) best = el; });
+  if (!best) return;
+  POS[id] = { k: best.id.slice(2), o: Math.max(0, Math.min(top + 8 - best.offsetTop, 2000)), t: Date.now() };
+  const ks = Object.keys(POS); if (ks.length > 60) { ks.sort((x, y) => POS[x].t - POS[y].t).slice(0, ks.length - 60).forEach((k) => delete POS[k]); }
+  LS.set("lv_pos", POS);
+}
+$("#doc").addEventListener("scroll", () => { clearTimeout(saveTm); saveTm = setTimeout(saveTabs, 600); clearTimeout(posTm); posTm = setTimeout(savePos, 500); });
 addEventListener("pagehide", saveTabs);
 document.addEventListener("visibilitychange", () => { if (document.hidden) saveTabs(); });
 async function restoreTabs() {
@@ -921,6 +941,7 @@ function showDoc(d, kind, rawmst, key, fromTab) {
   paintDocFav();
   $("#doc").scrollTop = 0;
   if (key && d.arts[key]) setTimeout(() => goKey(key), 30);
+  else if (!fromTab) { const ps = POS[kind + "|" + d.name]; if (ps && d.arts[ps.k]) setTimeout(() => { const el = document.getElementById("a-" + ps.k); if (el) $("#doc").scrollTop = el.offsetTop + (ps.o || 0) - 8; }, 40); }   // 마지막으로 보던 자리
   buildToc(d);
   fMarks = []; fIdx = -1; fLast = ""; $("#fCnt").textContent = "";
   if (tab === "t") paintToc();
@@ -1379,7 +1400,7 @@ document.addEventListener("selectionchange", () => {
 });
 let REP = LS.get("lv_rep", []);
 const repBadge = () => { const e = $("#repN"); if (e) e.textContent = REP.length ? "(" + REP.length + ")" : ""; };
-const repText = () => REP.map((r, i) => (i + 1) + ". [" + (KIND[r.kind] ? KIND[r.kind][0] : r.kind) + "] " + r.law + (r.date ? " (" + r.date + ")" : "") + " " + r.lab + " · " + (r.li + 1) + "번째 줄\n   " + r.text.replace(/\n/g, " ")).join("\n");
+const repText = () => REP.map((r, i) => (i + 1) + ". [" + (KIND[r.kind] ? KIND[r.kind][0] : r.kind) + "] " + r.law + (r.date ? " (" + r.date + ")" : "") + " " + r.lab + " · " + (r.li + 1) + "번째 줄\n   " + r.text.replace(/\n/g, " ") + (r.memo ? "\n   메모: " + r.memo : "")).join("\n");
 async function jumpRep(r) {                                  // 신고한 줄로 이동
   if (!r.rawmst && !(cur.doc && cur.doc.name === r.law && cur.doc.kind === r.kind)) return toast("이 신고는 법령 정보가 없어 이동할 수 없습니다", true);
   $("#ovRep").classList.remove("on");
@@ -1390,8 +1411,9 @@ async function jumpRep(r) {                                  // 신고한 줄로
 }
 function paintRep() {
   const L = $("#repList");
-  L.innerHTML = REP.length ? REP.map((r) => '<div class="hr" data-rj="' + r.id + '"><div style="display:flex;gap:8px;align-items:flex-start"><div class="h1" style="flex:1">' + esc(r.law) + " <span>" + esc(r.lab) + '</span></div><button class="btn g" style="padding:2px 10px;flex:none" data-rx="' + r.id + '">삭제</button></div><div class="hs" style="white-space:pre-wrap;display:block;overflow:visible;-webkit-line-clamp:unset;max-height:none">' + esc(r.text) + "</div></div>").join("") : '<div class="empty">신고한 줄이 없습니다.</div>';
-  L.querySelectorAll("[data-rj]").forEach((c) => (c.onclick = (e) => { if (e.target.closest("[data-rx]")) return; const r = REP.find((x) => x.id === c.dataset.rj); if (r) jumpRep(r); }));
+  L.innerHTML = REP.length ? REP.map((r) => '<div class="hr" data-rj="' + r.id + '"><div style="display:flex;gap:8px;align-items:flex-start"><div class="h1" style="flex:1">' + esc(r.law) + " <span>" + esc(r.lab) + '</span></div><button class="btn g" style="padding:2px 10px;flex:none" data-rx="' + r.id + '">삭제</button></div><div class="hs" style="white-space:pre-wrap;display:block;overflow:visible;-webkit-line-clamp:unset;max-height:none">' + esc(r.text) + '</div><input class="rmemo" data-rm="' + r.id + '" placeholder="메모 — 왜 이상한지 한 줄 (예: 호가 붙어 있음)" value="' + esc(r.memo || "").replace(/"/g, "&quot;") + '" style="margin-top:6px;width:100%"></div>').join("") : '<div class="empty">신고한 줄이 없습니다.</div>';
+  L.querySelectorAll("[data-rj]").forEach((c) => (c.onclick = (e) => { if (e.target.closest("[data-rx],[data-rm]")) return; const r = REP.find((x) => x.id === c.dataset.rj); if (r) jumpRep(r); }));
+  L.querySelectorAll("[data-rm]").forEach((i) => { i.onclick = (e) => e.stopPropagation(); i.oninput = () => { const r = REP.find((x) => x.id === i.dataset.rm); if (r) { r.memo = i.value; LS.set("lv_rep", REP); } }; });
   L.querySelectorAll("[data-rx]").forEach((b) => (b.onclick = () => { REP = REP.filter((r) => r.id !== b.dataset.rx); LS.set("lv_rep", REP); repBadge(); paintRep(); }));
 }
 $("#repOpen").onclick = () => { $("#ovSet").classList.remove("on"); paintRep(); $("#ovRep").classList.add("on"); };

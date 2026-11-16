@@ -1861,7 +1861,9 @@ def keyword_search(oc, q, scope=None, getter=None, limit=80, wide=True, city="")
         if wide or not probe:                                  # 범위 밖 법령까지 넓혀 찾기
             seen = {x["mst"] for x in laws}
             cands = []
-            jobs = [(kw, srch, lim) for kw in sorted(toks, key=len, reverse=True)[:2] for srch, lim in ((1, 3), (2, 6))]
+            phrase = "".join(toks) if len(toks) > 1 else ""            # '산지 전용' -> '산지전용' 으로도 찾는다(붙여 쓴 말이 법령명·본문에 흔함)
+            jobs = [(phrase, s2, 6) for s2 in (1, 2)] if phrase else []
+            jobs += [(kw, srch, lim) for kw in sorted(toks, key=len, reverse=True)[:2] for srch, lim in ((1, 12), (2, 6))]
 
             def cand_job(j):
                 try:
@@ -1874,7 +1876,8 @@ def keyword_search(oc, q, scope=None, getter=None, limit=80, wide=True, city="")
                         if c["mst"] not in seen:
                             seen.add(c["mst"])
                             cands.append(c)
-            cands = cands[:9]
+            cands.sort(key=lambda c: (0 if any(t in c["name"] for t in toks) else 1, len(c["name"])))   # 법령 이름에 검색어가 든 법령을 먼저(예: 산지 -> 산지관리법)
+            cands = cands[:12]
             if cands:
                 with ThreadPoolExecutor(max_workers=6) as ex:
                     extra = [x for x in ex.map(lambda c: _load_candidate(oc, c, getter), cands) if x]
