@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E7C6B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>법령 뷰어</title>
+<style>
+:root{--bg:#E9EDEC;--surf:#fff;--soft:#F4F7F6;--line:#D5DDDA;--text:#1D2A27;--sub:#3F4F4A;--muted:#6E7C77;--acc:#0E7C6B;--acc-d:#0A5E51;--acc-soft:#DDF0EA;--acc-t:#fff;--hl:#FFE57A;--subhl:#FFF0B3;--link:#0B5FB0;--danger:#B93A2E;--law:#0E7C6B;--adm:#5B4B9A;--ordin:#B8651B;--fs:16px}
+:root[data-theme=dark]{--bg:#0d1726;--surf:#12213a;--soft:#182a44;--line:#27405f;--text:#e8f0fa;--sub:#c3d1e4;--muted:#8ea6c4;--acc:#4cc3ff;--acc-d:#7bd3ff;--acc-soft:#223a5c;--acc-t:#06213a;--hl:#6b5a24;--subhl:#4a4224;--link:#7bd3ff;--danger:#ff7b7b}
+:root[data-theme=paper]{--bg:#f7f2ea;--surf:#fffdf8;--soft:#ece4d6;--line:#d3c7b2;--text:#2b2418;--sub:#4d4330;--muted:#6f6450;--acc:#b5532a;--acc-d:#8f3f1c;--acc-soft:#f1dfd2;--acc-t:#fff;--link:#a3441b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;font-size:var(--fs);overscroll-behavior:none}
+button{font:inherit;color:inherit;border:0;background:none;padding:0}
+.hdr{position:fixed;top:0;left:0;right:0;z-index:20;background:var(--acc);color:var(--acc-t);display:flex;align-items:center;gap:4px;padding:calc(env(safe-area-inset-top) + 6px) 8px 6px;min-height:52px}
+.hdr .t{flex:1;font-weight:700;font-size:1.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+.ib{min-width:40px;height:40px;border-radius:10px;font-size:1.1em;font-weight:700;color:var(--acc-t)}
+.ib:active{background:rgba(255,255,255,.2)}
+.view{display:none;position:fixed;inset:0;padding-top:calc(env(safe-area-inset-top) + 52px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.view.on{display:block}
+.pad{padding:12px}
+.sbox{display:flex;gap:6px;margin-bottom:8px}
+.sbox input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;background:var(--surf);color:var(--text)}
+.btn{background:var(--acc);color:var(--acc-t);border-radius:10px;padding:0 16px;font-weight:700;min-height:44px}
+.btn.g{background:var(--soft);color:var(--sub);border:1px solid var(--line)}
+.tabs{display:flex;gap:6px;margin:4px 0 10px}
+.tabs button{flex:1;padding:10px;border-radius:10px;background:var(--soft);color:var(--sub);font-weight:700;border:1px solid var(--line)}
+.tabs button.on{background:var(--acc);color:var(--acc-t);border-color:var(--acc)}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:8px;align-items:center}
+.card .m{flex:1;min-width:0}
+.card .nm{font-weight:700;line-height:1.35}
+.card .in{color:var(--muted);font-size:.82em;margin-top:2px}
+.tag{display:inline-block;color:#fff;border-radius:6px;font-size:.72em;font-weight:700;padding:1px 6px;margin-right:6px;vertical-align:1px}
+.tag.law{background:var(--law)}.tag.adm{background:var(--adm)}.tag.ordin{background:var(--ordin)}
+.sm{min-width:36px;height:36px;border-radius:8px;background:var(--soft);border:1px solid var(--line);color:var(--sub)}
+.muted{color:var(--muted)}
+.grp{margin:14px 2px 6px;font-weight:700;color:var(--acc-d)}
+#doc .body{padding:4px 14px 120px}
+.head{margin:26px 0 10px;text-align:center;font-weight:700;color:var(--acc-d);font-size:1.08em}
+.art{padding:10px 0;border-bottom:1px solid var(--line)}
+.art.cur{background:var(--acc-soft);margin:0 -14px;padding:10px 14px}
+.ln{line-height:1.75;margin:2px 0;word-break:keep-all;overflow-wrap:anywhere}
+.ln.l1{padding-left:1.1em}.ln.l2{padding-left:2.2em}.ln.l3{padding-left:3.3em}.ln.l4{padding-left:4.4em}
+.ln.hl{background:var(--hl);border-radius:4px}
+.ln b{font-weight:700}
+.am{color:var(--muted);font-size:.8em}
+a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;cursor:pointer}
+.ah{display:flex;gap:6px;align-items:flex-start}
+.ah .ln{flex:1}
+.fv{min-width:34px;height:34px;color:var(--muted);font-size:1.2em}
+.fv.on{color:#E0A800}
+.sheet{position:fixed;left:0;right:0;bottom:0;height:58%;z-index:30;background:var(--surf);border-radius:16px 16px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.25);display:none;flex-direction:column}
+.sheet.on{display:flex}
+.sheet .sh{display:flex;align-items:center;gap:4px;padding:8px 8px 6px 14px;background:var(--acc-soft);border-radius:16px 16px 0 0}
+.sheet .sh .t{flex:1;font-weight:700;color:var(--acc-d);font-size:.95em;line-height:1.3}
+.sheet .sb{background:var(--subhl);padding:6px 14px;font-size:.78em;line-height:1.45}
+.sheet .sc{flex:1;overflow-y:auto;padding:10px 14px 24px;-webkit-overflow-scrolling:touch}
+.sheet .sa{display:flex;gap:6px;padding:6px 8px;border-top:1px solid var(--line)}
+.sheet .sa button{flex:1;padding:9px 4px;border-radius:8px;background:var(--soft);border:1px solid var(--line);font-weight:700;font-size:.88em;color:var(--sub)}
+.over{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45);display:none}
+.over.on{display:block}
+.drawer{position:absolute;top:0;bottom:0;left:0;width:86%;max-width:420px;background:var(--surf);overflow-y:auto;padding:calc(env(safe-area-inset-top) + 8px) 0 24px}
+.drawer .hd{padding:8px 16px;font-weight:700;color:var(--acc-d)}
+.drawer .it{display:block;width:100%;text-align:left;padding:11px 16px;border-bottom:1px solid var(--line);line-height:1.35}
+.drawer .it.h{font-weight:700;color:var(--acc-d);background:var(--soft)}
+.modal{position:absolute;left:12px;right:12px;top:calc(env(safe-area-inset-top) + 60px);background:var(--surf);border-radius:14px;padding:16px;max-height:80%;overflow:auto}
+.modal h3{margin:0 0 10px}
+.modal label{display:block;margin:12px 0 4px;font-weight:700;font-size:.9em}
+.modal input,.modal select{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;font:inherit;background:var(--surf);color:var(--text)}
+#busy{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center}
+#busy.on{display:flex}
+#busy .bx{background:var(--surf);border-radius:14px;padding:18px 22px;max-width:80%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.spin{width:30px;height:30px;border:4px solid var(--line);border-top-color:var(--acc);border-radius:50%;margin:0 auto 10px;animation:sp 0.9s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#toast{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 14px);z-index:70;background:#333;color:#fff;border-radius:10px;padding:12px 14px;display:none;font-size:.9em;line-height:1.4;white-space:pre-wrap}
+#toast.err{background:var(--danger)}
+#toast.on{display:block}
+.tt .col{margin:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surf);overflow:hidden}
+.tt .col .ch{padding:8px 12px;color:#fff;font-weight:700;font-size:.92em}
+.tt .col .cb{padding:6px 12px 10px}
+.tt .col .at{font-weight:700;color:var(--acc-d);margin-top:8px;cursor:pointer}
+.nav{display:flex;gap:6px;padding:10px 12px;align-items:center;position:sticky;top:0;background:var(--bg);z-index:5}
+.nav .mid{flex:1;text-align:center;font-weight:700;line-height:1.3;font-size:.95em}
+.nav input{width:70px;border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;text-align:center;background:var(--surf);color:var(--text)}
+.empty{text-align:center;color:var(--muted);padding:40px 16px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <button class="ib" id="bBack" style="display:none">←</button>
+  <div class="t" id="hTitle">법령 뷰어</div>
+  <button class="ib" id="bToc" style="display:none">☰</button>
+  <button class="ib" id="bFav" style="display:none">☆</button>
+  <button class="ib" id="bTT" style="display:none" title="3단 비교">3단</button>
+  <button class="ib" id="bSet">⚙</button>
+</div>
+
+<div class="view on" id="home"><div class="pad">
+  <div class="sbox"><input id="q" placeholder="이름·조문  예) 국토계획법 시행령 71조 / 수립지침" enterkeyhint="search"><button class="btn" id="bGo">검색</button></div>
+  <div class="tabs"><button id="tR" class="on">검색결과</button><button id="tF">즐겨찾기</button></div>
+  <div id="list"><div class="empty">법령·행정규칙·자치법규 이름을 치면<br>목록이 나옵니다.<br><span style="font-size:.85em">처음에는 ⚙ 에서 국가법령정보센터 인증키(OC)를 넣어 주세요.</span></div></div>
+</div></div>
+
+<div class="view" id="doc"><div class="body" id="docBody"></div></div>
+<div class="view tt" id="tt"></div>
+
+<div class="sheet" id="sheet">
+  <div class="sh"><div class="t" id="shT"></div><button class="ib" style="color:var(--acc-d)" id="shX">✕</button></div>
+  <div class="sb" id="shS"></div>
+  <div class="sc" id="shC"></div>
+  <div class="sa"><button id="shBack">◀ 이전</button><button id="shFav">☆ 즐겨찾기</button><button id="shOpen">본문에서 열기</button></div>
+</div>
+
+<div class="over" id="ovToc"><div class="drawer" id="drawer"></div></div>
+<div class="over" id="ovSet"><div class="modal">
+  <h3>설정</h3>
+  <label>국가법령정보센터 인증키(OC)</label>
+  <input id="oc" placeholder="open.law.go.kr 에서 신청한 OC" autocapitalize="off" autocomplete="off">
+  <div class="muted" style="font-size:.78em;margin-top:4px">이 폰의 브라우저에만 저장되고, 법제처로 조회할 때만 쓰입니다.</div>
+  <label>색상 테마</label>
+  <select id="theme"><option value="">기본 (청록)</option><option value="paper">종이</option><option value="dark">남색 (어두움)</option></select>
+  <label>글자 크기</label>
+  <select id="fsz"><option value="14">작게</option><option value="16">보통</option><option value="18">크게</option><option value="20">아주 크게</option></select>
+  <div style="display:flex;gap:8px;margin-top:16px"><button class="btn" style="flex:1" id="setOk">저장</button><button class="btn g" id="setNo">닫기</button></div>
+  <div class="muted" id="ver" style="font-size:.75em;margin-top:12px"></div>
+</div></div>
+
+<div id="busy"><div class="bx"><div class="spin"></div><div id="busyT">불러오는 중…</div></div></div>
+<div id="toast"></div>
+
+<script>
+const VERSION = "5.0";
+const $ = (s) => document.querySelector(s);
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+const P = new URL(location.href).searchParams;
+const KIND = { law: ["법령", "law"], adm: ["행정규칙", "adm"], ordin: ["자치법규", "ordin"] };
+
+// ---------------------------------------------------------------- 엔진(워커)
+let worker = null, nid = 1, pend = {}, ready = false, bootWait = [];
+function startWorker() {
+  const qs = new URLSearchParams();
+  if (P.get("pyo")) qs.set("pyo", P.get("pyo"));
+  if (P.get("api")) qs.set("api", P.get("api"));
+  qs.set("v", VERSION);
+  worker = new Worker("worker.js?" + qs.toString());
+  worker.onmessage = (e) => {
+    const m = e.data;
+    if (m.id === 0) {
+      if (m.status === "ready") { ready = true; bootWait.forEach((f) => f()); bootWait = []; }
+      else busyText(m.status);
+      return;
+    }
+    const p = pend[m.id]; delete pend[m.id];
+    if (p) p(m.res);
+  };
+  worker.onerror = (e) => { busy(false); toast("엔진을 시작하지 못했습니다: " + (e.message || ""), true); };
+}
+function call(fn, args, label) {
+  return new Promise((resolve, reject) => {
+    if (!worker) startWorker();
+    busy(true, label || "불러오는 중…");
+    const id = nid++;
+    pend[id] = (res) => {
+      busy(false);
+      if (res.err) { toast(res.err, true); reject(new Error(res.err)); } else resolve(res.ok);
+    };
+    worker.postMessage({ id, fn, args });
+  });
+}
+function busy(on, t) { $("#busy").classList.toggle("on", on); if (t) busyText(t); }
+function busyText(t) { $("#busyT").textContent = t; }
+let tmr = null;
+function toast(t, err) {
+  const e = $("#toast"); e.textContent = t; e.className = (err ? "err " : "") + "on";
+  clearTimeout(tmr); tmr = setTimeout(() => (e.className = ""), err ? 7000 : 2200);
+}
+
+// ---------------------------------------------------------------- 설정
+let OC = LS.get("lv_oc", "");
+function applyPrefs() {
+  const th = LS.get("lv_theme", "");
+  if (th) document.documentElement.dataset.theme = th; else delete document.documentElement.dataset.theme;
+  document.documentElement.style.setProperty("--fs", LS.get("lv_fs", 16) + "px");
+  const mc = document.querySelector('meta[name=theme-color]');
+  if (mc) mc.content = getComputedStyle(document.documentElement).getPropertyValue("--acc").trim() || "#0E7C6B";
+}
+applyPrefs();
+$("#bSet").onclick = () => { $("#oc").value = OC; $("#theme").value = LS.get("lv_theme", ""); $("#fsz").value = LS.get("lv_fs", 16); $("#ver").textContent = "법령 뷰어 모바일 v" + VERSION + " · 법제처 국가법령정보센터 Open API"; $("#ovSet").classList.add("on"); };
+$("#setNo").onclick = () => $("#ovSet").classList.remove("on");
+$("#setOk").onclick = () => {
+  OC = $("#oc").value.trim(); LS.set("lv_oc", OC);
+  LS.set("lv_theme", $("#theme").value); LS.set("lv_fs", parseInt($("#fsz").value, 10));
+  applyPrefs(); $("#ovSet").classList.remove("on"); toast("저장했습니다");
+};
+function needOC() { if (!OC) { toast("먼저 ⚙ 설정에서 인증키(OC)를 넣어 주세요", true); return true; } return false; }
+
+// ---------------------------------------------------------------- 화면 전환
+const stack = [];          // 화면 이력
+function show(name, title) {
+  ["home", "doc", "tt"].forEach((v) => $("#" + v).classList.toggle("on", v === name));
+  $("#hTitle").textContent = title || "법령 뷰어";
+  const isDoc = name === "doc", isHome = name === "home", isTT = name === "tt";
+  $("#bBack").style.display = isHome ? "none" : "";
+  $("#bToc").style.display = isDoc ? "" : "none";
+  $("#bFav").style.display = isDoc ? "" : "none";
+  $("#bTT").style.display = isDoc ? "" : "none";
+  cur.view = name;
+}
+const cur = { view: "home", doc: null };
+$("#bBack").onclick = () => {
+  if ($("#sheet").classList.contains("on")) return closeSheet();
+  if (cur.view === "tt") return show("doc", cur.doc.name);
+  show("home");
+};
+window.addEventListener("popstate", () => { $("#bBack").onclick(); history.pushState(null, ""); });
+history.pushState(null, "");
+
+// ---------------------------------------------------------------- 검색·즐겨찾기 목록
+let hits = [];
+$("#bGo").onclick = doSearch;
+$("#q").addEventListener("keydown", (e) => { if (e.key === "Enter") doSearch(); });
+$("#tR").onclick = () => { setTab("r"); };
+$("#tF").onclick = () => { setTab("f"); };
+let tab = "r";
+function setTab(t) { tab = t; $("#tR").classList.toggle("on", t === "r"); $("#tF").classList.toggle("on", t === "f"); t === "r" ? paintHits() : paintFavs(); }
+async function doSearch() {
+  const q = $("#q").value.trim();
+  if (!q || needOC()) return;
+  const r = await call("search", [OC, q], "찾는 중…");
+  hits = r.hits; setTab("r");
+  if (!hits.length) $("#list").innerHTML = '<div class="empty">찾은 것이 없습니다.</div>';
+}
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function paintHits() {
+  const L = $("#list");
+  if (!hits.length) { L.innerHTML = '<div class="empty">이름을 치고 검색을 누르세요.</div>'; return; }
+  let h = "", last = "";
+  hits.forEach((x, i) => {
+    if (x.kind !== last) { h += '<div class="grp">' + KIND[x.kind][0] + "</div>"; last = x.kind; }
+    h += '<div class="card" data-i="' + i + '"><div class="m"><div class="nm"><span class="tag ' + x.kind + '">' + KIND[x.kind][0] + "</span>" + esc(x.lawname) + '</div><div class="in">' + esc(x.short.replace(/^[^·]*· ?/, "")) + (x.info ? " · " + esc(x.info) : "") + "</div></div></div>";
+  });
+  L.innerHTML = h;
+  L.querySelectorAll(".card").forEach((c) => (c.onclick = () => { const x = hits[+c.dataset.i]; openDoc(x.kind, x.rawmst, x.lawname, x.date); }));
+}
+let favs = LS.get("lv_favs", []);
+function saveFavs() { LS.set("lv_favs", favs); }
+function paintFavs() {
+  const L = $("#list");
+  if (!favs.length) { L.innerHTML = '<div class="empty">즐겨찾기가 없습니다.<br>법령 화면 위의 ☆(법령 전체)나<br>조문 옆의 ☆(조문)를 눌러 담으세요.</div>'; return; }
+  L.innerHTML = favs.map((f, i) => '<div class="card"><div class="m" data-i="' + i + '"><div class="nm"><span class="tag ' + f.kind + '">' + KIND[f.kind][0] + "</span>" + esc(f.lawname) + '</div><div class="in">' + (f.key ? esc(f.label || "") : "법령 전체") + '</div></div><button class="sm" data-u="' + i + '">▲</button><button class="sm" data-d="' + i + '">▼</button><button class="sm" data-x="' + i + '">✕</button></div>').join("");
+  L.querySelectorAll("[data-i]").forEach((c) => (c.onclick = () => { const f = favs[+c.dataset.i]; openDoc(f.kind, f.rawmst, f.lawname, f.date, f.key); }));
+  L.querySelectorAll("[data-u]").forEach((c) => (c.onclick = () => mv(+c.dataset.u, -1)));
+  L.querySelectorAll("[data-d]").forEach((c) => (c.onclick = () => mv(+c.dataset.d, 1)));
+  L.querySelectorAll("[data-x]").forEach((c) => (c.onclick = () => { favs.splice(+c.dataset.x, 1); saveFavs(); paintFavs(); }));
+}
+function mv(i, d) { const j = i + d; if (j < 0 || j >= favs.length) return; [favs[i], favs[j]] = [favs[j], favs[i]]; saveFavs(); paintFavs(); }
+function favIdx(kind, rawmst, key) { return favs.findIndex((f) => f.kind === kind && f.rawmst === rawmst && (f.key || "") === (key || "")); }
+function toggleFav(d, key) {
+  const i = favIdx(d.kind, d.rawmst, key);
+  if (i >= 0) { favs.splice(i, 1); toast("즐겨찾기에서 뺐습니다"); }
+  else { favs.push({ kind: d.kind, rawmst: d.rawmst, lawname: d.name, date: d.date, key: key || "", label: key ? d.arts[key].label + " " + d.arts[key].title : "" }); toast("즐겨찾기에 담았습니다"); }
+  saveFavs();
+}
+
+// ---------------------------------------------------------------- 본문 그리기
+const AMEND = /<[^<>\n]*\d{4}\.\s?\d{1,2}\.\s?\d{1,2}[^<>\n]*>|\[[^\[\]\n]*\d{4}\.\s?\d{1,2}\.\s?\d{1,2}[^\[\]\n]*\]/g;
+const HEADRE = /^제\d+조(?:의\d+)?\s*(?:\([^)]*\))?/;
+let CITES = [];              // 눌러서 열 인용 목록(전역 번호)
+function seg(s, bold) {
+  let out = "", last = 0, m;
+  AMEND.lastIndex = 0;
+  while ((m = AMEND.exec(s))) { out += esc(s.slice(last, m.index)) + '<span class="am">' + esc(m[0]) + "</span>"; last = m.index + m[0].length; }
+  out += esc(s.slice(last));
+  return bold ? "<b>" + out + "</b>" : out;
+}
+function lineHTML(text, spans, lv, ctx, self) {
+  let he = 0;
+  if (lv === 0) { const m = HEADRE.exec(text); if (m) he = m[0].length; }
+  const sp = (spans || []).slice().sort((a, b) => a[0] - b[0]);
+  let out = "", pos = 0;
+  const emit = (a, b) => {   // [a,b) 일반 글(머리 굵게)
+    if (b <= a) return;
+    if (he > a) { const k = Math.min(he, b); out += seg(text.slice(a, k), true); a = k; }
+    if (b > a) out += seg(text.slice(a, b), false);
+  };
+  for (const s of sp) {
+    if (s[0] < pos || s[0] < he) continue;      // 조문 머리 '제N조(제목)' 자신은 인용이 아님
+    emit(pos, s[0]);
+    const id = CITES.push({ law: s[2], n: s[3], b: s[4], sub: s[5], ctx, self }) - 1;
+    out += '<a class="c" data-c="' + id + '">' + esc(text.slice(s[0], s[1])) + "</a>";
+    pos = s[1];
+  }
+  emit(pos, text.length);
+  return out;
+}
+function artHTML(a, ctx, opt) {
+  opt = opt || {};
+  let h = '<div class="art" id="' + (opt.idp || "a-") + a.key + '">';
+  a.lines.forEach((l, i) => {
+    const hl = opt.hl && opt.hl.some((r) => i >= r[0] && i < r[1]);
+    const body = '<div class="ln l' + Math.min(l[0], 4) + (hl ? " hl" : "") + '">' + lineHTML(l[1], l[2], l[0], ctx, opt.self) + "</div>";
+    h += i === 0 && opt.fav ? '<div class="ah">' + body + '<button class="fv' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? " on" : "") + '" data-fk="' + a.key + '">' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? "★" : "☆") + "</button></div>" : body;
+  });
+  return h + "</div>";
+}
+function bindCites(root) {
+  root.querySelectorAll("a.c").forEach((a) => (a.onclick = (e) => { e.preventDefault(); openCite(CITES[+a.dataset.c]); }));
+}
+
+// ---------------------------------------------------------------- 문서 열기
+async function openDoc(kind, rawmst, name, date, key) {
+  if (needOC()) return;
+  const d = await call("open_doc", [OC, kind, rawmst, name, date || ""], name + " 받는 중…");
+  showDoc(d, kind, rawmst, key);
+}
+async function openByName(name, key) {
+  if (needOC()) return;
+  const d = await call("open_by_name", [OC, name], name + " 받는 중…");
+  showDoc(d, "law", d.mst, key);
+}
+function showDoc(d, kind, rawmst, key) {
+  d.kind = kind; d.rawmst = rawmst;
+  cur.doc = d; CITES = [];
+  closeSheet(); prevHist.length = 0;
+  let h = "";
+  d.items.forEach((it) => { h += it.k === "h" ? '<div class="head">' + esc(it.t) + "</div>" : artHTML(d.arts[it.key], d.mst, { fav: true, self: d.kind === "adm" && d.adm_base ? d.adm_base : d.name }); });
+  const b = $("#docBody"); b.innerHTML = h;
+  bindCites(b);
+  b.querySelectorAll(".fv").forEach((f) => (f.onclick = () => { toggleFav(d, f.dataset.fk); const on = favIdx(kind, rawmst, f.dataset.fk) >= 0; f.textContent = on ? "★" : "☆"; f.classList.toggle("on", on); }));
+  show("doc", d.name);
+  paintDocFav();
+  $("#doc").scrollTop = 0;
+  if (key && d.arts[key]) setTimeout(() => goKey(key), 30);
+  buildToc(d);
+}
+function paintDocFav() { const on = favIdx(cur.doc.kind, cur.doc.rawmst, "") >= 0; $("#bFav").textContent = on ? "★" : "☆"; }
+$("#bFav").onclick = () => { toggleFav(cur.doc, ""); paintDocFav(); };
+function goKey(key) {
+  const el = document.getElementById("a-" + key);
+  if (!el) return;
+  document.querySelectorAll(".art.cur").forEach((x) => x.classList.remove("cur"));
+  el.classList.add("cur");
+  $("#doc").scrollTop = el.offsetTop - 56;
+}
+function curKey() {   // 화면 맨 위에 있는 조문
+  const top = $("#doc").getBoundingClientRect().top + 60;
+  for (const it of cur.doc.items) {
+    if (it.k !== "a") continue;
+    const el = document.getElementById("a-" + it.key);
+    if (el && el.getBoundingClientRect().bottom > top) return it.key;
+  }
+  return "";
+}
+
+// ---------------------------------------------------------------- 목차
+function buildToc(d) {
+  let h = '<div class="hd">목차</div>';
+  d.items.forEach((it) => {
+    if (it.k === "h") h += '<button class="it h">' + esc(it.t) + "</button>";
+    else h += '<button class="it" data-k="' + it.key + '">' + esc(d.arts[it.key].label + " " + d.arts[it.key].title) + "</button>";
+  });
+  const dr = $("#drawer"); dr.innerHTML = h;
+  const els = [...dr.querySelectorAll(".it")];
+  els.forEach((el, i) => {
+    if (el.classList.contains("h")) { const nx = els.slice(i + 1).find((x) => x.dataset.k); el.dataset.k = nx ? nx.dataset.k : ""; }
+    el.onclick = () => { $("#ovToc").classList.remove("on"); if (el.dataset.k) goKey(el.dataset.k); };
+  });
+}
+$("#bToc").onclick = () => $("#ovToc").classList.add("on");
+$("#ovToc").onclick = (e) => { if (e.target.id === "ovToc") $("#ovToc").classList.remove("on"); };
+
+// ---------------------------------------------------------------- 인용 미리보기
+const prevHist = [];
+let prevNow = null;
+async function openCite(c, noPush) {
+  if (needOC()) return;
+  const name = c.law || c.self || cur.doc.name;
+  const sub = c.sub ? [c.sub] : null;
+  if (prevNow && !noPush) prevHist.push(prevNow);
+  const r = await call("open_cite", [OC, name, c.n, c.b, sub, c.ctx || cur.doc.mst], "조문 찾는 중…");
+  paintSheet(r);
+}
+function paintSheet(r) {
+  prevNow = r;
+  $("#shT").textContent = r.lawname + " · " + (r.art ? r.art.label + " " + r.art.title : r.label);
+  $("#shS").style.display = r.summary ? "" : "none";
+  $("#shS").textContent = r.summary || "";
+  if (!r.art) $("#shC").innerHTML = '<div class="empty">이 법령에는 ' + esc(r.label) + " 이(가) 없습니다.</div>";
+  else { $("#shC").innerHTML = artHTML(r.art, r.mst, { hl: r.hl, idp: "p-", self: r.lawname }); bindCites($("#shC")); }
+  $("#sheet").classList.add("on");
+  $("#shC").scrollTop = 0;
+  const f = $("#shC .ln.hl");
+  if (f) setTimeout(() => { $("#shC").scrollTop = Math.max(0, f.offsetTop - 70); }, 30);
+  $("#doc").style.paddingBottom = "58%";
+}
+function closeSheet() { $("#sheet").classList.remove("on"); $("#doc").style.paddingBottom = ""; prevNow = null; prevHist.length = 0; }
+$("#shX").onclick = closeSheet;
+$("#shBack").onclick = () => { const p = prevHist.pop(); if (!p) return toast("이전에 본 인용 조문이 없습니다"); paintSheet(p); };
+$("#shOpen").onclick = async () => {
+  if (!prevNow || !prevNow.art) return;
+  const r = prevNow;
+  if (cur.doc && r.mst === cur.doc.mst) { closeSheet(); return goKey(r.art.key); }
+  await openByName(r.lawname, r.art.key);
+};
+$("#shFav").onclick = async () => {
+  if (!prevNow || !prevNow.art) return;
+  const r = prevNow, i = favs.findIndex((f) => f.kind === "law" && f.rawmst === r.mst && f.key === r.art.key);
+  if (i >= 0) { favs.splice(i, 1); toast("즐겨찾기에서 뺐습니다"); }
+  else { favs.push({ kind: "law", rawmst: r.mst, lawname: r.lawname, date: "", key: r.art.key, label: r.art.label + " " + r.art.title }); toast("즐겨찾기에 담았습니다"); }
+  saveFavs();
+};
+
+// ---------------------------------------------------------------- 3단 비교
+let TT = null, TTI = 0;
+const TTCOL = ["var(--law)", "#2F6FB0", "var(--ordin)"];
+$("#bTT").onclick = async () => {
+  if (needOC()) return;
+  const d = cur.doc, base = d.refname.replace(/\s*(시행령|시행규칙)$/, "");
+  const key = curKey();
+  closeSheet();
+  const r = await call("tt_open", [OC, base, d.name, d.mst, key], "3단 비교를 만드는 중… (법·시행령·시행규칙을 받습니다)");
+  TT = { base, ...r }; show("tt", "3단 비교");
+  ttShow(r.start);
+};
+async function ttShow(i) {
+  i = Math.max(0, Math.min(TT.rows.length - 1, i)); TTI = i;
+  const r = await call("tt_row", [TT.base, i], "");
+  CITES = CITES.slice(0, 0);
+  const row = TT.rows[i];
+  let h = '<div class="nav"><button class="sm" id="tP">◀</button><div class="mid">' + esc(row.label + " " + row.title) + '<div class="muted" style="font-weight:400;font-size:.8em">' + (i + 1) + " / " + TT.rows.length + '</div></div><button class="sm" id="tN">▶</button><input id="tJ" inputmode="numeric" placeholder="조"><button class="sm" id="tG">이동</button></div>';
+  r.cols.forEach((c, ci) => {
+    h += '<div class="col"><div class="ch" style="background:' + TTCOL[ci] + '">' + esc(c.name) + "</div><div class=\"cb\">";
+    if (c.none) h += '<div class="muted" style="padding:8px 0">이 법령을 찾지 못했습니다</div>';
+    else if (!c.arts.length) h += '<div class="muted" style="padding:8px 0">— 해당 조문 없음</div>';
+    else c.arts.forEach((a) => { h += '<div class="at" data-n="' + esc(c.name) + '" data-k="' + a.key + '">' + esc(a.label + " " + a.title) + " ↗</div>" + artHTML(a, c.mst, { idp: "t" + ci + "-", self: c.name }); });
+    h += "</div></div>";
+  });
+  const v = $("#tt"); v.innerHTML = h; v.scrollTop = 0;
+  bindCites(v);
+  $("#tP").onclick = () => ttShow(TTI - 1); $("#tN").onclick = () => ttShow(TTI + 1);
+  $("#tG").onclick = () => { const n = parseInt($("#tJ").value, 10); if (!n) return; const k = TT.rows.findIndex((x) => x.key.split(":")[0] == n); if (k < 0) return toast("그 조문이 없습니다", true); ttShow(k); };
+  v.querySelectorAll(".at").forEach((e) => (e.onclick = () => openByName(e.dataset.n, e.dataset.k)));
+}
+
+// ---------------------------------------------------------------- 시작
+$("#ver").textContent = "";
+if (P.get("oc")) { OC = P.get("oc"); LS.set("lv_oc", OC); history.replaceState(null, "", location.pathname); }
+setTab("r");
+if (!OC) setTimeout(() => $("#bSet").click(), 300);
+else setTimeout(startWorker, 400);        // 엔진은 미리 내려받아 둔다
+</script>
+</body>
+</html>
