@@ -393,6 +393,26 @@ def list_ordin(oc, mst, key, city=""):
     return _hitres(r, "%s — '%s' 관련 조문" % (r.get("ordname", ""), " ".join(toks)))
 
 
+def rev_check(oc, items):
+    """즐겨찾기 법령들의 현재 시행본(일련번호·시행일)을 이름으로 다시 찾는다. items = [[kind, name], ...] -> {kind|name: {rawmst, date}}"""
+    import re as _re
+    norm = lambda x: _re.sub(r"[\sㆍ·]", "", _re.sub(r"\[[^\]]*\]", "", x or ""))
+    out = {}
+    for kind, name in items:
+        k = "%s|%s" % (kind, name)
+        if k in out:
+            continue
+        try:
+            r = L.name_search(oc, name, getter)
+        except Exception:  # noqa: BLE001
+            continue
+        for h in r["hits"]:
+            if h["kind"] == kind and norm(h["lawname"]) == norm(name):
+                out[k] = {"rawmst": h["rawmst"], "date": h.get("date", "")}
+                break
+    return out
+
+
 def web_url(kind, name, key=""):
     """법제처에서 열기 주소"""
     n = b = None
@@ -406,7 +426,7 @@ def web_url(kind, name, key=""):
     return L.web_url(L.parse_query(q))
 
 
-FUNCS = {"cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
+FUNCS = {"cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
          "tt_open": tt_open, "tt_row": tt_row, "set_api_base": set_api_base}
 
 
