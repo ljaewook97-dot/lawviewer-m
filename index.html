@@ -129,6 +129,10 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .sd-b:hover{background:var(--acc-soft)}
 .sd-b i{font-style:normal;color:var(--muted);font-size:.85em}
 .nt.h1{background:rgba(255,214,0,.5)}.nt.h2{background:rgba(76,200,110,.45)}.nt.h3{background:rgba(255,105,140,.4)}.nt.h4{background:rgba(70,160,255,.4)}.nt.h5{background:rgba(255,150,40,.45)}
+.nt.m{background:rgba(120,130,255,.16);border-bottom:2px dotted #5C6BC0;cursor:pointer}
+.nt.m.flash{outline:2px solid var(--acc)}
+.nmm{margin:3px 0 0;padding:4px 8px;border-left:3px solid #5C6BC0;background:var(--soft);border-radius:4px;font-size:.88em;white-space:pre-wrap;color:var(--sub)}
+#memoTa{width:100%;min-height:110px;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surf);color:var(--text);resize:vertical}
 .nt.f1{color:#D32F2F}.nt.f2{color:#1565C0}.nt.f3{color:#2E7D32}.nt.f4{color:#7B1FA2}
 :root[data-theme=dark] .nt.f1,:root[data-theme=graphite] .nt.f1,:root[data-theme=nord] .nt.f1,:root[data-theme=forest] .nt.f1,:root[data-theme=midnight] .nt.f1,:root[data-theme=solar] .nt.f1{color:#FF8A80}
 :root[data-theme=dark] .nt.f2,:root[data-theme=graphite] .nt.f2,:root[data-theme=nord] .nt.f2,:root[data-theme=forest] .nt.f2,:root[data-theme=midnight] .nt.f2,:root[data-theme=solar] .nt.f2{color:#82B1FF}
@@ -374,13 +378,19 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <div class="mfoot"><button class="btn" style="flex:1" id="setOk">저장</button><button class="btn g" id="setNo">닫기 (Esc)</button></div>
 </div></div>
 
-<div id="npal"><button data-c="h1" class="hb" style="background:rgba(255,214,0,.75)" title="노랑 형광펜"></button><button data-c="h2" class="hb" style="background:rgba(76,200,110,.7)" title="초록 형광펜"></button><button data-c="h3" class="hb" style="background:rgba(255,105,140,.65)" title="분홍 형광펜"></button><button data-c="h4" class="hb" style="background:rgba(70,160,255,.65)" title="파랑 형광펜"></button><button data-c="h5" class="hb" style="background:rgba(255,150,40,.7)" title="주황 형광펜"></button><span class="sep"></span><button data-c="f1" style="color:#D32F2F" title="글자색 빨강">A</button><button data-c="f2" style="color:#1565C0" title="글자색 파랑">A</button><button data-c="f3" style="color:#2E7D32" title="글자색 초록">A</button><button data-c="f4" style="color:#7B1FA2" title="글자색 보라">A</button><span class="sep"></span><button data-c="x" title="선택한 곳의 표시 지우기">✕</button><span class="sep"></span><button data-c="r" title="이 줄이 이상하게 보임 — 신고" style="font-size:.85em">⚑</button></div>
+<div id="npal"><button data-c="h1" class="hb" style="background:rgba(255,214,0,.75)" title="노랑 형광펜"></button><button data-c="h2" class="hb" style="background:rgba(76,200,110,.7)" title="초록 형광펜"></button><button data-c="h3" class="hb" style="background:rgba(255,105,140,.65)" title="분홍 형광펜"></button><button data-c="h4" class="hb" style="background:rgba(70,160,255,.65)" title="파랑 형광펜"></button><button data-c="h5" class="hb" style="background:rgba(255,150,40,.7)" title="주황 형광펜"></button><span class="sep"></span><button data-c="f1" style="color:#D32F2F" title="글자색 빨강">A</button><button data-c="f2" style="color:#1565C0" title="글자색 파랑">A</button><button data-c="f3" style="color:#2E7D32" title="글자색 초록">A</button><button data-c="f4" style="color:#7B1FA2" title="글자색 보라">A</button><span class="sep"></span><button data-c="x" title="선택한 곳의 표시 지우기">✕</button><span class="sep"></span><button data-c="m" title="메모 달기" style="font-size:.95em">📝</button><button data-c="r" title="이 줄이 이상하게 보임 — 신고" style="font-size:.85em">⚑</button></div>
 <div class="over" id="ovAud"><div class="modal">
   <h3>지침 본문 점검</h3>
   <div class="muted" style="font-size:.82em;line-height:1.5;margin-bottom:6px">점검할 지침 이름을 한 줄에 하나씩 적고 시작을 누르세요. 항·호·목이 한 줄로 붙어 보이는 곳을 찾아 줍니다.</div>
   <textarea id="audNames" rows="4"></textarea>
   <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" style="flex:1" id="audGo">점검 시작</button><button class="btn g" id="audCopy">결과 복사</button><button class="btn g" id="audNo">닫기</button></div>
   <pre id="audOut"></pre>
+</div></div>
+<div class="over" id="ovMemo"><div class="modal">
+  <h3>메모</h3>
+  <div id="memoQ" class="muted" style="font-size:.84em;line-height:1.45;margin-bottom:6px;max-height:4.4em;overflow:hidden"></div>
+  <textarea id="memoTa" placeholder="이 부분에 대한 메모를 적으세요"></textarea>
+  <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" style="flex:1" id="memoOk">저장</button><button class="btn g" id="memoDel" hidden>메모 지우기</button><button class="btn g" id="memoNo">취소</button></div>
 </div></div>
 <div class="over" id="ovRep"><div class="modal">
   <h3>이상한 줄 신고 목록</h3>
@@ -392,7 +402,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "9.1";
+const VERSION = "9.2";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -720,11 +730,11 @@ async function nPath() {
 function mergeNotes(local, ldel, rn, rdel) {
   const del = { ...(rdel || {}), ...(ldel || {}) }, cut = Date.now() - 400 * 864e5;
   Object.keys(del).forEach((k) => { if (del[k] < cut) delete del[k]; });
-  const seen = new Set(), out = [];
-  [...(rn || []), ...local].forEach((n) => { if (n && n.id && !del[n.id] && !seen.has(n.id)) { seen.add(n.id); out.push(n); } });
-  return { notes: out, del };
+  const best = new Map();                                    // 같은 번호면 나중에 고친(ts 큰) 쪽을 남긴다(메모 고침이 되돌아가지 않게)
+  [...(rn || []), ...local].forEach((n) => { if (n && n.id && !del[n.id]) { const o = best.get(n.id); if (!o || (n.ts || 0) > (o.ts || 0)) best.set(n.id, n); } });
+  return { notes: [...best.values()], del };
 }
-const nSig = (notes, del) => notes.map((n) => n.id).sort().join(",") + "|" + Object.keys(del).sort().join(",");
+const nSig = (notes, del) => notes.map((n) => n.id + ":" + (n.ts || 0)).sort().join(",") + "|" + Object.keys(del).sort().join(",");
 let nSyncing = false, nSyT = null;
 function syncNotesSoon() { clearTimeout(nSyT); const r = LS.get("lv_syrepo", ""); if (r && (LS.get("lv_sytok", "") || isScript(r))) nSyT = setTimeout(() => syncNotes(false), 2000); }
 async function syncNotes(manual) {
@@ -1393,7 +1403,7 @@ addEventListener("resize", () => { applyPrefs(); layoutPanes(); });
 
 // ---------------------------------------------------------------- 내 표시(글자색·형광펜) + 모아보기
 let NOTES = LS.get("lv_notes", []);
-const NCOL = { h1: "노랑 형광펜", h2: "초록 형광펜", h3: "분홍 형광펜", h4: "파랑 형광펜", h5: "주황 형광펜", f1: "빨강 글자", f2: "파랑 글자", f3: "초록 글자", f4: "보라 글자" };
+const NCOL = { h1: "노랑 형광펜", h2: "초록 형광펜", h3: "분홍 형광펜", h4: "파랑 형광펜", h5: "주황 형광펜", f1: "빨강 글자", f2: "파랑 글자", f3: "초록 글자", f4: "보라 글자", m: "메모" };
 let NDEL = LS.get("lv_ndel", {});                        // 지운 표시의 번호 -> 지운 시각(공유할 때 되살아나지 않게)
 const saveNotes = () => { LS.set("lv_notes", NOTES); LS.set("lv_ndel", NDEL); syncNotesSoon(); };
 function dropNotes(pred) { const now = Date.now(); const gone = NOTES.filter(pred); NOTES = NOTES.filter((n) => !pred(n)); gone.forEach((n) => (NDEL[n.id] = now)); return gone.length; }
@@ -1403,7 +1413,7 @@ function wrapRange(ln, s, e, n) {
   while (w.nextNode()) { const t = w.currentNode, len = t.nodeValue.length; if (pos + len > s && pos < e) hit.push([t, Math.max(s - pos, 0), Math.min(e - pos, len)]); pos += len; if (pos >= e) break; }
   hit.forEach(([t, a, b]) => {
     let mid = t; if (a > 0) mid = t.splitText(a); if (b - a < mid.nodeValue.length) mid.splitText(b - a);
-    const sp = document.createElement("span"); sp.className = "nt " + n.c; sp.dataset.id = n.id; mid.parentNode.insertBefore(sp, mid); sp.appendChild(mid);
+    const sp = document.createElement("span"); sp.className = "nt " + n.c; sp.dataset.id = n.id; if (n.m) sp.title = n.m; mid.parentNode.insertBefore(sp, mid); sp.appendChild(mid);
   });
 }
 function applyNotes() {
@@ -1448,6 +1458,28 @@ document.addEventListener("selectionchange", () => {
     } else { pal.style.left = Math.max(6, (innerWidth - w) / 2) + "px"; pal.style.top = "auto"; pal.style.bottom = "calc(env(safe-area-inset-bottom) + 16px)"; }
   }, isDT() ? 120 : 350);
 });
+let memoCtx = null;
+function openMemo(gid, parts, d) {                          // gid 가 있으면 고치기, 없으면 새 메모
+  const grp = gid ? NOTES.filter((n) => n.c === "m" && (n.g || n.id) === gid) : [];
+  memoCtx = { gid, parts, d, grp };
+  $("#memoQ").textContent = "“" + (grp.length ? grp.map((n) => n.t).join(" ") : parts.map((p) => p.t).join(" ")) + "”";
+  $("#memoTa").value = grp.length ? grp[0].m || "" : "";
+  $("#memoDel").hidden = !grp.length;
+  $("#ovMemo").classList.add("on"); setTimeout(() => $("#memoTa").focus(), 60);
+}
+$("#memoNo").onclick = () => $("#ovMemo").classList.remove("on");
+$("#memoDel").onclick = () => { const c = memoCtx; if (!c || !c.grp.length) return; const ids = new Set(c.grp.map((n) => n.id)); dropNotes((n) => ids.has(n.id)); saveNotes(); $("#ovMemo").classList.remove("on"); applyNotes(); if (tab === "n") paintNotesList(); toast("메모를 지웠습니다"); };
+$("#memoOk").onclick = () => {
+  const c = memoCtx, txt = $("#memoTa").value.trim(); if (!c) return;
+  if (!txt) return toast("메모를 적어 주세요", true);
+  if (c.grp.length) c.grp.forEach((n) => { n.m = txt; n.ts = Date.now(); });
+  else {
+    const g = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    c.parts.forEach((p, i) => { const a = c.d.arts[p.key]; NOTES.push({ id: g + "-" + i, g, kind: c.d.kind, rawmst: c.d.rawmst, date: c.d.date || "", law: c.d.name, key: p.key, li: p.li, s: p.s, e: p.e, t: p.t, c: "m", m: txt, lab: a ? (a.label + (a.title ? " " + a.title : "")) : "", ts: Date.now() }); });
+  }
+  saveNotes(); $("#ovMemo").classList.remove("on"); applyNotes(); if (tab === "n") paintNotesList(); toast("메모를 저장했습니다");
+};
+$("#memoTa").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) $("#memoOk").click(); });
 let REP = LS.get("lv_rep", []);
 const repBadge = () => { const e = $("#repN"); if (e) e.textContent = REP.length ? "(" + REP.length + ")" : ""; };
 const repText = () => REP.map((r, i) => (i + 1) + ". [" + (KIND[r.kind] ? KIND[r.kind][0] : r.kind) + "] " + r.law + (r.date ? " (" + r.date + ")" : "") + " " + r.lab + " · " + (r.li + 1) + "번째 줄\n   " + r.text.replace(/\n/g, " ") + (r.memo ? "\n   메모: " + r.memo : "")).join("\n");
@@ -1477,6 +1509,11 @@ $("#npal").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-c]"); if (!b) return;
   const d = cur.doc, parts = selParts(); if (!d || !parts.length) return;
   const c = b.dataset.c;
+  if (c === "m") {                                        // 메모 달기: 드래그한 글(여러 줄이어도 한 묶음)에 메모를 적는다
+    const ex = NOTES.find((n) => n.c === "m" && n.law === d.name && n.kind === d.kind && parts.some((p) => n.key === p.key && n.li === p.li && n.s < p.e && n.e > p.s));
+    getSelection().removeAllRanges(); $("#npal").classList.remove("on");
+    return openMemo(ex ? ex.g || ex.id : null, parts, d);
+  }
   if (c === "r") {                                        // 이상한 줄 신고: 드래그한 줄 전체 글을 기록
     let n = 0;
     parts.forEach((p) => {
@@ -1509,7 +1546,13 @@ function delNote(id) { dropNotes((n) => n.id === id); saveNotes(); applyNotes();
   const b = $("#docBody");
   const menu = (e, nt) => { e.preventDefault(); const id = nt.dataset.id; showMenu(e.clientX, e.clientY, [["이 표시 지우기", () => delNote(id)], ["표시 모아보기 열기", () => { setTab("n"); if (!isDT()) show("home"); }]]); };
   b.addEventListener("contextmenu", (e) => { const nt = e.target.closest(".nt"); if (nt) menu(e, nt); });
-  b.addEventListener("click", (e) => { if (isDT() || e.target.closest("a,button") || !getSelection().isCollapsed) return; const nt = e.target.closest(".nt"); if (nt) menu(e, nt); });
+  b.addEventListener("click", (e) => {
+    if (e.target.closest("a,button") || !getSelection().isCollapsed) return;
+    const nt = e.target.closest(".nt"); if (!nt) return;
+    const n = NOTES.find((x) => x.id === nt.dataset.id);
+    if (n && n.c === "m") { const d = cur.doc; return openMemo(n.g || n.id, [], d); }   // 메모 글을 누르면 메모를 보고 고친다
+    if (!isDT()) menu(e, nt);
+  });
 })();
 async function jumpNote(n) {
   if (!(cur.doc && cur.doc.name === n.law && cur.doc.kind === n.kind)) await openDoc(n.kind, n.rawmst, n.law, n.date, n.key);
@@ -1540,7 +1583,7 @@ function paintNotesList() {
       h += '<div class="lg' + (COLL.has(k) ? " c" : "") + '" data-g="' + esc(k) + '"><button class="lgh"><span class="car">▾</span><span class="lgn">' + esc(g.law) + '</span><span class="cnt">' + g.cnt + '건</span></button><div class="lgb">';
       g.ord.forEach((ak) => {
         const a2 = g.arts[ak]; h += '<div class="nsub">' + esc(a2.lab) + "</div>";
-        a2.items.forEach((n) => { h += '<div class="nr nc" data-id="' + n.id + '"><div class="nrt"><span class="nt ' + n.c + '">' + esc(n.t) + "</span>" + (n.lost ? ' <span class="muted">· (본문이 바뀌어 위치를 못 찾음)</span>' : "") + '</div><button class="sm" data-x="' + n.id + '" title="지우기">✕</button></div>'; });
+        a2.items.forEach((n) => { h += '<div class="nr nc" data-id="' + n.id + '"><div class="nrt"><span class="nt ' + n.c + '">' + esc(n.t) + "</span>" + (n.lost ? ' <span class="muted">· (본문이 바뀌어 위치를 못 찾음)</span>' : "") + (n.m ? '<div class="nmm">📝 ' + esc(n.m) + "</div>" : "") + '</div><button class="sm" data-x="' + n.id + '" title="지우기">✕</button></div>'; });
       });
       h += "</div></div>";
     });
@@ -1548,7 +1591,7 @@ function paintNotesList() {
   L.innerHTML = h; grpBind(L);
   $("#nsc").onchange = (e) => { LS.set("lv_nscope", e.target.value); paintNotesList(); };
   $("#ncf").onchange = (e) => { LS.set("lv_ncf", e.target.value); paintNotesList(); };
-  $("#ncp").onclick = () => { const vv = notesView(); if (!vv.length) return toast("복사할 표시가 없습니다", true); copyText(vv.map((n) => "「" + n.law + "」 " + (n.lab || n.key) + "\n  " + n.t).join("\n"), vv.length + "건을 복사했습니다"); };
+  $("#ncp").onclick = () => { const vv = notesView(); if (!vv.length) return toast("복사할 표시가 없습니다", true); copyText(vv.map((n) => "「" + n.law + "」 " + (n.lab || n.key) + "\n  " + n.t + (n.m ? "\n  메모: " + n.m : "")).join("\n"), vv.length + "건을 복사했습니다"); };
   L.querySelectorAll(".nc").forEach((c) => (c.onclick = (e) => { if (e.target.closest("[data-x]")) return; const n = NOTES.find((x) => x.id === c.dataset.id); if (n) jumpNote(n); }));
   L.querySelectorAll("[data-x]").forEach((b) => (b.onclick = () => delNote(b.dataset.x)));
 }
