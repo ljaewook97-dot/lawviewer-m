@@ -1,7 +1,7 @@
 // 법령 뷰어 서비스 워커 v7.2
 // 앱 파일은 '설치할 때 통째로 저장해 두고 그것을 쓴다'. 새 버전은 뒤에서 받아 두고 기다리다가,
 // 화면에서 사용자가 '업데이트'를 눌렀을 때만 바꿔 끼운다(딸깍 지도처럼). 파이오다이드(큰 파일)는 한 번 받으면 저장본을 쓴다.
-const VER = "7.4";
+const VER = "7.5";
 const V = "lv-" + VER;
 const SHELL = ["./", "index.html", "worker.js", "lawcore.py", "mobile_api.py", "manifest.webmanifest", "icon-192.png", "icon-512.png", "changes.txt"];
 self.addEventListener("install", (e) => {
