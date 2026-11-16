@@ -86,8 +86,19 @@ def set_api_base(base):
 # ---- 보내는 모양 만들기
 def _spans(text, selfname):
     out = []
+    taken = []
     for c in L.cite_spans(text, selfname):
         out.append([c["start"], c["end"], c["law"], c["n"], c["b"], c["sub"]])
+        taken.append((c["start"], c["end"]))
+    try:                                   # '대통령령으로'·'정하여 고시'·'조례' — 눌러서 관련 조문 목록을 만든다(PC 와 같음)
+        for a, b, to in L.deleg_spans(text, selfname, taken):
+            out.append([a, b, "@d", to, 0, None]); taken.append((a, b))
+        for a, b in L.adm_spans(text, taken):
+            out.append([a, b, "@a", "", 0, None]); taken.append((a, b))
+        for a, b in L.ordin_spans(text, taken):
+            out.append([a, b, "@o", "", 0, None]); taken.append((a, b))
+    except Exception:  # noqa: BLE001
+        pass
     return out
 
 
@@ -107,8 +118,12 @@ def _doc_json(law, selfname_target):
     for it in law["items"]:
         items.append({"k": "h", "t": it["text"]} if it["kind"] == "head" else {"k": "a", "key": it["key"]})
     base = L._split_name(refname)[0] if law.get("kind") == "adm" else None
+    annex = []
+    for x in (law.get("annex") or []):
+        annex.append({"label": x["label"], "title": x["title"], "lines": [[lv, t] for lv, t in x["text"]],
+                      "url": L.annex_url(x.get("pdf") or x.get("link") or ""), "deleted": bool(x.get("deleted"))})
     return {"name": law["name"], "kind": law.get("kind", "law"), "mst": law["mst"], "date": law.get("date", ""),
-            "refname": refname, "adm_base": base, "items": items, "arts": arts}
+            "refname": refname, "adm_base": base, "items": items, "arts": arts, "annex": annex}
 
 
 # ---- 화면에서 부르는 함수들
@@ -230,7 +245,77 @@ def tt_row(base, i):
     return {"cols": cols}
 
 
-FUNCS = {"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
+def _hit(h):
+    mst = str(h["mst"])
+    lw = L._LAW_CACHE.get(mst)
+    if lw is not None:
+        lw.setdefault("name", h["lawname"]); lw.setdefault("mst", mst)
+    kind = "adm" if h.get("adm") or mst.startswith("a") else "ordin" if h.get("ord") or mst.startswith("o") else "law"
+    return {"kind": kind, "mst": mst, "rawmst": mst[1:] if kind != "law" else mst, "lawname": h["lawname"], "key": h.get("key", ""),
+            "label": h.get("label", ""), "title": h.get("title", ""), "short": h.get("short", ""), "snippet": h.get("snippet", ""),
+            "ext": bool(h.get("ext"))}
+
+
+def _hitres(r, note=""):
+    return {"hits": [_hit(h) for h in r["hits"]], "total": r["total"], "note": note or r.get("note", ""), "toks": r.get("toks", []),
+            "searched": r.get("searched", [])}
+
+
+def kw_search(oc, q, city=""):
+    """키워드로 조문 찾기(PC 의 '키워드 검색')"""
+    r = L.keyword_search(oc, q, None, getter, 80, True, city or "")
+    return _hitres(r)
+
+
+def open_cached(mst, key=""):
+    """키워드·위임 결과를 누르면, 이미 받아 둔 법령을 본문으로 연다"""
+    law = L._LAW_CACHE.get(mst)
+    if law is None:
+        raise L.LawError("이 법령은 다시 검색해서 열어 주세요")
+    d = _doc_json(law, law["name"])
+    d["rawmst"] = mst[1:] if mst[:1] in ("a", "o") else mst
+    d["kind"] = "adm" if mst.startswith("a") else "ordin" if mst.startswith("o") else "law"
+    return d
+
+
+def _cur_art(mst, key):
+    law = L._LAW_CACHE.get(mst)
+    a = law["arts"].get(key) if law else None
+    if not a:
+        raise L.LawError("조문을 찾지 못했습니다")
+    return law, a
+
+
+def list_deleg(oc, mst, key, to):
+    """'대통령령으로'를 누르면: 이 조문을 위임받은 시행령(시행규칙) 조문 목록"""
+    law, a = _cur_art(mst, key)
+    r = L.deleg_lookup(oc, law["name"], to, a["n"], a["b"], a.get("title", ""), getter)
+    return _hitres(r)
+
+
+def list_adm(oc, mst, key, line=""):
+    """'정하여 고시한다'를 누르면: 관련 지침·고시"""
+    law, a = _cur_art(mst, key)
+    r = L.adm_search(oc, a.get("title", ""), law["name"], a.get("scan", ""), line=line, cite=(law["name"], a["n"], a["b"]), getter=getter)
+    return _hitres(r)
+
+
+def list_ordin(oc, mst, key, city=""):
+    """'조례'를 누르면: 기본 자치단체 조례에서 이 조문 제목 낱말이 든 조문"""
+    import re as _re
+    law, a = _cur_art(mst, key)
+    toks = []
+    for w in _re.split(r"[\s·ㆍ,()]+", a.get("title", "")):
+        w = _re.sub(r"(에서의|에서|으로의|의)$", "", w)
+        if len(w) >= 2 and w not in ("및", "경우", "기준", "대한", "관한", "관련") and w not in toks:
+            toks.append(w)
+    if not toks:
+        toks = _re.findall(r"[가-힣]{2,}", a.get("scan", ""))[:3]
+    r = L.ordin_lookup(oc, city or "고양시", toks, getter)
+    return _hitres(r, "%s — '%s' 관련 조문" % (r.get("ordname", ""), " ".join(toks)))
+
+
+FUNCS = {"kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
          "tt_open": tt_open, "tt_row": tt_row, "set_api_base": set_api_base}
 
 

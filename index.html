@@ -14,6 +14,9 @@
 :root{--bg:#E9EDEC;--surf:#fff;--soft:#F4F7F6;--line:#D5DDDA;--text:#1D2A27;--sub:#3F4F4A;--muted:#6E7C77;--acc:#0E7C6B;--acc-d:#0A5E51;--acc-soft:#DDF0EA;--acc-t:#fff;--hl:#FFE57A;--subhl:#FFF0B3;--link:#0B5FB0;--danger:#B93A2E;--law:#0E7C6B;--adm:#5B4B9A;--ordin:#B8651B;--fs:16px}
 :root[data-theme=dark]{--bg:#0d1726;--surf:#12213a;--soft:#182a44;--line:#27405f;--text:#e8f0fa;--sub:#c3d1e4;--muted:#8ea6c4;--acc:#4cc3ff;--acc-d:#7bd3ff;--acc-soft:#223a5c;--acc-t:#06213a;--hl:#6b5a24;--subhl:#4a4224;--link:#7bd3ff;--danger:#ff7b7b}
 :root[data-theme=paper]{--bg:#f7f2ea;--surf:#fffdf8;--soft:#ece4d6;--line:#d3c7b2;--text:#2b2418;--sub:#4d4330;--muted:#6f6450;--acc:#b5532a;--acc-d:#8f3f1c;--acc-soft:#f1dfd2;--acc-t:#fff;--link:#a3441b}
+:root[data-theme=graphite]{--bg:#121214;--surf:#1b1b1f;--soft:#26262c;--line:#3a3a44;--text:#ececf1;--sub:#C7C7D0;--muted:#9a9aa8;--acc:#5eb1ff;--acc-d:#8cc8ff;--acc-soft:#32455A;--acc-t:#06213a;--hl:#76582C;--subhl:#4B3A22;--link:#8cc8ff;--danger:#ff7b7b}
+:root[data-theme=nord]{--bg:#2e3440;--surf:#3b4252;--soft:#434c5e;--line:#556074;--text:#eceff4;--sub:#CBD3DF;--muted:#a3b1c6;--acc:#88c0d0;--acc-d:#a9d4e0;--acc-soft:#526677;--acc-t:#1f2933;--hl:#7D7360;--subhl:#5B5852;--link:#a9d4e0;--danger:#e07a85}
+:root[data-theme=light]{--bg:#f4f6fa;--surf:#ffffff;--soft:#F2F5F9;--line:#c5d0e0;--text:#1c2a3f;--sub:#394961;--muted:#5c6f8a;--acc:#0b7dd0;--acc-d:#085A96;--acc-soft:#D8EAF7;--acc-t:#ffffff;--hl:#FFE57A;--subhl:#FFF0B3;--link:#0A70BB;--danger:#d33f3f}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;font-size:var(--fs);overscroll-behavior:none}
 button{font:inherit;color:inherit;border:0;background:none;padding:0}
@@ -56,6 +59,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .ln.hl{background:var(--hl);border-radius:4px}
 .ln b{font-weight:700}
 .am{color:var(--muted);font-size:.8em}
+a.c.dg{border-bottom-style:dotted;color:var(--acc-d)}
 a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;cursor:pointer}
 .ah{display:flex;gap:6px;align-items:flex-start}
 .ah .ln{flex:1}
@@ -96,31 +100,73 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
 .nav input{width:70px;border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;text-align:center;background:var(--surf);color:var(--text)}
 .empty{text-align:center;color:var(--muted);padding:40px 16px;line-height:1.7}
 
-/* ===== PC 넓은 화면(1000px 이상): PC 프로그램처럼 왼쪽 목록 / 가운데 본문(위에 법령 탭) / 오른쪽 조문 ===== */
-#ltabs,#dtEmpty,#tT,.dtonly{display:none}
+/* ===== PC 넓은 화면(1000px 이상): PC 프로그램 모양 — 왼쪽 목록 / 가운데 본문(위 탭, 아래 미리보기 두 칸) / 오른쪽 인용 정리 ===== */
+#ltabs,#dtEmpty,.dtonly,#side,#tT{display:none}
+#pbox{display:contents}
+#sheet2{display:none!important}
+.sd-h{font-weight:700;color:var(--acc-d);margin:0 0 6px}
+.sd-s{font-weight:700;color:var(--sub);margin:12px 0 4px;font-size:.88em}
+.sd-b{display:block;width:100%;text-align:left;padding:6px 8px;margin-bottom:4px;border:1px solid var(--line);border-radius:6px;background:var(--soft);color:var(--text);line-height:1.35}
+.sd-b:hover{background:var(--acc-soft)}
+.sd-b i{font-style:normal;color:var(--muted);font-size:.85em}
+.axl{display:block;margin:4px 0}
 @media (min-width:1000px){
-  :root{--lw:340px}
-  .hdr{padding-left:14px}
-  .sbox input{font-size:1.02em}
-  #home{display:block!important;right:auto;width:var(--lw);border-right:1px solid var(--line);background:var(--bg)}
-  #doc,#tt{left:var(--lw);padding-top:calc(env(safe-area-inset-top) + 52px + 38px);padding-left:20px;padding-right:20px}
-  #doc.wide-sheet{padding-right:calc(46% + 14px)}
-  #ltabs{display:flex;position:fixed;top:calc(env(safe-area-inset-top) + 52px);left:var(--lw);right:0;height:38px;z-index:15;background:var(--soft);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap}
-  #ltabs .lt{display:flex;align-items:center;gap:6px;padding:0 6px 0 12px;border-right:1px solid var(--line);color:var(--sub);cursor:pointer;max-width:240px;font-size:.88em}
+  :root{--lw:250px;--rw:230px;--hh:34px;--th:26px;--ph:36vh}
+  body.hl{--lw:0px}
+  body.hr{--rw:0px}
+  .dtonly{display:inline-block}
+  .hdr{min-height:var(--hh);padding:0 8px;gap:2px}
+  .hdr .t{font-size:.9em}
+  .hdr .ib{font-size:.85em;min-width:26px;height:26px;padding:0 7px}
+  #bBack,#bToc{display:none!important}
+  #home{display:block!important;right:auto;width:var(--lw);top:var(--hh);padding-top:4px;border-right:1px solid var(--line)}
+  body.hl #home{display:none!important}
+  #home .pad{padding:6px}
+  .sbox{margin-bottom:6px;gap:4px}
+  .sbox input{padding:4px 6px;font-size:.95em;border-radius:5px}
+  .sbox select{padding:0 2px}
+  .btn{min-height:26px;padding:0 10px;border-radius:5px;font-size:.9em}
+  .tabs{margin:2px 0 6px;gap:3px}
+  .tabs button{padding:3px 2px;font-size:.82em;border-radius:5px}
+  #tT{display:block}
+  .card{padding:4px 7px;border-radius:5px;margin-bottom:3px}
+  .card .nm{font-size:.9em;line-height:1.25}
+  .card .in{font-size:.76em;margin-top:1px}
+  .grp{margin:8px 2px 3px;font-size:.88em}
+  #sug div{padding:6px 10px;font-size:.92em}
+  #doc,#tt{left:var(--lw);right:var(--rw);top:calc(var(--hh) + var(--th));padding:4px 14px 0}
+  body.pv #doc,body.pv #tt{bottom:var(--ph)}
+  #doc .body{padding:0 4px 50px;max-width:860px}
+  .art{padding:4px 0}
+  .art.cur{margin:0 -6px;padding:4px 6px}
+  .ln{line-height:1.5;margin:1px 0}
+  .fv{min-width:22px;height:22px;font-size:1em}
+  .head{margin:12px 0 4px;font-size:1em}
+  #ltabs{display:flex;position:fixed;top:var(--hh);left:var(--lw);right:var(--rw);height:var(--th);z-index:15;background:var(--soft);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap}
+  #ltabs .lt{display:flex;align-items:center;gap:4px;padding:0 3px 0 8px;border-right:1px solid var(--line);color:var(--sub);cursor:pointer;max-width:200px;font-size:.8em}
   #ltabs .lt span{overflow:hidden;text-overflow:ellipsis}
   #ltabs .lt.on{background:var(--surf);color:var(--acc-d);font-weight:700;box-shadow:inset 0 -3px 0 var(--acc)}
-  #ltabs .lt b{font-weight:400;opacity:.6;padding:2px 6px;border-radius:6px}
+  #ltabs .lt b{font-weight:400;opacity:.6;padding:1px 5px;border-radius:5px}
   #ltabs .lt b:hover{background:var(--line);opacity:1}
-  #dtEmpty{display:block;position:fixed;top:calc(env(safe-area-inset-top) + 52px + 38px);left:var(--lw);right:0;bottom:0;padding:90px 30px;text-align:center;color:var(--muted);line-height:1.8;z-index:1;pointer-events:none}
+  #dtEmpty{display:block;position:fixed;top:calc(var(--hh) + var(--th));left:var(--lw);right:var(--rw);bottom:0;padding:90px 30px;text-align:center;color:var(--muted);line-height:1.8;z-index:1;pointer-events:none}
   #dtEmpty.off{display:none}
-  #tT{display:block}
-  #bBack,#bToc{display:none!important}
-  .sheet{top:calc(env(safe-area-inset-top) + 52px + 38px);left:auto;right:0;bottom:0;width:46%;height:auto!important;border-radius:0;box-shadow:-6px 0 20px rgba(0,0,0,.18);z-index:25}
-  .sheet .sh{border-radius:0;cursor:default;touch-action:auto}
+  #side{display:block;position:fixed;top:var(--hh);right:0;bottom:0;width:var(--rw);padding:6px 8px;overflow-y:auto;background:var(--surf);border-left:1px solid var(--line);font-size:.88em}
+  body.hr #side{display:none}
+  #pbox{display:none;position:fixed;left:var(--lw);right:var(--rw);bottom:0;height:var(--ph);z-index:25;border-top:2px solid var(--acc);background:var(--surf)}
+  body.pv #pbox{display:flex}
+  .sheet{position:static;flex:1;min-width:0;height:auto!important;border-radius:0;box-shadow:none;z-index:auto}
+  #sheet2.on{display:flex!important;border-left:1px solid var(--line)}
+  .sheet .sh{border-radius:0;padding:1px 3px 1px 8px;cursor:ns-resize}
   .sheet .sh::before{display:none}
+  .sheet .sh .t{font-size:.84em}
+  .sheet .sh .ib{height:22px;min-width:24px;padding:0 6px}
+  .sheet .sb{padding:3px 10px}
+  .sheet .sc{padding:4px 10px}
+  .sheet .sa{padding:3px 5px}
+  .sheet .sa button{padding:2px;font-size:.78em}
   .modal{left:calc(50% - 280px)!important;right:auto!important;width:560px!important}
-  .tabs button{padding:8px 4px;font-size:.9em}
-  .nav{top:calc(env(safe-area-inset-top) + 52px + 38px)}
+  .nav{padding:4px 6px}
+  .tt .col{margin:6px 8px}
 }
 </style>
 </head>
@@ -130,12 +176,14 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
   <div class="t" id="hTitle">법령 뷰어</div>
   <button class="ib" id="bToc" style="display:none">☰</button>
   <button class="ib" id="bFav" style="display:none">☆</button>
+  <button class="ib dtonly" id="bL" title="왼쪽 목록 접기/펴기 (F7)">◀ 목록</button>
+  <button class="ib dtonly" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
   <button class="ib" id="bTT" style="display:none" title="3단 비교">3단</button>
   <button class="ib" id="bSet">⚙</button>
 </div>
 
 <div class="view on" id="home"><div class="pad">
-  <div class="sbox"><input id="q" placeholder="이름·조문  예) 국토계획법 시행령 71조 / 수립지침" enterkeyhint="search" autocomplete="off"><button class="btn" id="bGo">검색</button><div id="sug"></div></div>
+  <div class="sbox"><select id="qm" style="border:1px solid var(--line);border-radius:8px;background:var(--surf);color:var(--text);font:inherit"><option value="name">이름</option><option value="kw">키워드</option></select><input id="q" placeholder="이름·조문  예) 국토계획법 시행령 71조 / 수립지침" enterkeyhint="search" autocomplete="off"><button class="btn" id="bGo">검색</button><div id="sug"></div></div>
   <div class="tabs"><button id="tR" class="on">검색결과</button><button id="tF">즐겨찾기</button><button id="tT">목차</button></div>
   <div id="list"><div class="empty">법령·행정규칙·자치법규 이름을 치면<br>목록이 나옵니다.<br><span style="font-size:.85em">처음에는 ⚙ 에서 국가법령정보센터 인증키(OC)를 넣어 주세요.</span></div></div>
 </div></div>
@@ -144,12 +192,8 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
 <div class="view" id="doc"><div class="body" id="docBody"></div></div>
 <div class="view tt" id="tt"></div>
 
-<div class="sheet" id="sheet">
-  <div class="sh"><div class="t" id="shT"></div><button class="ib" style="color:var(--acc-d)" id="shX">✕</button></div>
-  <div class="sb" id="shS"></div>
-  <div class="sc" id="shC"></div>
-  <div class="sa"><button id="shBack">◀ 이전</button><button id="shFav">☆ 즐겨찾기</button><button id="shOpen">본문에서 열기</button></div>
-</div>
+<div id="pbox"><div class="sheet" id="sheet"></div><div class="sheet" id="sheet2"></div></div>
+<div id="side"></div>
 
 <div class="over" id="ovToc"><div class="drawer" id="drawer"></div></div>
 <div class="over" id="ovSet"><div class="modal">
@@ -162,10 +206,12 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
   <input id="syTok" type="password" placeholder="GitHub 토큰 (웹앱 주소를 쓰면 비움)" autocapitalize="off" autocomplete="off" style="margin-top:6px">
   <div class="muted" style="font-size:.78em;margin-top:4px">토큰은 이 폰에만 저장됩니다. 저장소가 공개면 즐겨찾기 목록도 공개되니 비공개를 권합니다. 비우면 공유를 끕니다.</div>
   <button class="btn g" id="syNow" style="margin-top:8px;width:100%">지금 동기화</button>
+  <label>기본 자치단체 (조례 찾기)</label>
+  <input id="city" placeholder="예) 고양시" autocomplete="off">
   <label>색상 테마</label>
-  <select id="theme"><option value="">기본 (청록)</option><option value="paper">종이</option><option value="dark">남색 (어두움)</option></select>
+  <select id="theme"><option value="">기본 (청록)</option><option value="light">밝은 파랑</option><option value="paper">종이</option><option value="dark">남색 (어두움)</option><option value="graphite">차콜 (어두움)</option><option value="nord">노드 (어두움)</option></select>
   <label>글자 크기</label>
-  <select id="fsz"><option value="14">작게</option><option value="16">보통</option><option value="18">크게</option><option value="20">아주 크게</option></select>
+  <select id="fsz"><option value="12">아주 작게 (PC 기본)</option><option value="13">조밀</option><option value="14">작게</option><option value="16">보통</option><option value="18">크게</option><option value="20">아주 크게</option></select>
   <div style="display:flex;gap:8px;margin-top:16px"><button class="btn" style="flex:1" id="setOk">저장</button><button class="btn g" id="setNo">닫기</button></div>
   <div class="muted" id="ver" style="font-size:.75em;margin-top:12px"></div>
 </div></div>
@@ -174,13 +220,15 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
 <div id="toast"></div>
 
 <script>
-const VERSION = "5.9";
+const VERSION = "6.2";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 };
 const P = new URL(location.href).searchParams;
+const isDT = () => matchMedia("(min-width:1000px)").matches;
+const FSK = () => (isDT() ? "lv_fsd" : "lv_fs"), FSD = () => (isDT() ? 12 : 16);
 const KIND = { law: ["법령", "law"], adm: ["행정규칙", "adm"], ordin: ["자치법규", "ordin"] };
 
 // ---------------------------------------------------------------- 엔진(워커)
@@ -228,12 +276,12 @@ let OC = LS.get("lv_oc", "");
 function applyPrefs() {
   const th = LS.get("lv_theme", "");
   if (th) document.documentElement.dataset.theme = th; else delete document.documentElement.dataset.theme;
-  document.documentElement.style.setProperty("--fs", LS.get("lv_fs", 16) + "px");
+  document.documentElement.style.setProperty("--fs", LS.get(FSK(), FSD()) + "px");
   const mc = document.querySelector('meta[name=theme-color]');
   if (mc) mc.content = getComputedStyle(document.documentElement).getPropertyValue("--acc").trim() || "#0E7C6B";
 }
 applyPrefs();
-$("#bSet").onclick = () => { $("#oc").value = OC; $("#syRepo").value = LS.get("lv_syrepo", ""); $("#syTok").value = LS.get("lv_sytok", ""); $("#theme").value = LS.get("lv_theme", ""); $("#fsz").value = LS.get("lv_fs", 16); $("#ver").textContent = "법령 뷰어 모바일 v" + VERSION + " · 법제처 국가법령정보센터 Open API"; $("#ovSet").classList.add("on"); };
+$("#bSet").onclick = () => { $("#oc").value = OC; $("#syRepo").value = LS.get("lv_syrepo", ""); $("#syTok").value = LS.get("lv_sytok", ""); $("#theme").value = LS.get("lv_theme", ""); $("#fsz").value = LS.get(FSK(), FSD()); $("#city").value = LS.get("lv_city", "고양시"); $("#ver").textContent = "법령 뷰어 모바일 v" + VERSION + " · 법제처 국가법령정보센터 Open API"; $("#ovSet").classList.add("on"); };
 $("#syNow").onclick = () => { LS.set("lv_syrepo", $("#syRepo").value.trim()); LS.set("lv_sytok", $("#syTok").value.trim()); OC = $("#oc").value.trim() || OC; syncNow(true); };
 $("#setNo").onclick = () => $("#ovSet").classList.remove("on");
 $("#setOk").onclick = () => {
@@ -241,7 +289,7 @@ $("#setOk").onclick = () => {
   const sr = $("#syRepo").value.trim(), st = $("#syTok").value.trim(), had = LS.get("lv_syrepo", "") + LS.get("lv_sytok", "");
   LS.set("lv_syrepo", sr); LS.set("lv_sytok", st);
   if (sr && (st || isScript(sr)) && sr + st !== had) setTimeout(() => syncNow(true), 300);
-  LS.set("lv_theme", $("#theme").value); LS.set("lv_fs", parseInt($("#fsz").value, 10));
+  LS.set("lv_theme", $("#theme").value); LS.set(FSK(), parseInt($("#fsz").value, 10)); LS.set("lv_city", $("#city").value.trim() || "고양시");
   applyPrefs(); $("#ovSet").classList.remove("on"); toast("저장했습니다");
 };
 function needOC() { if (!OC) { toast("먼저 ⚙ 설정에서 인증키(OC)를 넣어 주세요", true); return true; } return false; }
@@ -264,7 +312,7 @@ function show(name, title) {
 }
 const cur = { view: "home", doc: null };
 $("#bBack").onclick = () => {
-  if ($("#sheet").classList.contains("on")) return closeSheet();
+  if (paneOn()) return closeSheet();
   if (cur.view === "tt") return show("doc", cur.doc.name);
   if (isDT()) return;
   show("home");
@@ -273,7 +321,7 @@ window.addEventListener("popstate", () => { $("#bBack").onclick(); history.pushS
 history.pushState(null, "");
 
 // ---------------------------------------------------------------- 검색·즐겨찾기 목록
-let hits = [];
+let hits = [], hitNote = "";
 $("#bGo").onclick = doSearch;
 $("#q").addEventListener("keydown", (e) => { if (e.key === "Enter") { sugHide(); doSearch(); } });
 // ---- 검색창 자동완성(법령 이름)
@@ -320,22 +368,28 @@ function paintToc() {
 async function doSearch() {
   const q = $("#q").value.trim();
   if (!q || needOC()) return;
+  if ($("#qm").value === "kw") {
+    const r = await call("kw_search", [OC, q, LS.get("lv_city", "고양시")], "키워드로 조문을 찾는 중… (처음엔 법령을 받느라 오래 걸립니다)");
+    hitNote = r.total + "건 · " + (r.note || ""); hits = r.hits; setTab("r");
+    if (!hits.length) $("#list").innerHTML = '<div class="empty">조문을 찾지 못했습니다. 낱말을 줄이거나 바꿔 보세요.</div>';
+    return;
+  }
   const r = await call("search", [OC, q], "찾는 중…");
   if (r.open) { try { await openByName(r.open.name, r.open.key || undefined); return; } catch (e) { toast(String(e && e.message || e)); } }
-  hits = r.hits; setTab("r");
+  hits = r.hits; hitNote = r.msg || ""; setTab("r");
   if (!hits.length) $("#list").innerHTML = '<div class="empty">' + esc(r.msg || "찾은 것이 없습니다.") + "</div>";
 }
 function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 function paintHits() {
   const L = $("#list");
   if (!hits.length) { L.innerHTML = '<div class="empty">이름을 치고 검색을 누르세요.</div>'; return; }
-  let h = "", last = "";
+  let h = hitNote ? '<div class="muted" style="font-size:.8em;margin:0 2px 6px;line-height:1.4">' + esc(hitNote) + "</div>" : "", last = "";
   hits.forEach((x, i) => {
     if (x.kind !== last) { h += '<div class="grp">' + KIND[x.kind][0] + "</div>"; last = x.kind; }
-    h += '<div class="card" data-i="' + i + '"><div class="m"><div class="nm"><span class="tag ' + x.kind + '">' + KIND[x.kind][0] + "</span>" + esc(x.lawname) + '</div><div class="in">' + esc(x.short.replace(/^[^·]*· ?/, "")) + (x.info ? " · " + esc(x.info) : "") + "</div></div></div>";
+    h += '<div class="card" data-i="' + i + '"><div class="m"><div class="nm"><span class="tag ' + x.kind + '">' + KIND[x.kind][0] + "</span>" + esc(x.lawname) + (x.key ? " " + esc(x.label + " " + x.title) : "") + '</div><div class="in">' + esc((x.short || "").replace(/^[^·]*· ?/, "")) + (x.info || x.snippet ? " · " + esc(x.info || x.snippet) : "") + "</div></div></div>";
   });
   L.innerHTML = h;
-  L.querySelectorAll(".card").forEach((c) => (c.onclick = () => { const x = hits[+c.dataset.i]; openDoc(x.kind, x.rawmst, x.lawname, x.date); }));
+  L.querySelectorAll(".card").forEach((c) => (c.onclick = () => { const x = hits[+c.dataset.i]; x.key ? openHitArt(x) : openDoc(x.kind, x.rawmst, x.lawname, x.date); }));
 }
 let favs = LS.get("lv_favs", []);
 function saveFavs() { LS.set("lv_favs", favs); LS.set("lv_favs_ts", Date.now()); syncSoon(); }
@@ -428,7 +482,7 @@ function seg(s, bold) {
   out += esc(s.slice(last));
   return bold ? "<b>" + out + "</b>" : out;
 }
-function lineHTML(text, spans, lv, ctx, self) {
+function lineHTML(text, spans, lv, ctx, self, akey) {
   let he = 0;
   if (lv === 0) { const m = HEADRE.exec(text); if (m) he = m[0].length; }
   const sp = (spans || []).slice().sort((a, b) => a[0] - b[0]);
@@ -441,8 +495,9 @@ function lineHTML(text, spans, lv, ctx, self) {
   for (const s of sp) {
     if (s[0] < pos || s[0] < he) continue;      // 조문 머리 '제N조(제목)' 자신은 인용이 아님
     emit(pos, s[0]);
-    const id = CITES.push({ law: s[2], n: s[3], b: s[4], sub: s[5], ctx, self }) - 1;
-    out += '<a class="c" data-c="' + id + '">' + esc(text.slice(s[0], s[1])) + "</a>";
+    const sp0 = String(s[2]).charAt(0) === "@";          // 대통령령으로·고시·조례: 눌러서 관련 조문 목록
+    const id = CITES.push(sp0 ? { kind: s[2].slice(1), to: s[3], ctx, akey, line: text } : { law: s[2], n: s[3], b: s[4], sub: s[5], ctx, self }) - 1;
+    out += '<a class="c' + (sp0 ? " dg" : "") + '" data-c="' + id + '">' + esc(text.slice(s[0], s[1])) + "</a>";
     pos = s[1];
   }
   emit(pos, text.length);
@@ -453,13 +508,13 @@ function artHTML(a, ctx, opt) {
   let h = '<div class="art" id="' + (opt.idp || "a-") + a.key + '">';
   a.lines.forEach((l, i) => {
     const hl = opt.hl && opt.hl.some((r) => i >= r[0] && i < r[1]);
-    const body = '<div class="ln l' + Math.min(l[0], 4) + (hl ? " hl" : "") + '">' + lineHTML(l[1], l[2], l[0], ctx, opt.self) + "</div>";
+    const body = '<div class="ln l' + Math.min(l[0], 4) + (hl ? " hl" : "") + '">' + lineHTML(l[1], l[2], l[0], ctx, opt.self, a.key) + "</div>";
     h += i === 0 && opt.fav ? '<div class="ah">' + body + '<button class="fv' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? " on" : "") + '" data-fk="' + a.key + '">' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? "★" : "☆") + "</button></div>" : body;
   });
   return h + "</div>";
 }
 function bindCites(root) {
-  root.querySelectorAll("a.c").forEach((a) => (a.onclick = (e) => { e.preventDefault(); openCite(CITES[+a.dataset.c]); }));
+  root.querySelectorAll("a.c").forEach((a) => (a.onclick = (e) => { e.preventDefault(); openCite(CITES[+a.dataset.c], a.closest("#sheet,#sheet2") ? 2 : 1); }));
 }
 
 // ---------------------------------------------------------------- 문서 열기
@@ -473,7 +528,6 @@ async function openByName(name, key) {
   const d = await call("open_by_name", [OC, name], name + " 받는 중…");
   showDoc(d, "law", d.mst, key);
 }
-const isDT = () => matchMedia("(min-width:1000px)").matches;
 const ltabs = [];      // 열어 둔 법령 (PC 넓은 화면)
 function paintLTabs() {
   const bar = $("#ltabs");
@@ -496,7 +550,7 @@ function closeLTab(i) {
   ltabs.splice(i, 1);
   if (!was) return paintLTabs();
   if (ltabs.length) return switchLTab(Math.min(i, ltabs.length - 1));
-  cur.doc = null; CITES = []; $("#docBody").innerHTML = ""; closeSheet(); show("home"); paintLTabs();
+  cur.doc = null; CITES = []; $("#docBody").innerHTML = ""; closeSheet(); show("home"); paintLTabs(); sideKey = ""; paintSide();
   if (tab === "t") paintToc();
 }
 function showDoc(d, kind, rawmst, key, fromTab) {
@@ -507,10 +561,21 @@ function showDoc(d, kind, rawmst, key, fromTab) {
     if (old >= 0) ltabs[old].d = d; else ltabs.push({ d, scroll: 0 });
   }
   cur.doc = d; CITES = [];
-  closeSheet(); prevHist.length = 0;
+  closeSheet();
   let h = "";
   d.items.forEach((it) => { h += it.k === "h" ? '<div class="head">' + esc(it.t) + "</div>" : artHTML(d.arts[it.key], d.mst, { fav: true, self: d.kind === "adm" && d.adm_base ? d.adm_base : d.name }); });
+  if ((d.annex || []).length) {
+    h += '<div class="head">별표·서식 (' + d.annex.length + ")</div>";
+    d.annex.forEach((x, i) => {
+      h += '<div class="art" id="ax-' + i + '"><div class="ln l0"><b>[' + esc(x.label) + "] " + esc(x.title) + "</b></div>";
+      if (x.deleted) h += '<div class="ln l1 muted">삭제</div>';
+      x.lines.forEach((l) => (h += '<div class="ln l' + Math.min(l[0], 4) + '">' + esc(l[1]) + "</div>"));
+      if (x.url) h += '<a class="axl" href="' + esc(x.url) + '" target="_blank" rel="noopener">원본 파일 열기 ▸</a>';
+      h += "</div>";
+    });
+  }
   const b = $("#docBody"); b.innerHTML = h;
+  b.onclick = (e) => { if (!isDT() || e.target.closest("a,button")) return; const art = e.target.closest(".art"); if (art && art.id.startsWith("a-")) setCurArt(art.id.slice(2)); };
   bindCites(b);
   b.querySelectorAll(".fv").forEach((f) => (f.onclick = () => { toggleFav(d, f.dataset.fk); const on = favIdx(kind, rawmst, f.dataset.fk) >= 0; f.textContent = on ? "★" : "☆"; f.classList.toggle("on", on); }));
   show("doc", d.name);
@@ -519,15 +584,18 @@ function showDoc(d, kind, rawmst, key, fromTab) {
   if (key && d.arts[key]) setTimeout(() => goKey(key), 30);
   buildToc(d);
   if (tab === "t") paintToc();
+  if (isDT()) { const k0 = key && d.arts[key] ? key : (d.items.find((x) => x.k === "a") || {}).key; sideKey = ""; if (k0) setCurArt(k0); else paintSide(); }
 }
 function paintDocFav() { const on = favIdx(cur.doc.kind, cur.doc.rawmst, "") >= 0; $("#bFav").textContent = on ? "★" : "☆"; }
 $("#bFav").onclick = () => { toggleFav(cur.doc, ""); paintDocFav(); };
 function goKey(key) {
+  if (String(key).startsWith("ax:")) { const x = document.getElementById("ax-" + key.slice(3)); if (x) $("#doc").scrollTop = x.offsetTop - 8; return; }
   const el = document.getElementById("a-" + key);
   if (!el) return;
   document.querySelectorAll(".art.cur").forEach((x) => x.classList.remove("cur"));
   el.classList.add("cur");
-  $("#doc").scrollTop = el.offsetTop - 56;
+  if (isDT()) { sideKey = key; paintSide(); }
+  $("#doc").scrollTop = el.offsetTop - 8;
 }
 function curKey() {   // 화면 맨 위에 있는 조문
   const top = $("#doc").getBoundingClientRect().top + 60;
@@ -546,6 +614,7 @@ function buildToc(d) {
     if (it.k === "h") h += '<button class="it h">' + esc(it.t) + "</button>";
     else h += '<button class="it" data-k="' + it.key + '">' + esc(d.arts[it.key].label + " " + d.arts[it.key].title) + "</button>";
   });
+  if ((d.annex || []).length) { h += '<button class="it h" data-k="ax:0">별표·서식 (' + d.annex.length + ")</button>"; d.annex.forEach((x, i) => (h += '<button class="it" data-k="ax:' + i + '">[' + esc(x.label) + "] " + esc(x.title) + "</button>")); }
   const dr = $("#drawer"); dr.innerHTML = h;
   const els = [...dr.querySelectorAll(".it")];
   els.forEach((el, i) => {
@@ -556,66 +625,153 @@ function buildToc(d) {
 $("#bToc").onclick = () => $("#ovToc").classList.add("on");
 $("#ovToc").onclick = (e) => { if (e.target.id === "ovToc") $("#ovToc").classList.remove("on"); };
 
-// ---------------------------------------------------------------- 인용 미리보기
-const prevHist = [];
-let prevNow = null;
-async function openCite(c, noPush) {
+// ---------------------------------------------------------------- 인용 미리보기 (PC: 본문 아래 두 칸 / 폰: 아래 시트)
+const PANE_HTML = '<div class="sh"><div class="t"></div><button class="ib shx" style="color:var(--acc-d)">✕</button></div><div class="sb"></div><div class="sc"></div><div class="sa"><button class="bk">◀ 이전</button><button class="fv2">☆ 즐겨찾기</button><button class="op">본문에서 열기</button></div>';
+const PN = {};
+[1, 2].forEach((n) => {
+  const el = $(n === 1 ? "#sheet" : "#sheet2"); el.innerHTML = PANE_HTML;
+  PN[n] = { el, T: el.querySelector(".t"), S: el.querySelector(".sb"), C: el.querySelector(".sc"), hist: [], now: null, idp: n === 1 ? "p-" : "q-" };
+});
+const paneOn = () => PN[1].el.classList.contains("on") || PN[2].el.classList.contains("on");
+let sheetH = LS.get("lv_sheet", 58), sheetD = LS.get("lv_sheetd", 40);
+function layoutPanes() {
+  document.body.classList.toggle("pv", isDT() && paneOn());
+  if (isDT()) { document.documentElement.style.setProperty("--ph", sheetD + "vh"); $("#doc").style.paddingBottom = ""; PN[1].el.style.height = ""; return; }
+  PN[1].el.style.height = sheetH + "%";
+  $("#doc").style.paddingBottom = PN[1].el.classList.contains("on") ? sheetH + "%" : "";
+}
+async function openCite(c, n, noPush) {
   if (needOC()) return;
+  if (c.kind) return openList(c);
+  n = isDT() ? (n || 1) : 1;
+  const pn = PN[n];
   const name = c.law || c.self || cur.doc.name;
   const sub = c.sub ? [c.sub] : null;
-  if (prevNow && !noPush) prevHist.push(prevNow);
+  if (pn.now && !noPush) pn.hist.push(pn.now);
   const r = await call("open_cite", [OC, name, c.n, c.b, sub, c.ctx || cur.doc.mst], "조문 찾는 중…");
-  paintSheet(r);
+  paintPane(n, r);
 }
-function paintSheet(r) {
-  prevNow = r;
-  $("#shT").textContent = r.lawname + " · " + (r.art ? r.art.label + " " + r.art.title : r.label);
-  $("#shS").style.display = r.summary ? "" : "none";
-  $("#shS").textContent = r.summary || "";
-  if (!r.art) $("#shC").innerHTML = '<div class="empty">이 법령에는 ' + esc(r.label) + " 이(가) 없습니다.</div>";
-  else { $("#shC").innerHTML = artHTML(r.art, r.mst, { hl: r.hl, idp: "p-", self: r.lawname }); bindCites($("#shC")); }
-  $("#sheet").classList.add("on");
-  $("#shC").scrollTop = 0;
-  const f = $("#shC .ln.hl");
-  if (f) setTimeout(() => { $("#shC").scrollTop = Math.max(0, f.offsetTop - 70); }, 30);
-  setSheetH(sheetH);
+function paintPane(n, r) {
+  const pn = PN[n]; pn.now = r;
+  pn.T.textContent = r.lawname + " · " + (r.art ? r.art.label + " " + r.art.title : r.label);
+  pn.S.style.display = r.summary ? "" : "none";
+  pn.S.textContent = r.summary || "";
+  if (!r.art) pn.C.innerHTML = '<div class="empty">이 법령에는 ' + esc(r.label) + " 이(가) 없습니다.</div>";
+  else { pn.C.innerHTML = artHTML(r.art, r.mst, { hl: r.hl, idp: pn.idp, self: r.lawname }); bindCites(pn.C); }
+  pn.el.classList.add("on");
+  pn.C.scrollTop = 0;
+  const f = pn.C.querySelector(".ln.hl");
+  if (f) setTimeout(() => { pn.C.scrollTop = Math.max(0, f.offsetTop - 70); }, 30);
+  layoutPanes();
 }
-function closeSheet() { $("#sheet").classList.remove("on"); $("#doc").classList.remove("wide-sheet"); $("#doc").style.paddingBottom = ""; prevNow = null; prevHist.length = 0; }
-$("#shX").onclick = closeSheet;
-// ---- 조문 창 제목줄을 위아래로 끌어 크기 조절(크게 보기)
-let sheetH = LS.get("lv_sheet", 58);
+function closePane(n) { const pn = PN[n]; pn.el.classList.remove("on"); pn.now = null; pn.hist.length = 0; layoutPanes(); }
+function closeSheet() { closePane(1); closePane(2); }
+// ---- 조문 창 제목줄을 끌어 크기 조절(폰: 아래 시트 높이 / PC: 미리보기 칸 높이)
 function setSheetH(p) {
-  sheetH = Math.max(25, Math.min(92, p));
-  $("#sheet").style.height = sheetH + "%";
-  if ($("#sheet").classList.contains("on")) { const wide = innerWidth >= 1000; $("#doc").style.paddingBottom = wide ? "" : sheetH + "%"; $("#doc").classList.toggle("wide-sheet", wide); }
+  if (isDT()) { sheetD = Math.max(15, Math.min(80, p)); document.documentElement.style.setProperty("--ph", sheetD + "vh"); return; }
+  sheetH = Math.max(25, Math.min(92, p)); PN[1].el.style.height = sheetH + "%";
+  if (PN[1].el.classList.contains("on")) $("#doc").style.paddingBottom = sheetH + "%";
 }
-(function () {
-  const sh = $("#sheet").querySelector(".sh");
+[1, 2].forEach((n) => {
+  const pn = PN[n], sh = pn.el.querySelector(".sh");
   let y0 = null, h0 = 0, moved = false;
-  sh.addEventListener("pointerdown", (e) => { if (e.target.closest("button")) return; y0 = e.clientY; h0 = $("#sheet").getBoundingClientRect().height; moved = false; sh.setPointerCapture(e.pointerId); });
+  sh.addEventListener("pointerdown", (e) => { if (e.target.closest("button")) return; y0 = e.clientY; h0 = pn.el.getBoundingClientRect().height; moved = false; sh.setPointerCapture(e.pointerId); });
   sh.addEventListener("pointermove", (e) => {
     if (y0 === null) return;
     moved = true;
-    setSheetH(((h0 + (y0 - e.clientY)) / innerHeight) * 100);
+    setSheetH(isDT() ? ((innerHeight - e.clientY) / innerHeight) * 100 : ((h0 + (y0 - e.clientY)) / innerHeight) * 100);
   });
-  const end = () => { if (y0 !== null && moved) LS.set("lv_sheet", Math.round(sheetH)); y0 = null; };
+  const end = () => { if (y0 !== null && moved) { LS.set("lv_sheet", Math.round(sheetH)); LS.set("lv_sheetd", Math.round(sheetD)); } y0 = null; };
   sh.addEventListener("pointerup", end); sh.addEventListener("pointercancel", end);
-  sh.addEventListener("dblclick", () => setSheetH(sheetH > 80 ? 58 : 92));        // 두 번 누르면 크게/원래대로
-})();
-$("#shBack").onclick = () => { const p = prevHist.pop(); if (!p) return toast("이전에 본 인용 조문이 없습니다"); paintSheet(p); };
-$("#shOpen").onclick = async () => {
-  if (!prevNow || !prevNow.art) return;
-  const r = prevNow;
-  if (cur.doc && r.mst === cur.doc.mst) { closeSheet(); return goKey(r.art.key); }
-  await openByName(r.lawname, r.art.key);
-};
-$("#shFav").onclick = async () => {
-  if (!prevNow || !prevNow.art) return;
-  const r = prevNow, i = favs.findIndex((f) => f.kind === "law" && f.rawmst === r.mst && f.key === r.art.key);
-  if (i >= 0) { favs.splice(i, 1); toast("즐겨찾기에서 뺐습니다"); }
-  else { favs.push({ kind: "law", rawmst: r.mst, lawname: r.lawname, date: "", key: r.art.key, label: r.art.label + " " + r.art.title }); toast("즐겨찾기에 담았습니다"); }
-  saveFavs();
-};
+  sh.addEventListener("dblclick", (e) => { if (e.target.closest("button")) return; isDT() ? setSheetH(sheetD > 60 ? 40 : 75) : setSheetH(sheetH > 80 ? 58 : 92); });
+  pn.el.querySelector(".shx").onclick = () => closePane(n);
+  pn.el.querySelector(".bk").onclick = () => { const p = pn.hist.pop(); if (!p) return toast("이전에 본 인용 조문이 없습니다"); paintPane(n, p); };
+  pn.el.querySelector(".op").onclick = async () => {
+    const r = pn.now;
+    if (!r || !r.art) return;
+    if (cur.doc && r.mst === cur.doc.mst) { closePane(n); return goKey(r.art.key); }
+    await openByName(r.lawname, r.art.key);
+  };
+  pn.el.querySelector(".fv2").onclick = async () => {
+    const r = pn.now;
+    if (!r || !r.art) return;
+    const i = favs.findIndex((f) => f.kind === "law" && f.rawmst === r.mst && f.key === r.art.key);
+    if (i >= 0) { favs.splice(i, 1); toast("즐겨찾기에서 뺐습니다"); }
+    else { favs.push({ kind: "law", rawmst: r.mst, lawname: r.lawname, date: "", key: r.art.key, label: r.art.label + " " + r.art.title }); toast("즐겨찾기에 담았습니다"); }
+    saveFavs();
+  };
+});
+
+// ---------------------------------------------------------------- '대통령령으로'·'고시'·'조례' 눌렀을 때 관련 조문 목록
+async function openList(c) {
+  const fn = c.kind === "d" ? "list_deleg" : c.kind === "o" ? "list_ordin" : "list_adm";
+  const args = c.kind === "d" ? [OC, c.ctx, c.akey, c.to] : c.kind === "o" ? [OC, c.ctx, c.akey, LS.get("lv_city", "고양시")] : [OC, c.ctx, c.akey, c.line || ""];
+  const r = await call(fn, args, c.kind === "d" ? c.to + " 에서 위임받은 조문을 찾는 중…" : c.kind === "o" ? "조례를 찾는 중…" : "지침·고시를 찾는 중…");
+  if (!r.hits.length) return toast("관련 조문을 찾지 못했습니다", true);
+  hits = r.hits; hitNote = r.total + "건 · " + (r.note || ""); setTab("r");
+  if (c.kind !== "a") await openHitArt(r.hits[0]);                      // 위임·조례: 맨 위 조문을 새 탭(본문)으로 — 보던 법은 탭에 그대로 남음
+  else if (!isDT()) show("home");
+}
+async function openHitArt(x) {
+  if (needOC()) return;
+  const d = await call("open_cached", [x.mst, x.key], x.lawname + " 여는 중…");
+  showDoc(d, d.kind, d.rawmst, x.key);
+}
+
+// ---------------------------------------------------------------- 오른쪽 '인용 정리' 칸 (PC)
+let sideKey = "";
+function setCurArt(key) {
+  document.querySelectorAll("#docBody .art.cur").forEach((x) => x.classList.remove("cur"));
+  const el = document.getElementById("a-" + key);
+  if (el) el.classList.add("cur");
+  sideKey = key; paintSide();
+}
+function paintSide() {
+  const S = $("#side"), d = cur.doc;
+  if (!d || !sideKey || !d.arts[sideKey]) { S.innerHTML = '<div class="sd-h">인용 정리</div><div class="empty" style="padding:20px 4px;font-size:.9em">본문의 조문을 누르면 그 조문이 인용한 조문과<br>위임 조문이 여기에 정리됩니다.</div>'; return; }
+  const a = d.arts[sideKey], self = d.kind === "adm" && d.adm_base ? d.adm_base : d.name;
+  const seen = new Set(); let cs = "", ds = "";
+  const btn = (c, t, sub) => '<button class="sd-b" data-c="' + (CITES.push(c) - 1) + '">' + t + (sub ? " <i>" + esc(sub) + "</i>" : "") + "</button>";
+  a.lines.forEach((l) => { const hm = l[0] === 0 ? HEADRE.exec(l[1]) : null, he = hm ? hm[0].length : 0; (l[2] || []).forEach((s) => {
+    if (s[0] < he) return;                                   // 조문 머리 '제N조(제목)' 자신은 인용이 아님
+    const txt = l[1].slice(s[0], s[1]);
+    if (String(s[2]).charAt(0) === "@") {
+      const k = s[2] + s[3]; if (seen.has(k)) return; seen.add(k);
+      const kd = s[2].slice(1);
+      ds += btn({ kind: kd, to: s[3], ctx: d.mst, akey: sideKey, line: l[1] }, kd === "d" ? esc(txt) + " → " + esc(s[3]) + " 조문 찾기" : kd === "a" ? "지침·고시 찾기" : "조례 찾기", "");
+    } else {
+      const k = [s[2], s[3], s[4], s[5]].join("|"); if (seen.has(k)) return; seen.add(k);
+      cs += btn({ law: s[2], n: s[3], b: s[4], sub: s[5], ctx: d.mst, self }, esc(txt), s[2] || "");
+    }
+  }); });
+  const fav = favIdx(d.kind, d.rawmst, sideKey) >= 0;
+  S.innerHTML = '<div class="sd-h">' + esc(a.label + " " + a.title) + '</div><button class="sd-b" id="sdFav">' + (fav ? "★ 즐겨찾기 해제" : "☆ 이 조문 즐겨찾기") + "</button>" +
+    '<div class="sd-s">인용한 조문 (' + (cs.match(/class="sd-b"/g) || []).length + ")</div>" + (cs || '<div class="muted" style="font-size:.85em">없음</div>') +
+    '<div class="sd-s">위임·관련 규정</div>' + (ds || '<div class="muted" style="font-size:.85em">없음</div>');
+  S.querySelectorAll("button[data-c]").forEach((b) => (b.onclick = () => openCite(CITES[+b.dataset.c], 1)));
+  $("#sdFav").onclick = () => { toggleFav(d, sideKey); paintSide(); const f = document.querySelector('#docBody .fv[data-fk="' + sideKey + '"]'); if (f) { const on = favIdx(d.kind, d.rawmst, sideKey) >= 0; f.textContent = on ? "★" : "☆"; f.classList.toggle("on", on); } };
+}
+
+// ---------------------------------------------------------------- 칸 접기·단축키 (PC)
+function setPane(side, hide) { document.body.classList.toggle(side === "l" ? "hl" : "hr", hide); LS.set("lv_hide" + side, hide ? 1 : 0); $(side === "l" ? "#bL" : "#bR").textContent = side === "l" ? (hide ? "목록 ▶" : "◀ 목록") : (hide ? "◀ 정리" : "정리 ▶"); }
+$("#bL").onclick = () => setPane("l", !document.body.classList.contains("hl"));
+$("#bR").onclick = () => setPane("r", !document.body.classList.contains("hr"));
+paintSide();
+if (LS.get("lv_hidel", 0)) setPane("l", true);
+if (LS.get("lv_hider", 0)) setPane("r", true);
+document.addEventListener("keydown", (e) => {
+  if (!isDT()) return;
+  const k = e.key;
+  if (k === "F7") { e.preventDefault(); $("#bL").click(); }
+  else if (k === "F8") { e.preventDefault(); $("#bR").click(); }
+  else if (k === "F9") { e.preventDefault(); const both = document.body.classList.contains("hl") && document.body.classList.contains("hr"); setPane("l", !both); setPane("r", !both); }
+  else if (e.ctrlKey && (k === "w" || k === "W") && ltabs.length) { e.preventDefault(); closeLTab(Math.max(0, ltabs.findIndex((t) => t.d === cur.doc))); }
+  else if (e.ctrlKey && k === "Tab" && ltabs.length > 1) { e.preventDefault(); const i = ltabs.findIndex((t) => t.d === cur.doc); switchLTab((i + (e.shiftKey ? -1 : 1) + ltabs.length) % ltabs.length); }
+  else if (e.ctrlKey && (k === "f" || k === "F")) { e.preventDefault(); if (document.body.classList.contains("hl")) setPane("l", false); $("#q").focus(); $("#q").select(); }
+  else if (k === "Escape" && paneOn() && document.activeElement !== $("#q")) closeSheet();
+  else if (e.altKey && k === "ArrowLeft") { e.preventDefault(); (PN[2].now ? PN[2] : PN[1]).el.querySelector(".bk").click(); }
+});
+addEventListener("resize", () => { applyPrefs(); layoutPanes(); });
 
 // ---------------------------------------------------------------- 3단 비교
 let TT = null, TTI = 0;

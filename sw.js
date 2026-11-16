@@ -1,5 +1,5 @@
 // 법령 뷰어 서비스 워커: 앱 파일은 '인터넷이 되면 최신, 안 되면 저장본', 파이오다이드(큰 파일)는 한 번 받으면 저장본을 씀.
-const V = "lv-5.9";
+const V = "lv-6.2";
 const SHELL = ["./", "index.html", "worker.js", "lawcore.py", "mobile_api.py", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", (e) => { e.waitUntil(caches.open(V).then((c) => c.addAll(SHELL).catch(() => {})).then(() => self.skipWaiting())); });
 self.addEventListener("activate", (e) => {
@@ -24,5 +24,5 @@ self.addEventListener("fetch", (e) => {
   e.respondWith(fetch(r).then((res) => {                        // 앱 파일: 최신 우선, 실패(오프라인)하면 저장본
     if (res && res.ok) { const cp = res.clone(); caches.open(V).then((c) => c.put(r, cp)); }
     return res;
-  }).catch(() => caches.match(r, { ignoreSearch: true }).then((m) => m || caches.match("index.html"))));
+  }).catch(() => caches.match(r, { ignoreSearch: true }).then((m) => m || (r.mode === "navigate" ? caches.match("index.html") : Response.error()))));
 });
