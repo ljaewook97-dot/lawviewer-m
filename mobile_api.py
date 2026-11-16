@@ -84,12 +84,41 @@ def set_api_base(base):
 
 
 # ---- 보내는 모양 만들기
-def _spans(text, selfname):
+_ANNEX_RE = re.compile(r"별표\s*(\d+)(?:\s*의\s*(\d+))?|서식\s*제?\s*(\d+)\s*호")
+_CODE_RE = re.compile(r"(?<![\d-])\d{1,2}(?:-\d{1,2}){2}(?![\d-])")
+
+
+def _spans(text, selfname, law=None, lv=0):
     out = []
     taken = []
     for c in L.cite_spans(text, selfname):
         out.append([c["start"], c["end"], c["law"], c["n"], c["b"], c["sub"]])
         taken.append((c["start"], c["end"]))
+    hm = L.HEADER_RE.match(text) if lv == 0 else None
+    hdr = hm.end() if hm else 0
+    if law is not None:                    # '별표 3'·'서식 제2호'(그 법령에 있으면) / 지침의 '2-3-12' -> 눌러서 이동
+        try:
+            labs = law.get("_axl")
+            if labs is None:
+                labs = law["_axl"] = {x["label"] for x in (law.get("annex") or [])}
+            for m in _ANNEX_RE.finditer(text):
+                if m.start() < hdr:
+                    continue
+                lab = ("별표 %s%s" % (m.group(1), ("의" + m.group(2)) if m.group(2) else "")) if m.group(1) else "서식 %s" % m.group(3)
+                if lab in labs:
+                    out.append([m.start(), m.end(), "@x", lab, 0, None]); taken.append((m.start(), m.end()))
+            if law.get("kind") == "adm":
+                codes = law.get("_cdm")
+                if codes is None:
+                    codes = law["_cdm"] = {x["label"]: k for k, x in law["arts"].items()}
+                for m in _CODE_RE.finditer(text):
+                    if m.start() < hdr or m.group(0) not in codes or any(x <= m.start() < y for x, y in taken):
+                        continue
+                    if text[:m.start()].strip() == "" and text[m.end():m.end() + 1] == ".":
+                        continue
+                    out.append([m.start(), m.end(), "@c", codes[m.group(0)], 0, None]); taken.append((m.start(), m.end()))
+        except Exception:  # noqa: BLE001
+            pass
     try:                                   # '대통령령으로'·'정하여 고시'·'조례' — 눌러서 관련 조문 목록을 만든다(PC 와 같음)
         for a, b, to in L.deleg_spans(text, selfname, taken):
             out.append([a, b, "@d", to, 0, None]); taken.append((a, b))
@@ -102,18 +131,19 @@ def _spans(text, selfname):
     return out
 
 
-def _art_json(a, selfname, spans=True):
+def _art_json(a, selfname, spans=True, law=None):
     lines = []
     for lv, t in a["lines"]:
-        lines.append([lv, t, _spans(t, selfname) if spans else []])
-    return {"key": a["key"], "n": a["n"], "b": a["b"], "label": a["label"], "title": a["title"], "lines": lines}
+        lines.append([lv, t, _spans(t, selfname, law, lv) if spans else []])
+    return {"key": a["key"], "n": a["n"], "b": a["b"], "label": a["label"], "title": a["title"], "lines": lines,
+            "inn": list(a.get("in_keys") or [])}
 
 
 def _doc_json(law, selfname_target):
     refname = law.get("refname") or law["name"]
     arts = {}
     for k in law["order"]:
-        arts[k] = _art_json(law["arts"][k], refname)
+        arts[k] = _art_json(law["arts"][k], refname, True, law)
     items = []
     for it in law["items"]:
         items.append({"k": "h", "t": it["text"]} if it["kind"] == "head" else {"k": "a", "key": it["key"]})
@@ -215,7 +245,7 @@ def open_cite(oc, lawname, n, b, subs, ctx_mst=""):
         r = L.find_sub(a["lines"], sb)
         if r:
             hl.append([r[0], r[1]])
-    return {"lawname": law["name"], "mst": law["mst"], "art": _art_json(a, law.get("refname") or law["name"]), "hl": hl,
+    return {"lawname": law["name"], "mst": law["mst"], "art": _art_json(a, law.get("refname") or law["name"], True, law), "hl": hl,
             "summary": L.cite_summary(a, subs), "label": a["label"]}
 
 
@@ -315,7 +345,20 @@ def list_ordin(oc, mst, key, city=""):
     return _hitres(r, "%s — '%s' 관련 조문" % (r.get("ordname", ""), " ".join(toks)))
 
 
-FUNCS = {"kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
+def web_url(kind, name, key=""):
+    """법제처에서 열기 주소"""
+    n = b = None
+    if key:
+        n, b = [int(x) for x in key.split(":")]
+    if kind == "adm":
+        return L.adm_web_url(name)
+    if kind == "ordin":
+        return L.ordin_web_url(name, n, b or 0)
+    q = name + ((" " + L.jo_label(n, b)) if n else "")
+    return L.web_url(L.parse_query(q))
+
+
+FUNCS = {"web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
          "tt_open": tt_open, "tt_row": tt_row, "set_api_base": set_api_base}
 
 

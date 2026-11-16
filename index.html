@@ -101,7 +101,8 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
 .empty{text-align:center;color:var(--muted);padding:40px 16px;line-height:1.7}
 
 /* ===== PC 넓은 화면(1000px 이상): PC 프로그램 모양 — 왼쪽 목록 / 가운데 본문(위 탭, 아래 미리보기 두 칸) / 오른쪽 인용 정리 ===== */
-#ltabs,#dtEmpty,.dtonly,#side,#tT{display:none}
+#ltabs,#dbar,#dtEmpty,.dtonly,#side,#tT,#dropHint,#pgrip,#ctx{display:none}
+mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:#FFAE42;color:#1D2A27}
 #pbox{display:contents}
 #sheet2{display:none!important}
 .sd-h{font-weight:700;color:var(--acc-d);margin:0 0 6px}
@@ -111,7 +112,7 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
 .sd-b i{font-style:normal;color:var(--muted);font-size:.85em}
 .axl{display:block;margin:4px 0}
 @media (min-width:1000px){
-  :root{--lw:250px;--rw:230px;--hh:34px;--th:26px;--ph:36vh}
+  :root{--lw:250px;--rw:230px;--hh:34px;--th:26px;--bh:32px;--ph:36vh}
   body.hl{--lw:0px}
   body.hr{--rw:0px}
   .dtonly{display:inline-block}
@@ -134,9 +135,27 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
   .card .in{font-size:.76em;margin-top:1px}
   .grp{margin:8px 2px 3px;font-size:.88em}
   #sug div{padding:6px 10px;font-size:.92em}
-  #doc,#tt{left:var(--lw);right:var(--rw);top:calc(var(--hh) + var(--th));padding:4px 14px 0}
+  #doc,#tt{left:var(--lw);right:var(--rw);top:calc(var(--hh) + var(--th) + var(--bh));padding:2px 16px 0}
+  #bFav,#bTT{display:none!important}
+  #dbar{display:flex;align-items:center;gap:4px;position:fixed;top:calc(var(--hh) + var(--th));left:var(--lw);right:var(--rw);height:var(--bh);z-index:14;padding:0 8px;background:var(--surf);border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap}
+  #dbar .tb{height:24px;padding:0 8px;border-radius:5px;background:var(--soft);border:1px solid var(--line);color:var(--sub);font-size:.82em}
+  #dbar .tb:hover{background:var(--acc-soft)}
+  #dbar .sp{flex:1}
+  #dbar .fbox{display:flex;align-items:center;gap:3px;border:1px solid var(--line);border-radius:5px;padding:0 6px;height:24px;color:var(--muted);font-size:.82em}
+  #dbar .fbox input{border:0;outline:0;background:transparent;color:var(--text);font:inherit;width:140px}
+  #fCnt{font-size:.8em;margin:0 4px}
+  #dropHint{position:fixed;top:calc(var(--hh) + var(--th) + var(--bh) + 10px);left:calc(var(--lw) + 20px);right:calc(var(--rw) + 20px);z-index:60;padding:14px;text-align:center;border:2px dashed var(--acc);border-radius:8px;background:var(--acc-soft);color:var(--acc-d);font-weight:700;pointer-events:none}
+  #dropHint.show{display:block}
+  #dropHint.ov2{background:var(--hl)}
+  body.pv #pgrip{display:block;position:fixed;left:var(--lw);right:var(--rw);bottom:var(--ph);height:8px;margin-bottom:-4px;cursor:ns-resize;z-index:27;touch-action:none}
+  #ctx{position:fixed;z-index:80;min-width:150px;background:var(--surf);border:1px solid var(--line);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.25);padding:3px 0}
+  #ctx.on{display:block}
+  #ctx div{padding:5px 14px;font-size:.88em;cursor:pointer}
+  #ctx div:hover{background:var(--acc-soft)}
+  .card.dov{box-shadow:inset 0 3px 0 #E0A800}
+  .card [data-u],.card [data-d]{display:none}
   body.pv #doc,body.pv #tt{bottom:var(--ph)}
-  #doc .body{padding:0 4px 50px;max-width:860px}
+  #doc .body{padding:0 2px 50px}
   .art{padding:4px 0}
   .art.cur{margin:0 -6px;padding:4px 6px}
   .ln{line-height:1.5;margin:1px 0}
@@ -148,7 +167,7 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
   #ltabs .lt.on{background:var(--surf);color:var(--acc-d);font-weight:700;box-shadow:inset 0 -3px 0 var(--acc)}
   #ltabs .lt b{font-weight:400;opacity:.6;padding:1px 5px;border-radius:5px}
   #ltabs .lt b:hover{background:var(--line);opacity:1}
-  #dtEmpty{display:block;position:fixed;top:calc(var(--hh) + var(--th));left:var(--lw);right:var(--rw);bottom:0;padding:90px 30px;text-align:center;color:var(--muted);line-height:1.8;z-index:1;pointer-events:none}
+  #dtEmpty{display:block;position:fixed;top:calc(var(--hh) + var(--th) + var(--bh));left:var(--lw);right:var(--rw);bottom:0;padding:90px 30px;text-align:center;color:var(--muted);line-height:1.8;z-index:1;pointer-events:none}
   #dtEmpty.off{display:none}
   #side{display:block;position:fixed;top:var(--hh);right:0;bottom:0;width:var(--rw);padding:6px 8px;overflow-y:auto;background:var(--surf);border-left:1px solid var(--line);font-size:.88em}
   body.hr #side{display:none}
@@ -156,7 +175,7 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
   body.pv #pbox{display:flex}
   .sheet{position:static;flex:1;min-width:0;height:auto!important;border-radius:0;box-shadow:none;z-index:auto}
   #sheet2.on{display:flex!important;border-left:1px solid var(--line)}
-  .sheet .sh{border-radius:0;padding:1px 3px 1px 8px;cursor:ns-resize}
+  .sheet .sh{border-radius:0;padding:1px 3px 1px 8px;cursor:grab}
   .sheet .sh::before{display:none}
   .sheet .sh .t{font-size:.84em}
   .sheet .sh .ib{height:22px;min-width:24px;padding:0 6px}
@@ -176,8 +195,9 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
   <div class="t" id="hTitle">법령 뷰어</div>
   <button class="ib" id="bToc" style="display:none">☰</button>
   <button class="ib" id="bFav" style="display:none">☆</button>
-  <button class="ib dtonly" id="bL" title="왼쪽 목록 접기/펴기 (F7)">◀ 목록</button>
-  <button class="ib dtonly" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
+  <button class="ib dtonly" id="bHist" title="이전에 보던 조문으로 (Alt+←)">◀ 뒤로</button>
+  <button class="ib dtonly" id="fMinus" title="글자 작게">A−</button><button class="ib dtonly" id="fPlus" title="글자 크게">A＋</button>
+  <button class="ib dtonly" id="bTheme" title="색상 테마">◐ 테마</button>
   <button class="ib" id="bTT" style="display:none" title="3단 비교">3단</button>
   <button class="ib" id="bSet">⚙</button>
 </div>
@@ -188,7 +208,17 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
   <div id="list"><div class="empty">법령·행정규칙·자치법규 이름을 치면<br>목록이 나옵니다.<br><span style="font-size:.85em">처음에는 ⚙ 에서 국가법령정보센터 인증키(OC)를 넣어 주세요.</span></div></div>
 </div></div>
 
-<div id="ltabs"></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
+<div id="ltabs"></div>
+<div id="dbar">
+  <button class="tb" id="bL" title="왼쪽 목록 접기/펴기 (F7)">◀ 목록</button>
+  <span class="fbox"><span>🔍</span><input id="fq" placeholder="본문에서 찾기" autocomplete="off"></span>
+  <button class="tb" id="fPrev" title="이전 (Shift+Enter)">▲</button><button class="tb" id="fNext" title="다음 (Enter)">▼</button>
+  <button class="tb" id="fClr">✕ 지우기</button><span id="fCnt" class="muted"></span>
+  <span class="sp"></span>
+  <button class="tb" id="dbTT">3단 비교</button><button class="tb" id="dbFav">☆ 즐겨찾기</button><button class="tb" id="dbCopy">조문 복사</button><button class="tb" id="dbWeb">법제처에서 열기</button>
+  <button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
+</div>
+<div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="ctx"></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
 <div class="view" id="doc"><div class="body" id="docBody"></div></div>
 <div class="view tt" id="tt"></div>
 
@@ -220,7 +250,7 @@ a.c{color:var(--link);text-decoration:none;border-bottom:1px solid currentColor;
 <div id="toast"></div>
 
 <script>
-const VERSION = "6.2";
+const VERSION = "6.3";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -321,7 +351,7 @@ window.addEventListener("popstate", () => { $("#bBack").onclick(); history.pushS
 history.pushState(null, "");
 
 // ---------------------------------------------------------------- 검색·즐겨찾기 목록
-let hits = [], hitNote = "";
+let hits = [], hitNote = "", hitToks = [];
 $("#bGo").onclick = doSearch;
 $("#q").addEventListener("keydown", (e) => { if (e.key === "Enter") { sugHide(); doSearch(); } });
 // ---- 검색창 자동완성(법령 이름)
@@ -370,13 +400,13 @@ async function doSearch() {
   if (!q || needOC()) return;
   if ($("#qm").value === "kw") {
     const r = await call("kw_search", [OC, q, LS.get("lv_city", "고양시")], "키워드로 조문을 찾는 중… (처음엔 법령을 받느라 오래 걸립니다)");
-    hitNote = r.total + "건 · " + (r.note || ""); hits = r.hits; setTab("r");
+    hitNote = r.total + "건 · " + (r.note || ""); hits = r.hits; hitToks = r.toks || []; setTab("r");
     if (!hits.length) $("#list").innerHTML = '<div class="empty">조문을 찾지 못했습니다. 낱말을 줄이거나 바꿔 보세요.</div>';
     return;
   }
   const r = await call("search", [OC, q], "찾는 중…");
   if (r.open) { try { await openByName(r.open.name, r.open.key || undefined); return; } catch (e) { toast(String(e && e.message || e)); } }
-  hits = r.hits; hitNote = r.msg || ""; setTab("r");
+  hits = r.hits; hitNote = r.msg || ""; hitToks = []; setTab("r");
   if (!hits.length) $("#list").innerHTML = '<div class="empty">' + esc(r.msg || "찾은 것이 없습니다.") + "</div>";
 }
 function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
@@ -456,12 +486,33 @@ async function syncNow(manual) {
 function paintFavs() {
   const L = $("#list");
   if (!favs.length) { L.innerHTML = '<div class="empty">즐겨찾기가 없습니다.<br>법령 화면 위의 ☆(법령 전체)나<br>조문 옆의 ☆(조문)를 눌러 담으세요.</div>'; return; }
-  L.innerHTML = favs.map((f, i) => '<div class="card"><div class="m" data-i="' + i + '"><div class="nm"><span class="tag ' + f.kind + '">' + KIND[f.kind][0] + "</span>" + esc(f.lawname) + '</div><div class="in">' + (f.key ? esc(f.label || "") : "법령 전체") + '</div></div><button class="sm" data-u="' + i + '">▲</button><button class="sm" data-d="' + i + '">▼</button><button class="sm" data-x="' + i + '">✕</button></div>').join("");
+  L.innerHTML = favs.map((f, i) => '<div class="card" draggable="true" data-ci="' + i + '"><div class="m" data-i="' + i + '"><div class="nm"><span class="tag ' + f.kind + '">' + KIND[f.kind][0] + "</span>" + esc(f.lawname) + '</div><div class="in">' + (f.key ? esc(f.label || "") : "법령 전체") + '</div></div><button class="sm" data-u="' + i + '">▲</button><button class="sm" data-d="' + i + '">▼</button><button class="sm" data-x="' + i + '">✕</button></div>').join("");
   L.querySelectorAll("[data-i]").forEach((c) => (c.onclick = () => { const f = favs[+c.dataset.i]; openDoc(f.kind, f.rawmst, f.lawname, f.date, f.key); }));
   L.querySelectorAll("[data-u]").forEach((c) => (c.onclick = () => mv(+c.dataset.u, -1)));
   L.querySelectorAll("[data-d]").forEach((c) => (c.onclick = () => mv(+c.dataset.d, 1)));
   L.querySelectorAll("[data-x]").forEach((c) => (c.onclick = () => { favs.splice(+c.dataset.x, 1); saveFavs(); paintFavs(); }));
+  let from = -1;
+  L.querySelectorAll(".card[data-ci]").forEach((c) => {
+    const i = +c.dataset.ci;
+    c.ondragstart = (e) => { from = i; e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", String(i)); } catch (x) {} };
+    c.ondragover = (e) => { if (from < 0) return; e.preventDefault(); c.classList.add("dov"); };
+    c.ondragleave = () => c.classList.remove("dov");
+    c.ondrop = (e) => { e.preventDefault(); c.classList.remove("dov"); if (from < 0 || from === i) return; const [m] = favs.splice(from, 1); favs.splice(i, 0, m); from = -1; saveFavs(); paintFavs(); };
+    c.ondragend = () => { from = -1; L.querySelectorAll(".dov").forEach((x) => x.classList.remove("dov")); };
+    c.oncontextmenu = (e) => {
+      e.preventDefault();
+      const to = (j) => () => { j = Math.max(0, Math.min(favs.length - 1, j)); if (j === i) return; const [m] = favs.splice(i, 1); favs.splice(j, 0, m); saveFavs(); paintFavs(); };
+      showMenu(e.clientX, e.clientY, [["맨 위로", to(0)], ["위로", to(i - 1)], ["아래로", to(i + 1)], ["맨 아래로", to(favs.length - 1)], ["즐겨찾기에서 빼기", () => { favs.splice(i, 1); saveFavs(); paintFavs(); }]]);
+    };
+  });
 }
+function showMenu(x, y, items) {
+  const m = $("#ctx"); m.innerHTML = "";
+  items.forEach(([t, fn]) => { const d = document.createElement("div"); d.textContent = t; d.onclick = () => { m.classList.remove("on"); fn(); }; m.appendChild(d); });
+  m.classList.add("on");
+  m.style.left = Math.min(x, innerWidth - 170) + "px"; m.style.top = Math.min(y, innerHeight - m.offsetHeight - 6) + "px";
+}
+document.addEventListener("pointerdown", (e) => { if (!e.target.closest("#ctx")) $("#ctx").classList.remove("on"); });
 function mv(i, d) { const j = i + d; if (j < 0 || j >= favs.length) return; [favs[i], favs[j]] = [favs[j], favs[i]]; saveFavs(); paintFavs(); }
 function favIdx(kind, rawmst, key) { return favs.findIndex((f) => f.kind === kind && f.rawmst === rawmst && (f.key || "") === (key || "")); }
 function toggleFav(d, key) {
@@ -495,9 +546,10 @@ function lineHTML(text, spans, lv, ctx, self, akey) {
   for (const s of sp) {
     if (s[0] < pos || s[0] < he) continue;      // 조문 머리 '제N조(제목)' 자신은 인용이 아님
     emit(pos, s[0]);
-    const sp0 = String(s[2]).charAt(0) === "@";          // 대통령령으로·고시·조례: 눌러서 관련 조문 목록
-    const id = CITES.push(sp0 ? { kind: s[2].slice(1), to: s[3], ctx, akey, line: text } : { law: s[2], n: s[3], b: s[4], sub: s[5], ctx, self }) - 1;
-    out += '<a class="c' + (sp0 ? " dg" : "") + '" data-c="' + id + '">' + esc(text.slice(s[0], s[1])) + "</a>";
+    const sp0 = String(s[2]).charAt(0) === "@";          // 대통령령으로·고시·조례(관련 조문 목록) / 별표·지침 번호(이동)
+    const kd = sp0 ? s[2].slice(1) : "";
+    const id = CITES.push(sp0 ? { kind: kd, to: s[3], ctx, akey, line: text } : { law: s[2], n: s[3], b: s[4], sub: s[5], ctx, self }) - 1;
+    out += '<a class="c' + (sp0 && "dao".indexOf(kd) >= 0 ? " dg" : "") + '" data-c="' + id + '">' + esc(text.slice(s[0], s[1])) + "</a>";
     pos = s[1];
   }
   emit(pos, text.length);
@@ -560,7 +612,7 @@ function showDoc(d, kind, rawmst, key, fromTab) {
     if (cur.doc) { const c = ltabs.find((x) => x.d === cur.doc); if (c) c.scroll = $("#doc").scrollTop; }
     if (old >= 0) ltabs[old].d = d; else ltabs.push({ d, scroll: 0 });
   }
-  cur.doc = d; CITES = [];
+  navPush(); cur.doc = d; CITES = [];
   closeSheet();
   let h = "";
   d.items.forEach((it) => { h += it.k === "h" ? '<div class="head">' + esc(it.t) + "</div>" : artHTML(d.arts[it.key], d.mst, { fav: true, self: d.kind === "adm" && d.adm_base ? d.adm_base : d.name }); });
@@ -583,10 +635,12 @@ function showDoc(d, kind, rawmst, key, fromTab) {
   $("#doc").scrollTop = 0;
   if (key && d.arts[key]) setTimeout(() => goKey(key), 30);
   buildToc(d);
+  fMarks = []; fIdx = -1; fLast = ""; $("#fCnt").textContent = "";
   if (tab === "t") paintToc();
+  if (isDT() && $("#fq").value.trim()) findRun(key);
   if (isDT()) { const k0 = key && d.arts[key] ? key : (d.items.find((x) => x.k === "a") || {}).key; sideKey = ""; if (k0) setCurArt(k0); else paintSide(); }
 }
-function paintDocFav() { const on = favIdx(cur.doc.kind, cur.doc.rawmst, "") >= 0; $("#bFav").textContent = on ? "★" : "☆"; }
+function paintDocFav() { const on = favIdx(cur.doc.kind, cur.doc.rawmst, "") >= 0; $("#bFav").textContent = on ? "★" : "☆"; $("#dbFav").textContent = on ? "★ 즐겨찾기" : "☆ 즐겨찾기"; }
 $("#bFav").onclick = () => { toggleFav(cur.doc, ""); paintDocFav(); };
 function goKey(key) {
   if (String(key).startsWith("ax:")) { const x = document.getElementById("ax-" + key.slice(3)); if (x) $("#doc").scrollTop = x.offsetTop - 8; return; }
@@ -594,7 +648,7 @@ function goKey(key) {
   if (!el) return;
   document.querySelectorAll(".art.cur").forEach((x) => x.classList.remove("cur"));
   el.classList.add("cur");
-  if (isDT()) { sideKey = key; paintSide(); }
+  if (isDT()) { if (key !== sideKey) navPush(); sideKey = key; paintSide(); }
   $("#doc").scrollTop = el.offsetTop - 8;
 }
 function curKey() {   // 화면 맨 위에 있는 조문
@@ -626,7 +680,7 @@ $("#bToc").onclick = () => $("#ovToc").classList.add("on");
 $("#ovToc").onclick = (e) => { if (e.target.id === "ovToc") $("#ovToc").classList.remove("on"); };
 
 // ---------------------------------------------------------------- 인용 미리보기 (PC: 본문 아래 두 칸 / 폰: 아래 시트)
-const PANE_HTML = '<div class="sh"><div class="t"></div><button class="ib shx" style="color:var(--acc-d)">✕</button></div><div class="sb"></div><div class="sc"></div><div class="sa"><button class="bk">◀ 이전</button><button class="fv2">☆ 즐겨찾기</button><button class="op">본문에서 열기</button></div>';
+const PANE_HTML = '<div class="sh"><div class="t"></div><button class="ib shx" style="color:var(--acc-d)">✕</button></div><div class="sb"></div><div class="sc"></div><div class="sa"><button class="bk">◀ 이전</button><button class="cp">복사</button><button class="fv2">☆ 즐겨찾기</button><button class="op">본문에서 열기</button></div>';
 const PN = {};
 [1, 2].forEach((n) => {
   const el = $(n === 1 ? "#sheet" : "#sheet2"); el.innerHTML = PANE_HTML;
@@ -642,6 +696,7 @@ function layoutPanes() {
 }
 async function openCite(c, n, noPush) {
   if (needOC()) return;
+  if (c.kind === "x" || c.kind === "c") return openJump(c);
   if (c.kind) return openList(c);
   n = isDT() ? (n || 1) : 1;
   const pn = PN[n];
@@ -675,14 +730,29 @@ function setSheetH(p) {
 [1, 2].forEach((n) => {
   const pn = PN[n], sh = pn.el.querySelector(".sh");
   let y0 = null, h0 = 0, moved = false;
-  sh.addEventListener("pointerdown", (e) => { if (e.target.closest("button")) return; y0 = e.clientY; h0 = pn.el.getBoundingClientRect().height; moved = false; sh.setPointerCapture(e.pointerId); });
+  let td = null;
+  sh.addEventListener("pointerdown", (e) => { if (e.target.closest("button")) return; if (isDT()) { td = { x: e.clientX, y: e.clientY, on: false }; sh.setPointerCapture(e.pointerId); return; } y0 = e.clientY; h0 = pn.el.getBoundingClientRect().height; moved = false; sh.setPointerCapture(e.pointerId); });
+  const overMain = (e) => { const a = $("#ltabs").getBoundingClientRect(), d = $("#doc").getBoundingClientRect(); return e.clientX >= d.left && e.clientX <= d.right && e.clientY >= a.top && e.clientY <= d.bottom; };
   sh.addEventListener("pointermove", (e) => {
+    if (td) {
+      if (!td.on && Math.hypot(e.clientX - td.x, e.clientY - td.y) > 8) { td.on = true; $("#dropHint").classList.add("show"); }
+      if (td.on) $("#dropHint").classList.toggle("ov2", overMain(e));
+      return;
+    }
     if (y0 === null) return;
     moved = true;
     setSheetH(isDT() ? ((innerHeight - e.clientY) / innerHeight) * 100 : ((h0 + (y0 - e.clientY)) / innerHeight) * 100);
   });
   const end = () => { if (y0 !== null && moved) { LS.set("lv_sheet", Math.round(sheetH)); LS.set("lv_sheetd", Math.round(sheetD)); } y0 = null; };
-  sh.addEventListener("pointerup", end); sh.addEventListener("pointercancel", end);
+  sh.addEventListener("pointerup", async (e) => {
+    if (td) {
+      const was = td; td = null; $("#dropHint").classList.remove("show", "ov2");
+      if (was.on && overMain(e) && pn.now && pn.now.art) { const r = pn.now; if (cur.doc && r.mst === cur.doc.mst) { closePane(n); goKey(r.art.key); } else await openByName(r.lawname, r.art.key); }
+      return;
+    }
+    end();
+  });
+  sh.addEventListener("pointercancel", () => { td = null; $("#dropHint").classList.remove("show", "ov2"); end(); });
   sh.addEventListener("dblclick", (e) => { if (e.target.closest("button")) return; isDT() ? setSheetH(sheetD > 60 ? 40 : 75) : setSheetH(sheetH > 80 ? 58 : 92); });
   pn.el.querySelector(".shx").onclick = () => closePane(n);
   pn.el.querySelector(".bk").onclick = () => { const p = pn.hist.pop(); if (!p) return toast("이전에 본 인용 조문이 없습니다"); paintPane(n, p); };
@@ -692,6 +762,7 @@ function setSheetH(p) {
     if (cur.doc && r.mst === cur.doc.mst) { closePane(n); return goKey(r.art.key); }
     await openByName(r.lawname, r.art.key);
   };
+  pn.el.querySelector(".cp").onclick = () => { const r = pn.now; if (!r || !r.art) return; copyText(r.lawname + " " + r.art.label + "\n" + r.art.lines.map(([lv, t]) => "   ".repeat(Math.max(lv - 1, 0)) + t).join("\n"), r.art.label + " 본문을 복사했습니다"); };
   pn.el.querySelector(".fv2").onclick = async () => {
     const r = pn.now;
     if (!r || !r.art) return;
@@ -708,19 +779,28 @@ async function openList(c) {
   const args = c.kind === "d" ? [OC, c.ctx, c.akey, c.to] : c.kind === "o" ? [OC, c.ctx, c.akey, LS.get("lv_city", "고양시")] : [OC, c.ctx, c.akey, c.line || ""];
   const r = await call(fn, args, c.kind === "d" ? c.to + " 에서 위임받은 조문을 찾는 중…" : c.kind === "o" ? "조례를 찾는 중…" : "지침·고시를 찾는 중…");
   if (!r.hits.length) return toast("관련 조문을 찾지 못했습니다", true);
-  hits = r.hits; hitNote = r.total + "건 · " + (r.note || ""); setTab("r");
+  hits = r.hits; hitNote = r.total + "건 · " + (r.note || ""); hitToks = []; setTab("r");
   if (c.kind !== "a") await openHitArt(r.hits[0]);                      // 위임·조례: 맨 위 조문을 새 탭(본문)으로 — 보던 법은 탭에 그대로 남음
   else if (!isDT()) show("home");
+}
+async function openJump(c) {                 // 별표·서식 / 지침 번호 링크: 이 법령 안에서 그 자리로
+  let d = cur.doc;
+  if (c.ctx && (!d || d.mst !== c.ctx)) { const dd = await call("open_cached", [c.ctx, ""], "여는 중…"); showDoc(dd, dd.kind, dd.rawmst, ""); d = dd; }
+  if (c.kind === "c") return goKey(c.to);
+  const i = (d.annex || []).findIndex((x) => x.label === c.to);
+  if (i >= 0) goKey("ax:" + i); else toast("이 법령에서 " + c.to + " 을(를) 찾지 못했습니다", true);
 }
 async function openHitArt(x) {
   if (needOC()) return;
   const d = await call("open_cached", [x.mst, x.key], x.lawname + " 여는 중…");
   showDoc(d, d.kind, d.rawmst, x.key);
+  if (hitToks.length) { $("#fq").value = hitToks.join(" "); findRun(x.key); }
 }
 
 // ---------------------------------------------------------------- 오른쪽 '인용 정리' 칸 (PC)
 let sideKey = "";
 function setCurArt(key) {
+  if (key !== sideKey) navPush();
   document.querySelectorAll("#docBody .art.cur").forEach((x) => x.classList.remove("cur"));
   const el = document.getElementById("a-" + key);
   if (el) el.classList.add("cur");
@@ -736,8 +816,9 @@ function paintSide() {
     if (s[0] < he) return;                                   // 조문 머리 '제N조(제목)' 자신은 인용이 아님
     const txt = l[1].slice(s[0], s[1]);
     if (String(s[2]).charAt(0) === "@") {
-      const k = s[2] + s[3]; if (seen.has(k)) return; seen.add(k);
       const kd = s[2].slice(1);
+      if ("dao".indexOf(kd) < 0) return;
+      const k = s[2] + s[3]; if (seen.has(k)) return; seen.add(k);
       ds += btn({ kind: kd, to: s[3], ctx: d.mst, akey: sideKey, line: l[1] }, kd === "d" ? esc(txt) + " → " + esc(s[3]) + " 조문 찾기" : kd === "a" ? "지침·고시 찾기" : "조례 찾기", "");
     } else {
       const k = [s[2], s[3], s[4], s[5]].join("|"); if (seen.has(k)) return; seen.add(k);
@@ -745,12 +826,108 @@ function paintSide() {
     }
   }); });
   const fav = favIdx(d.kind, d.rawmst, sideKey) >= 0;
+  let ins = "";
+  (a.inn || []).forEach((k) => { const x = d.arts[k]; if (x) ins += btn({ law: d.name, n: x.n, b: x.b, ctx: d.mst, self }, esc(x.label + " " + x.title), ""); });
   S.innerHTML = '<div class="sd-h">' + esc(a.label + " " + a.title) + '</div><button class="sd-b" id="sdFav">' + (fav ? "★ 즐겨찾기 해제" : "☆ 이 조문 즐겨찾기") + "</button>" +
     '<div class="sd-s">인용한 조문 (' + (cs.match(/class="sd-b"/g) || []).length + ")</div>" + (cs || '<div class="muted" style="font-size:.85em">없음</div>') +
+    '<div class="sd-s">이 조문을 인용한 조문 (' + (a.inn || []).length + ")</div>" + (ins || '<div class="muted" style="font-size:.85em">없음</div>') +
     '<div class="sd-s">위임·관련 규정</div>' + (ds || '<div class="muted" style="font-size:.85em">없음</div>');
   S.querySelectorAll("button[data-c]").forEach((b) => (b.onclick = () => openCite(CITES[+b.dataset.c], 1)));
   $("#sdFav").onclick = () => { toggleFav(d, sideKey); paintSide(); const f = document.querySelector('#docBody .fv[data-fk="' + sideKey + '"]'); if (f) { const on = favIdx(d.kind, d.rawmst, sideKey) >= 0; f.textContent = on ? "★" : "☆"; f.classList.toggle("on", on); } };
 }
+
+// ---------------------------------------------------------------- 본문 찾기(강조 ▲▼)·복사·법제처·뒤로·글자·테마 (PC)
+let fMarks = [], fIdx = -1, fLast = "";
+function findClr() {
+  document.querySelectorAll("#docBody mark.fm").forEach((m) => { const p = m.parentNode; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize(); });
+  fMarks = []; fIdx = -1; fLast = ""; $("#fCnt").textContent = "";
+}
+function findRun(key) {
+  findClr();
+  const q = $("#fq").value.trim(), words = q.split(/\s+/).filter(Boolean);
+  if (!words.length || !cur.doc) return;
+  fLast = q;
+  const re = new RegExp(words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "g");
+  const tw = document.createTreeWalker($("#docBody"), NodeFilter.SHOW_TEXT), nodes = [];
+  while (tw.nextNode()) nodes.push(tw.currentNode);
+  nodes.forEach((n) => {
+    const t = n.nodeValue; re.lastIndex = 0;
+    if (!re.test(t)) return;
+    re.lastIndex = 0;
+    const frag = document.createDocumentFragment(); let last = 0, m;
+    while ((m = re.exec(t))) { if (m.index > last) frag.appendChild(document.createTextNode(t.slice(last, m.index))); const k = document.createElement("mark"); k.className = "fm"; k.textContent = m[0]; frag.appendChild(k); last = m.index + m[0].length; if (!m[0].length) re.lastIndex++; }
+    if (last < t.length) frag.appendChild(document.createTextNode(t.slice(last)));
+    n.parentNode.replaceChild(frag, n);
+  });
+  fMarks = [...$("#docBody").querySelectorAll("mark.fm")];
+  if (!fMarks.length) { $("#fCnt").textContent = "없음"; return; }
+  let s = 0;
+  if (key) { const el = document.getElementById("a-" + key); const i = el ? fMarks.findIndex((m) => el.contains(m)) : -1; if (i >= 0) s = i; }
+  fStep(s, true);
+}
+function fStep(i, abs) {
+  if (!fMarks.length) return;
+  fIdx = abs ? i : (fIdx + i + fMarks.length) % fMarks.length;
+  fMarks.forEach((m) => m.classList.remove("fc"));
+  const m = fMarks[fIdx]; m.classList.add("fc"); m.scrollIntoView({ block: "center" });
+  $("#fCnt").textContent = (fIdx + 1) + " / " + fMarks.length;
+}
+$("#fq").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); if ($("#fq").value.trim() !== fLast || !fMarks.length) findRun(); else fStep(e.shiftKey ? -1 : 1); }
+  else if (e.key === "Escape") { findClr(); $("#fq").blur(); }
+});
+$("#fNext").onclick = () => ($("#fq").value.trim() !== fLast ? findRun() : fStep(1));
+$("#fPrev").onclick = () => ($("#fq").value.trim() !== fLast ? findRun() : fStep(-1));
+$("#fClr").onclick = () => { findClr(); $("#fq").value = ""; toast("강조를 지웠습니다"); };
+async function copyText(t, msg) {
+  try { await navigator.clipboard.writeText(t); } catch (e) { const ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); } catch (x) {} ta.remove(); }
+  toast(msg);
+}
+$("#dbCopy").onclick = () => {
+  const d = cur.doc, a = d && d.arts[sideKey];
+  if (!a) return toast("복사할 조문을 먼저 고르세요", true);
+  copyText(d.name + " " + a.label + "\n" + a.lines.map(([lv, t]) => "   ".repeat(Math.max(lv - 1, 0)) + t).join("\n"), d.name + " " + a.label + " 본문을 복사했습니다");
+};
+$("#dbWeb").onclick = async () => {
+  const d = cur.doc; if (!d) return toast("먼저 법령을 여세요", true);
+  try { const u = await call("web_url", [d.kind, d.name, d.arts[sideKey] ? sideKey : ""], ""); window.open(u, "_blank", "noopener"); } catch (e) { toast("법제처 주소를 만들지 못했습니다", true); }
+};
+$("#dbTT").onclick = () => { if (!cur.doc) return toast("먼저 법령을 여세요", true); $("#bTT").click(); };
+$("#dbFav").onclick = () => { if (!cur.doc) return toast("먼저 법령을 여세요", true); toggleFav(cur.doc, ""); paintDocFav(); };
+// ---- 이전에 보던 조문으로(◀ 뒤로, Alt+←)
+const navHist = []; let navBusy = false;
+function navPush() {
+  if (navBusy || !cur.doc || !sideKey) return;
+  const t = navHist[navHist.length - 1];
+  if (t && t.mst === cur.doc.mst && t.key === sideKey) return;
+  navHist.push({ mst: cur.doc.mst, key: sideKey }); if (navHist.length > 100) navHist.shift();
+}
+async function navBack() {
+  const t = navHist.pop();
+  if (!t) return toast("이전에 보던 조문이 없습니다");
+  navBusy = true;
+  try {
+    const i = ltabs.findIndex((x) => x.d.mst === t.mst);
+    if (i >= 0) { if (ltabs[i].d !== cur.doc) switchLTab(i); goKey(t.key); }
+    else { const d = await call("open_cached", [t.mst, t.key], "여는 중…"); showDoc(d, d.kind, d.rawmst, t.key); }
+  } finally { navBusy = false; }
+}
+$("#bHist").onclick = navBack;
+// ---- 글자 크기·테마 빠른 버튼
+function fsStep(d) { const k = "lv_fsd"; LS.set(k, Math.max(10, Math.min(20, LS.get(k, 12) + d))); applyPrefs(); }
+$("#fMinus").onclick = () => fsStep(-1); $("#fPlus").onclick = () => fsStep(1);
+$("#bTheme").onclick = (e) => {
+  const r = e.currentTarget.getBoundingClientRect();
+  showMenu(r.left, r.bottom + 2, [["", "기본 (청록)"], ["light", "밝은 파랑"], ["paper", "종이"], ["dark", "남색"], ["graphite", "차콜"], ["nord", "노드"]].map(([v, t]) => [(LS.get("lv_theme", "") === v ? "✓ " : "   ") + t, () => { LS.set("lv_theme", v); applyPrefs(); }]));
+};
+// ---- 미리보기 칸 높이 끌기
+(function () {
+  const g = $("#pgrip"); let on = false;
+  g.addEventListener("pointerdown", (e) => { on = true; g.setPointerCapture(e.pointerId); });
+  g.addEventListener("pointermove", (e) => { if (on) setSheetH(((innerHeight - e.clientY) / innerHeight) * 100); });
+  const end = () => { if (on) LS.set("lv_sheetd", Math.round(sheetD)); on = false; };
+  g.addEventListener("pointerup", end); g.addEventListener("pointercancel", end);
+})();
 
 // ---------------------------------------------------------------- 칸 접기·단축키 (PC)
 function setPane(side, hide) { document.body.classList.toggle(side === "l" ? "hl" : "hr", hide); LS.set("lv_hide" + side, hide ? 1 : 0); $(side === "l" ? "#bL" : "#bR").textContent = side === "l" ? (hide ? "목록 ▶" : "◀ 목록") : (hide ? "◀ 정리" : "정리 ▶"); }
@@ -767,9 +944,10 @@ document.addEventListener("keydown", (e) => {
   else if (k === "F9") { e.preventDefault(); const both = document.body.classList.contains("hl") && document.body.classList.contains("hr"); setPane("l", !both); setPane("r", !both); }
   else if (e.ctrlKey && (k === "w" || k === "W") && ltabs.length) { e.preventDefault(); closeLTab(Math.max(0, ltabs.findIndex((t) => t.d === cur.doc))); }
   else if (e.ctrlKey && k === "Tab" && ltabs.length > 1) { e.preventDefault(); const i = ltabs.findIndex((t) => t.d === cur.doc); switchLTab((i + (e.shiftKey ? -1 : 1) + ltabs.length) % ltabs.length); }
-  else if (e.ctrlKey && (k === "f" || k === "F")) { e.preventDefault(); if (document.body.classList.contains("hl")) setPane("l", false); $("#q").focus(); $("#q").select(); }
-  else if (k === "Escape" && paneOn() && document.activeElement !== $("#q")) closeSheet();
-  else if (e.altKey && k === "ArrowLeft") { e.preventDefault(); (PN[2].now ? PN[2] : PN[1]).el.querySelector(".bk").click(); }
+  else if (e.ctrlKey && (k === "f" || k === "F")) { e.preventDefault(); $("#fq").focus(); $("#fq").select(); }
+  else if (e.ctrlKey && (k === "l" || k === "L")) { e.preventDefault(); if (document.body.classList.contains("hl")) setPane("l", false); $("#q").focus(); $("#q").select(); }
+  else if (k === "Escape" && document.activeElement !== $("#q") && document.activeElement !== $("#fq")) { findClr(); closeSheet(); $("#ctx").classList.remove("on"); }
+  else if (e.altKey && k === "ArrowLeft") { e.preventDefault(); navBack(); }
 });
 addEventListener("resize", () => { applyPrefs(); layoutPanes(); });
 
