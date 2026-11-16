@@ -21,6 +21,7 @@
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;font-size:var(--fs);overscroll-behavior:none}
 button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .hdr{position:fixed;top:0;left:0;right:0;z-index:20;background:var(--acc);color:var(--acc-t);display:flex;align-items:center;gap:4px;padding:calc(env(safe-area-inset-top) + 6px) 8px 6px;min-height:52px}
+.hver{font-size:.7em;opacity:.9;padding:2px 7px;border-radius:9px;background:rgba(255,255,255,.2);white-space:nowrap;margin-right:4px}
 .hdr .t{flex:1;font-weight:700;font-size:1.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
 .ib{min-width:40px;height:40px;border-radius:10px;font-size:1.1em;font-weight:700;color:var(--acc-t)}
 .ib:active{background:rgba(255,255,255,.2)}
@@ -214,7 +215,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <body>
 <div class="hdr">
   <button class="ib" id="bBack" style="display:none">←</button>
-  <div class="t" id="hTitle">법령 뷰어</div>
+  <div class="t" id="hTitle">법령 뷰어</div><span class="hver" id="hVer"></span>
   <button class="ib" id="bToc" style="display:none">☰</button>
   <button class="ib" id="bFav" style="display:none">☆</button>
   <button class="ib dtonly" id="bHist" title="이전에 보던 조문으로 (Alt+←)">◀ 뒤로</button>
@@ -237,7 +238,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <button class="tb" id="fPrev" title="이전 (Shift+Enter)">▲</button><button class="tb" id="fNext" title="다음 (Enter)">▼</button>
   <button class="tb" id="fClr">✕ 지우기</button><span id="fCnt" class="muted"></span>
   <span class="sp"></span>
-  <button class="tb" id="dbTT">3단 비교</button><button class="tb" id="dbFav">☆ 즐겨찾기</button><button class="tb" id="dbCopy">조문 복사</button><button class="tb" id="dbWeb" title="법제처 화면에서 열기">법제처 열기</button>
+  <button class="tb" id="dbTT">3단 비교</button><button class="tb" id="dbFav">☆ 즐겨찾기</button><button class="tb" id="dbCopy">조문 복사</button><button class="tb" id="dbCite" title="「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">인용 복사</button><button class="tb" id="dbWeb" title="법제처 화면에서 열기">법제처 열기</button>
   <button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
 </div>
 <div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="ctx"></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
@@ -272,7 +273,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "6.7";
+const VERSION = "6.8";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -611,7 +612,42 @@ async function openByName(name, key) {
   showDoc(d, "law", d.mst, key);
 }
 const ltabs = [];      // 열어 둔 법령 (PC 넓은 화면)
+let tabRestoring = true;          // 시작 직후 복원이 끝날 때까지는 저장하지 않는다(빈 목록으로 덮어쓰기 방지)
+function saveTabs() {
+  if (tabRestoring || !isDT()) return;
+  try {
+    const sc = (t) => (t.d === cur.doc ? $("#doc").scrollTop : t.scroll || 0);
+    LS.set("lv_tabs", JSON.stringify({ a: ltabs.findIndex((t) => t.d === cur.doc), t: ltabs.map((t) => ({ k: t.d.kind, m: t.d.rawmst, n: t.d.name, d: t.d.date || "", s: Math.round(sc(t)) })) }));
+  } catch (e) {}
+}
+let saveTm = null;
+$("#doc").addEventListener("scroll", () => { clearTimeout(saveTm); saveTm = setTimeout(saveTabs, 600); });
+addEventListener("pagehide", saveTabs);
+document.addEventListener("visibilitychange", () => { if (document.hidden) saveTabs(); });
+async function restoreTabs() {
+  if (!isDT() || ltabs.length || !OC) { tabRestoring = false; return; }
+  let s; try { s = JSON.parse(LS.get("lv_tabs", "") || "null"); } catch (e) { s = null; }
+  if (!s || !s.t || !s.t.length) { tabRestoring = false; return; }
+  try {
+    let n = 0; const got = [];
+    for (const t of s.t) {
+      n++;
+      try {
+        const d = await call("open_doc", [OC, t.k, t.m, t.n, t.d || ""], "열어 두었던 탭 복원 중… (" + n + "/" + s.t.length + ")");
+        showDoc(d, t.k, t.m, ""); got.push({ d, s: t.s || 0, k: t.k, m: t.m });
+      } catch (e) {}
+    }
+    if (ltabs.length) {
+      got.forEach((g) => { const e = ltabs.find((x) => x.d === g.d); if (e) e.scroll = g.s; });   // 탭을 여는 동안 덮어쓴 스크롤 위치를 되돌린다
+      const ai = s.a >= 0 && s.t[s.a] ? ltabs.findIndex((x) => String(x.d.rawmst) === String(s.t[s.a].m) && x.d.kind === s.t[s.a].k) : 0;
+      const i = ai >= 0 ? ai : 0;
+      if (ltabs[i].d !== cur.doc) switchLTab(i);
+      const sc = ltabs[i].scroll || 0; setTimeout(() => ($("#doc").scrollTop = sc), 80);
+    }
+  } finally { tabRestoring = false; saveTabs(); }
+}
 function paintLTabs() {
+  saveTabs();
   const bar = $("#ltabs");
   bar.innerHTML = ltabs.map((t, i) => '<div class="lt' + (t.d === cur.doc ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><span>' + esc(t.d.name) + '</span><b data-x="' + i + '">✕</b></div>').join("");
   bar.querySelectorAll(".lt").forEach((el) => (el.onclick = (e) => {
@@ -918,6 +954,22 @@ $("#dbCopy").onclick = () => {
   if (!a) return toast("복사할 조문을 먼저 고르세요", true);
   copyText(d.name + " " + a.label + "\n" + a.lines.map(([lv, t]) => "   ".repeat(Math.max(lv - 1, 0)) + t).join("\n"), d.name + " " + a.label + " 본문을 복사했습니다");
 };
+$("#dbCite").onclick = () => {
+  const d = cur.doc; if (!d) return toast("먼저 법령을 여세요", true);
+  let key = sideKey, hang = "";
+  const sel = getSelection();
+  if (sel && sel.rangeCount && !sel.isCollapsed && sel.anchorNode) {
+    const n = sel.anchorNode, ln = (n.nodeType === 1 ? n : n.parentElement).closest(".ln"), art = ln && ln.closest(".art");
+    if (art && art.id.startsWith("a-") && d.arts[art.id.slice(2)]) {
+      key = art.id.slice(2);
+      for (let e = ln; e; e = e.previousElementSibling) { const m = /^\s*([\u2460-\u2473])/.exec(e.textContent); if (m) { hang = "제" + (m[1].charCodeAt(0) - 0x245F) + "항"; break; } }
+    }
+  }
+  const a = d.arts[key]; if (!a) return toast("인용할 조문을 먼저 고르세요", true);
+  const nm = d.kind === "adm" && d.adm_base ? d.adm_base : d.name;
+  const t = "「" + nm + "」 " + a.label.replace(/\s+$/, "") + hang;
+  copyText(t, "복사했습니다: " + t);
+};
 $("#dbWeb").onclick = async () => {
   const d = cur.doc; if (!d) return toast("먼저 법령을 여세요", true);
   try { const u = await call("web_url", [d.kind, d.name, d.arts[sideKey] ? sideKey : ""], ""); window.open(u, "_blank", "noopener"); } catch (e) { toast("법제처 주소를 만들지 못했습니다", true); }
@@ -1030,12 +1082,12 @@ async function ttShow(i) {
 }
 
 // ---------------------------------------------------------------- 시작
-$("#ver").textContent = "";
+$("#ver").textContent = "버전 v" + VERSION; $("#hVer").textContent = "v" + VERSION;
 if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("sw.js").catch(() => {});   // 앱으로 설치(PC·폰)·오프라인 시작
 if (P.get("oc")) { OC = P.get("oc"); LS.set("lv_oc", OC); history.replaceState(null, "", location.pathname); }
 setTab("r");
-if (!OC) setTimeout(() => $("#bSet").click(), 300);
-else { setTimeout(startWorker, 400); setTimeout(() => syncNow(false), 1500); }        // 엔진은 미리 내려받아 둔다
+if (!OC) { tabRestoring = false; setTimeout(() => $("#bSet").click(), 300); }
+else { setTimeout(startWorker, 400); setTimeout(restoreTabs, 700); setTimeout(() => syncNow(false), 1500); }        // 엔진은 미리 내려받아 둔다
 </script>
 </body>
 </html>
