@@ -118,6 +118,14 @@ a.c{color:color-mix(in srgb,var(--link) 75%,var(--text));font-weight:600;text-de
 .tt .col .ch{padding:8px 12px;color:#fff;font-weight:700;font-size:.92em}
 .tt .col .cb{padding:6px 12px 10px}
 .tt .col .at{font-weight:700;color:var(--acc-d);margin-top:8px;cursor:pointer}
+.ttg{position:relative}.ttl{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:3}
+.ttl path{fill:none;stroke-width:2;stroke-linecap:round;opacity:.85}
+.tt .col{overflow:visible}.tt .col .ch{position:sticky;top:56px;z-index:4;border-radius:11px 11px 0 0}
+.tt .ta{border-radius:8px;padding:0 6px;margin:0 -6px;transition:background .12s,opacity .12s}
+.tt .ttg.ttf .ta{opacity:.38}.tt .ttg.ttf .ta.rel,.tt .ttg.ttf .ta.src{opacity:1}
+.tt .ta.src{background:color-mix(in srgb,var(--acc) 14%,transparent);box-shadow:inset 3px 0 0 var(--acc)}
+.tt .ta.rel{background:color-mix(in srgb,var(--acc) 7%,transparent)}
+.tt .ta:hover{cursor:default}
 .nav{display:flex;gap:6px;padding:10px 12px;align-items:center;position:sticky;top:0;background:var(--bg);z-index:5}
 .nav .mid{flex:1;text-align:center;font-weight:700;line-height:1.3;font-size:.95em}
 .nav input{width:70px;border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;text-align:center;background:var(--surf);color:var(--text)}
@@ -446,7 +454,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.19";
+const VERSION = "10.20";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1639,6 +1647,7 @@ document.addEventListener("keydown", (e) => {
   else if (e.ctrlKey && (k === "l" || k === "L")) { e.preventDefault(); if (document.body.classList.contains("hl")) setPane("l", false); $("#q").focus(); $("#q").select(); }
   else if (k === "Escape" && document.activeElement !== $("#q") && document.activeElement !== $("#fq")) { findClr(); closeSheet(); $("#ctx").classList.remove("on"); }
   else if (e.altKey && k === "ArrowLeft") { e.preventDefault(); navBack(); }
+  else if (TT && $("#tt").classList.contains("on") && !e.ctrlKey && !e.altKey && !e.metaKey && (k === "ArrowLeft" || k === "ArrowRight") && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || "")) { e.preventDefault(); ttShow(TTI + (k === "ArrowRight" ? 1 : -1)); }
 });
 addEventListener("resize", () => { applyPrefs(); layoutPanes(); });
 
@@ -1892,12 +1901,12 @@ async function ttShow(i) {
   CITES = CITES.slice(0, 0);
   const row = TT.rows[i];
   let h = '<div class="nav"><button class="sm" id="tP">◀</button><div class="mid">' + esc(row.label + " " + row.title) + '<div class="muted" style="font-weight:400;font-size:.8em">' + (i + 1) + " / " + TT.rows.length + '</div></div><button class="sm" id="ttN">▶</button><input id="tJ" inputmode="numeric" placeholder="조"><button class="sm" id="tG">이동</button></div>';
-  h += '<div class="ttg">';
+  h += '<div class="ttg"><svg class="ttl"></svg>';
   r.cols.forEach((c, ci) => {
     h += '<div class="col"><div class="ch" style="background:' + TTCOL[ci] + '">' + esc(c.name) + "</div><div class=\"cb\">";
     if (c.none) h += '<div class="muted" style="padding:8px 0">이 법령을 찾지 못했습니다</div>';
     else if (!c.arts.length) h += '<div class="muted" style="padding:8px 0">— 해당 조문 없음</div>';
-    else c.arts.forEach((a) => { h += '<div class="at" data-n="' + esc(c.name) + '" data-k="' + a.key + '">' + esc(a.label + " " + a.title) + " ↗</div>" + artHTML(a, c.mst, { idp: "t" + ci + "-", self: c.name }); });
+    else c.arts.forEach((a) => { h += '<div class="ta" data-ci="' + ci + '"><div class="at" data-n="' + esc(c.name) + '" data-k="' + a.key + '">' + esc(a.label + " " + a.title) + " ↗</div>" + artHTML(a, c.mst, { idp: "t" + ci + "-", self: c.name }) + "</div>"; });
     h += "</div></div>";
   });
   h += "</div>";
@@ -1905,7 +1914,36 @@ async function ttShow(i) {
   bindCites(v);
   $("#tP").onclick = () => ttShow(TTI - 1); $("#ttN").onclick = () => ttShow(TTI + 1);
   $("#tG").onclick = () => { const n = parseInt($("#tJ").value, 10); if (!n) return; const k = TT.rows.findIndex((x) => x.key.split(":")[0] == n); if (k < 0) return toast("그 조문이 없습니다", true); ttShow(k); };
-  v.querySelectorAll(".at").forEach((e) => (e.onclick = () => openByName(e.dataset.n, e.dataset.k)));
+  v.querySelectorAll(".at").forEach((e) => (e.onclick = (ev) => { ev.stopPropagation(); openByName(e.dataset.n, e.dataset.k); }));
+  ttLinks(v);
+}
+// 3단 비교: 조문 위에 마우스를 올리면(폰은 한 번 누르면) 같은 줄의 나머지 조문만 남기고 지시선으로 이어 준다
+function ttLinks(v) {
+  const g = v.querySelector(".ttg"), svg = g.querySelector(".ttl"), tas = [...g.querySelectorAll(".ta")];
+  let pin = null;
+  const clear = () => { svg.innerHTML = ""; g.classList.remove("ttf"); tas.forEach((t) => t.classList.remove("src", "rel")); };
+  const draw = (src) => {
+    clear(); if (!src) return;
+    const rel = tas.filter((t) => t !== src && t.dataset.ci !== src.dataset.ci);
+    if (!rel.length) return;
+    g.classList.add("ttf"); src.classList.add("src"); rel.forEach((t) => t.classList.add("rel"));
+    const gb = g.getBoundingClientRect(), sb = src.getBoundingClientRect(), sc = +src.dataset.ci;
+    let p = "";
+    const acc = getComputedStyle(document.documentElement).getPropertyValue("--acc").trim() || "#0E7C6B";
+    rel.forEach((t) => {
+      const tb = t.getBoundingClientRect(), tc = +t.dataset.ci, right = tc > sc;
+      const x1 = (right ? sb.right : sb.left) - gb.left, y1 = sb.top - gb.top + 14;
+      const x2 = (right ? tb.left : tb.right) - gb.left, y2 = tb.top - gb.top + 14, dx = Math.max(24, Math.abs(x2 - x1) / 2) * (right ? 1 : -1);
+      p += '<path d="M' + x1 + " " + y1 + " C" + (x1 + dx) + " " + y1 + " " + (x2 - dx) + " " + y2 + " " + x2 + " " + y2 + '" stroke="' + acc + '"/><circle cx="' + x2 + '" cy="' + y2 + '" r="3.5" fill="' + acc + '"/>';
+    });
+    svg.innerHTML = p;
+  };
+  tas.forEach((t) => {
+    t.addEventListener("mouseenter", () => { if (!pin) draw(t); });
+    t.addEventListener("mouseleave", () => { if (!pin) clear(); });
+    t.addEventListener("click", (e) => { if (e.target.closest("a,button,.at")) return; if (pin === t) { pin = null; clear(); } else { pin = t; draw(t); } });
+  });
+  v.onscroll = () => { if (pin) draw(pin); };
 }
 
 // ---------------------------------------------------------------- 시작
