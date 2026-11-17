@@ -629,11 +629,33 @@ def _format_table(block):
     return rows
 
 
+_RULE = re.compile(r"[─━═┌┐└┘├┤┬┴┼╋┏┓┗┛┣┫┳┻┿┠┨┯┷┝┥╂│┃|]*[─━═]{2,}[─━═┌┐└┘├┤┬┴┼╋┏┓┗┛┣┫┳┻┿┠┨┯┷┝┥╂│┃|]*")
+
+
+def _prep_annex_lines(raw):
+    """글이 섞인 가로줄('관한 사항 ├──┼──', '시설 ┌──┬── 결정 │ 해제')과 세로줄이 하나뿐인 줄은 선을 걷어 내고 글만 줄로 남긴다"""
+    out = []
+    for ln in raw:
+        if _is_border(ln) or not ln.strip():
+            out.append(ln)
+            continue
+        nb = sum(c in _VB or c in _JB for c in ln)
+        if _RULE.search(ln) and re.sub(r"[\s─━═┌┐└┘├┤┬┴┼╋┏┓┗┛┣┫┳┻┿┠┨┯┷┝┥╂│┃|]", "", ln):
+            for p in re.split(r"\s{2,}|\s*[│┃|]\s*", _RULE.sub("  ", ln)):
+                if p.strip():
+                    out.append(p.strip())
+        elif nb == 1:
+            out.append(re.sub(r"[│┃|]", " ", ln).strip())
+        else:
+            out.append(ln)
+    return out
+
+
 def format_annex(raw, title=""):
     """별표 본문: 글자로 그린 표는 표로, 나머지는 번호 들여쓰기 글로. 표 한 행은 (9, JSON[[칸수,글],...])"""
     import json
     import html
-    raw = [html.unescape(x) for x in raw]
+    raw = _prep_annex_lines([html.unescape(x) for x in raw])
     out, buf, tbl, i = [], [], [], 0
     def flush_text():
         nonlocal buf
