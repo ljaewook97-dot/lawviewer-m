@@ -475,7 +475,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.34";
+const VERSION = "10.35";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1021,8 +1021,9 @@ function paintFavs() {
   if (!favs.length) { L.innerHTML = '<div class="empty">즐겨찾기가 없습니다.<br>법령 화면 위의 ☆(법령 전체)나<br>조문 옆의 ☆(조문)를 눌러 담으세요.</div>'; return; }
   const gs = favGroups(), gk = gs.map((g) => g.k);
   L.innerHTML = gs.map((g, gi) => {
+    if (g.kind !== "law") return g.it.map((i) => { const f = favs[i]; return '<div class="card" data-ci="' + i + '" title="' + esc(f.lawname + (f.key ? " " + (f.label || "") : "")) + '"><div class="m" data-i="' + i + '"><div class="nm"><span class="tag ' + f.kind + '">' + KIND[f.kind][0] + "</span>" + '<span class="h">' + esc(f.lawname) + '</span></div><div class="in">' + (f.key ? esc(f.label || "") : "") + revTag(f, i) + '</div></div><button class="sm" data-gu="' + gi + '">▲</button><button class="sm" data-gd="' + gi + '">▼</button><button class="sm" data-x="' + i + '">✕</button></div>'; }).join("");
     const shut = favClosed.includes(g.k);
-    let h = '<div class="fgh" draggable="true" data-g="' + gi + '" title="' + esc(g.b) + '"><span class="ar">' + (shut ? "▸" : "▾") + "</span>" + (g.kind === "law" ? "" : '<span class="tag ' + g.kind + '">' + KIND[g.kind][0] + "</span>") + '<span class="gn">' + esc(g.b) + '</span><span class="gc">' + g.it.length + '</span><button class="sm" data-gu="' + gi + '">▲</button><button class="sm" data-gd="' + gi + '">▼</button></div>';
+    let h = '<div class="fgh" draggable="true" data-g="' + gi + '" title="' + esc(g.b) + '"><span class="ar">' + (shut ? "▸" : "▾") + '</span><span class="gn">' + esc(g.b) + '</span><span class="gc">' + g.it.length + '</span><button class="sm" data-gu="' + gi + '">▲</button><button class="sm" data-gd="' + gi + '">▼</button></div>';
     if (!shut) h += g.it.map((i) => { const f = favs[i]; return '<div class="card fi" data-ci="' + i + '" title="' + esc(f.lawname + (f.key ? " " + (f.label || "") : "")) + '"><div class="m" data-i="' + i + '"><div class="nm">' + favBadge(f.lawname, f.kind) + '<span class="h">' + esc(f.key ? f.label || "" : "법령 전체") + '</span></div><div class="in">' + revTag(f, i) + '</div></div><button class="sm" data-x="' + i + '">✕</button></div>'; }).join("");
     return h;
   }).join("");
@@ -1044,7 +1045,7 @@ function paintFavs() {
   });
   L.querySelectorAll(".card[data-ci]").forEach((c) => {
     const i = +c.dataset.ci;
-    c.oncontextmenu = (e) => { e.preventDefault(); showMenu(e.clientX, e.clientY, [["즐겨찾기에서 빼기", () => { favs.splice(i, 1); saveFavs(); paintFavs(); }]]); };
+    c.oncontextmenu = (e) => { e.preventDefault(); const f = favs[i], gi = gs.findIndex((g) => g.it.includes(i)), k = gk[gi], mvm = f.kind === "law" ? [] : [["맨 위로", () => favMoveGroup(k, 0)], ["위로", () => favMoveGroup(k, gi - 1)], ["아래로", () => favMoveGroup(k, gi + 1)], ["맨 아래로", () => favMoveGroup(k, gs.length - 1)]]; showMenu(e.clientX, e.clientY, mvm.concat([["즐겨찾기에서 빼기", () => { favs.splice(i, 1); saveFavs(); paintFavs(); }]])); };
   });
 }
 function showMenu(x, y, items) {
