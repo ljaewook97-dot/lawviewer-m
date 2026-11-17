@@ -478,6 +478,22 @@ def _ax_val(kind, g):
     return int(g)
 
 
+_AXJ_P = re.compile(r"(를|을|는|은|에|의|와|과|로|고|며|서|면|어|여|아|도)$|하여$|하고$|하는$")
+_AXJ_NO = re.compile(r"^[)\]」·,.]|^(이|가|을|를|은|는|의|에|로|와|과|도|만)(\s|$)")
+_AXJ_REF = re.compile(r"^(제\s*\d|「|같은\s*(법|영|조|항|호|규칙)|별표\s*\d|별지\s*제|및\s|또는\s)")
+_AXJ_END = re.compile(r"(」|시행령|시행규칙|조례|및|또는|[,;:])$")
+
+
+def _ax_joiner(prev, st):
+    """잘린 줄을 이을 때 띄울지: 조사·어미 뒤, 또는 법령 이름 뒤에 '제N조'·「…」 같은 인용이 이어질 때 띄운다"""
+    if _AXJ_NO.match(st):
+        return ""
+    if _AXJ_P.search(prev) or _AXJ_END.search(prev) or _AXJ_REF.match(st):
+        return " "
+    return ""
+
+
+
 def _format_annex_text(raw, title=""):
     """별표 본문(줄 목록) -> [(단계, 글)]. 번호(1. 가. 1) 가) (1) ①)를 보고 들여쓸 단계를 정하되, 번호가 차례(1,2,3 / 가,나,다)로 이어질 때만 번호로 인정한다
     ('…이하 같\n다) 및 …'처럼 잘린 줄의 '다)'를 번호로 착각하지 않게). 번호 없이 이어지는 줄(고정 너비로 잘린 줄 바꿈)은 앞 줄에 이어 붙인다.
@@ -511,7 +527,7 @@ def _format_annex_text(raw, title=""):
         if out and not is_item and "|" not in out[-1][1] and out[-1][2] >= 0.5 * width and width >= 20 and not re.search(r"[.:;]$", out[-1][1]):
             prev_lv, prev, _w = out[-1]
             # 줄 끝 공백은 믿을 수 없어(모든 줄에 붙어 오기도 함) 낱말 끝 글자로만 판단: 조사·어미 뒤에서 끊겼으면 띄우고, 낱말 가운데면 붙인다
-            joiner = " " if (re.search(r"(를|을|는|은|에|의|와|과|로|고|며|서|면|어|여|아|도)$|하여$|하고$|하는$", prev) and not re.match(r"^[)\]」·,.]|^(이|가|을|를|은|는|의|에|로|와|과|도|만)(\s|$)", st)) else ""
+            joiner = _ax_joiner(prev, st)
             out[-1] = (prev_lv, prev + joiner + st, len(st))
             continue
         out.append((lv, st, len(st)))
@@ -573,7 +589,7 @@ def _join_cell(lines):
             out.append(t)
             continue
         prev = out[-1]
-        joiner = " " if ((re.search(r"(를|을|는|은|에|의|와|과|로|고|며|서|면|도)$|하여$|하고$|하는$", prev) and not re.match(r"^[)\]」·,.]|^(이|가|을|를|은|는|의|에|로|와|과|도|만)(\s|$)", t)) or re.search(r"[,;:]$", prev)) else ""
+        joiner = _ax_joiner(prev, t)
         out[-1] = prev + joiner + t
     return "\n".join(out)
 

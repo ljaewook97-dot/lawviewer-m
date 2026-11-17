@@ -64,7 +64,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .fgh .sm{min-width:34px;height:28px;font-size:.8em;border:0;background:var(--soft);padding:0}
 .card.fi{margin-left:10px;padding:7px 10px;margin-bottom:4px;border-radius:8px}
 .tag.fb{min-width:1.3em;text-align:center;padding:1px 5px;margin-right:6px}
-.tag.fb.rl{background:var(--law)}.tag.fb.ry{background:#d9822b}.tag.fb.rc{background:#7a5ac8}
+.tag.fb.rl{background:#1565C0}.tag.fb.ry{background:#2E7D32}.tag.fb.rc{background:#EF6C00}
 .card.fi .nm{display:flex;align-items:center}
 .card .sm{min-width:32px;height:30px;font-size:.85em}
 .muted{color:var(--muted)}
@@ -137,6 +137,14 @@ a.c{color:color-mix(in srgb,var(--link) 75%,var(--text));font-weight:600;text-de
 .tt .ta.src{background:color-mix(in srgb,var(--acc) 14%,transparent);box-shadow:inset 3px 0 0 var(--acc)}
 .tt .ta.rel{background:color-mix(in srgb,var(--acc) 7%,transparent)}
 .tt .ta:hover{cursor:default}
+.tt .tth{position:sticky;top:0;z-index:6;background:var(--bg)}
+.tt .tth .nav{position:static}
+.ttk{display:flex;gap:6px;padding:0 12px 8px}
+.ttk button{flex:1;padding:7px 4px;border-radius:8px;border:1.5px solid var(--kc);background:var(--surf);color:var(--kc);font-weight:700;font-size:.86em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttk button.on{background:var(--kc);color:#fff}
+.ttk button small{font-weight:400;opacity:.8}
+@media(max-width:999px){.tt .col.off{display:none}.tt .col .ch{position:static}}
+.tt .ta.wh .ln{background:color-mix(in srgb,var(--acc) 12%,transparent)}
 .tt a.c.hlc{background:color-mix(in srgb,var(--acc) 26%,transparent);border-radius:3px}
 .tt .ln.hlx{background:color-mix(in srgb,var(--acc) 22%,transparent);border-radius:4px;box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 55%,transparent)}
 .nav{display:flex;gap:6px;padding:10px 12px;align-items:center;position:sticky;top:0;background:var(--bg);z-index:5}
@@ -147,6 +155,14 @@ a.c{color:color-mix(in srgb,var(--link) 75%,var(--text));font-weight:600;text-de
 /* ===== PC 넓은 화면(1000px 이상): PC 프로그램 모양 — 왼쪽 목록 / 가운데 본문(위 탭, 아래 미리보기 두 칸) / 오른쪽 인용 정리 ===== */
 #gk{width:118px;margin-left:8px;border:1px solid var(--line);border-radius:5px;padding:3px 7px;font:inherit;font-size:.9em;background:var(--surf);color:var(--text)}
 #ltabs,#dbar,#dtEmpty,.dtonly,#side,#tT,#dropHint,#pgrip,#ctx,.gv{display:none}
+#ctx.on{display:block;position:fixed;z-index:80;min-width:190px;background:var(--surf);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);padding:4px 0}
+#ctx div{padding:12px 18px;font-size:.95em}
+#ctx div.dz{color:var(--danger)}
+#ctx .mh{font-size:.78em;color:var(--muted);padding:6px 18px 4px;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+@media(hover:none){.fgh .sm,#list .card [data-gu],#list .card [data-gd]{display:none}}
+@media(hover:hover){#list .card [data-gu],#list .card [data-gd]{visibility:hidden}#list .card:hover [data-gu],#list .card:hover [data-gd]{visibility:visible}}
+.fhint{font-size:.78em;color:var(--muted);text-align:center;padding:10px 0 4px}
+@media(hover:hover){.fhint{display:none}}
 mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:#FFAE42;color:#1D2A27}
 #pbox{display:contents}
 #sheet2{display:none!important}
@@ -280,8 +296,12 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #busy .spin{display:none}
   #busyT{font-weight:700;color:var(--acc-d);font-size:.84em;line-height:1.35;padding-top:2px}
   .card .sm{min-width:24px;height:24px}
-  .ttg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:start}
-  .tt .col{margin:0}
+  .ttg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch;flex:1;min-height:0;padding-bottom:8px}
+  .tt .col{margin:0;overflow-y:auto;overflow-x:hidden;min-height:0;overscroll-behavior:contain;scrollbar-width:thin}
+  .tt .col .ch{top:0}
+  #tt.on{display:flex;flex-direction:column;overflow:hidden}
+  #tt .tth{flex:none}
+  #tt .ttk{display:none}
   #toast{left:auto;right:calc(var(--rw) + 12px);bottom:auto;top:calc(var(--hh) + 8px);max-width:420px;z-index:90}
   #dbar{overflow-x:auto;scrollbar-width:none}
   #dbar .tb,#dbar .fbox{flex:0 0 auto}
@@ -298,6 +318,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #ltabs .lt{--tc:#1565C0;display:flex;align-items:center;gap:4px;padding:0 4px 0 11px;margin:6px 2px 0;height:calc(100% - 6px);box-sizing:border-box;flex:none;border:1.5px solid color-mix(in srgb,var(--tc) 55%,transparent);border-bottom:0;border-radius:5px 5px 0 0;background:var(--soft);color:var(--sub);cursor:pointer;max-width:200px;font-size:.8em}
   #ltabs .lt:first-child{margin-left:6px}
   #ltabs .lt span{overflow:hidden;text-overflow:ellipsis}
+  #ltabs .lt i.lk{font-style:normal;flex:none;background:var(--tc);color:#fff;font-size:.82em;font-weight:700;border-radius:4px;padding:0 4px;line-height:1.45}
   #ltabs .lt:hover{background:var(--line)}
   #ltabs .lt.k-dec{--tc:#2E7D32}#ltabs .lt.k-rule{--tc:#EF6C00}#ltabs .lt.k-adm{--tc:#7B1FA2}#ltabs .lt.k-ord{--tc:#00838F}
   #ltabs .lt.sm{--tc:var(--acc);background:var(--acc-soft,var(--soft));color:var(--acc-d);font-weight:700}
@@ -313,9 +334,9 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #list .card[data-ci] .nm .h{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
   #list .card[data-ci] .nm .h{min-width:3em}
   #list .card[data-ci] .nm .tag.fb{min-width:1.3em;text-align:center;padding:1px 4px;margin-right:5px}
-  #list .card[data-ci] .nm .tag.fb.rl{background:var(--law)}
-  #list .card[data-ci] .nm .tag.fb.ry{background:#d9822b}
-  #list .card[data-ci] .nm .tag.fb.rc{background:#7a5ac8}
+  #list .card[data-ci] .nm .tag.fb.rl{background:#1565C0}
+  #list .card[data-ci] .nm .tag.fb.ry{background:#2E7D32}
+  #list .card[data-ci] .nm .tag.fb.rc{background:#EF6C00}
   #list .card[data-ci] .in:empty{display:none}
   #list .card[data-ci] .in{white-space:nowrap;flex:0 0 auto;margin:0;font-size:.74em}
   #list .card[data-ci] .sm{min-width:18px;height:18px;font-size:.72em;border:0;background:none;color:var(--muted);padding:0}
@@ -487,7 +508,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.39";
+const VERSION = "10.40";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1038,7 +1059,7 @@ function paintFavs() {
     let h = '<div class="fgh" draggable="true" data-g="' + gi + '" title="' + esc(g.b) + '"><span class="ar">' + (shut ? "▸" : "▾") + '</span><span class="gn">' + esc(g.b) + '</span><span class="gc">' + g.it.length + '</span><button class="sm" data-gu="' + gi + '">▲</button><button class="sm" data-gd="' + gi + '">▼</button></div>';
     if (!shut) h += g.it.map((i) => { const f = favs[i]; return '<div class="card fi" data-ci="' + i + '" title="' + esc(f.lawname + (f.key ? " " + (f.label || "") : "")) + '"><div class="m" data-i="' + i + '"><div class="nm">' + favBadge(f.lawname, f.kind) + '<span class="h">' + esc(f.key ? f.label || "" : "법령 전체") + '</span></div><div class="in">' + revTag(f, i) + '</div></div><button class="sm" data-x="' + i + '">✕</button></div>'; }).join("");
     return h;
-  }).join("");
+  }).join("") + '<div class="fhint">꾹 누르면 순서 바꾸기·빼기 메뉴가 나옵니다</div>';
   L.querySelectorAll("[data-i]").forEach((c) => (c.onclick = () => { const f = favs[+c.dataset.i]; openDoc(f.kind, f.rawmst, f.lawname, f.date, f.key); }));
   L.querySelectorAll("[data-rv]").forEach((c) => (c.onclick = (e) => { e.stopPropagation(); openCmp(favs[+c.dataset.rv]); }));
   L.querySelectorAll("[data-gu]").forEach((c) => (c.onclick = (e) => { e.stopPropagation(); favMoveGroup(gk[+c.dataset.gu], +c.dataset.gu - 1); }));
@@ -1053,18 +1074,30 @@ function paintFavs() {
     c.ondragleave = () => c.classList.remove("dov");
     c.ondrop = (e) => { e.preventDefault(); c.classList.remove("dov"); if (from < 0 || from === gi) return; const f0 = from; from = -1; favMoveGroup(gk[f0], gi); };
     c.ondragend = () => { from = -1; L.querySelectorAll(".dov").forEach((x) => x.classList.remove("dov")); };
-    c.oncontextmenu = (e) => { e.preventDefault(); const k = gk[gi]; showMenu(e.clientX, e.clientY, [["맨 위로", () => favMoveGroup(k, 0)], ["위로", () => favMoveGroup(k, gi - 1)], ["아래로", () => favMoveGroup(k, gi + 1)], ["맨 아래로", () => favMoveGroup(k, gs.length - 1)]]); };
+    const gm = (x, y) => { const k = gk[gi], g = gs[gi]; showMenu(x, y, [[g.b, null, "mh"], ["맨 위로", () => favMoveGroup(k, 0)], ["위로", () => favMoveGroup(k, gi - 1)], ["아래로", () => favMoveGroup(k, gi + 1)], ["맨 아래로", () => favMoveGroup(k, gs.length - 1)], ["묶음 전체 빼기 (" + g.it.length + "개)", () => { const del = new Set(g.it); favs = favs.filter((f, j) => !del.has(j)); saveFavs(); paintFavs(); toast(g.it.length + "개를 뺐습니다"); }, "dz"]]); };
+    c.oncontextmenu = (e) => { e.preventDefault(); gm(e.clientX, e.clientY); };
+    onHold(c, gm);
   });
   L.querySelectorAll(".card[data-ci]").forEach((c) => {
     const i = +c.dataset.ci;
-    c.oncontextmenu = (e) => { e.preventDefault(); const f = favs[i], gi = gs.findIndex((g) => g.it.includes(i)), k = gk[gi], mvm = f.kind === "law" ? [] : [["맨 위로", () => favMoveGroup(k, 0)], ["위로", () => favMoveGroup(k, gi - 1)], ["아래로", () => favMoveGroup(k, gi + 1)], ["맨 아래로", () => favMoveGroup(k, gs.length - 1)]]; showMenu(e.clientX, e.clientY, mvm.concat([["즐겨찾기에서 빼기", () => { favs.splice(i, 1); saveFavs(); paintFavs(); }]])); };
+    const im = (x, y) => { const f = favs[i], gi = gs.findIndex((g) => g.it.includes(i)), k = gk[gi], mvm = f.kind === "law" ? [] : [["맨 위로", () => favMoveGroup(k, 0)], ["위로", () => favMoveGroup(k, gi - 1)], ["아래로", () => favMoveGroup(k, gi + 1)], ["맨 아래로", () => favMoveGroup(k, gs.length - 1)]]; showMenu(x, y, [[f.lawname + (f.key ? " " + (f.label || "").split(" ")[0] : ""), null, "mh"]].concat(mvm, [["즐겨찾기에서 빼기", () => { favs.splice(i, 1); saveFavs(); paintFavs(); }, "dz"]])); };
+    c.oncontextmenu = (e) => { e.preventDefault(); im(e.clientX, e.clientY); };
+    onHold(c, im);
   });
+}
+function onHold(el, fn) {                                        // 폰: 꾹 누르면(0.5초) 메뉴. 그 뒤 따라오는 누름(click)은 무시
+  let t = 0, x = 0, y = 0;
+  el.addEventListener("touchstart", (e) => { const p = e.touches[0]; x = p.clientX; y = p.clientY; clearTimeout(t); t = setTimeout(() => { el.__held = Date.now(); if (navigator.vibrate) try { navigator.vibrate(15); } catch (er) {} fn(x, y); }, 480); }, { passive: true });
+  el.addEventListener("touchmove", (e) => { const p = e.touches[0]; if (Math.abs(p.clientX - x) + Math.abs(p.clientY - y) > 10) clearTimeout(t); }, { passive: true });
+  ["touchend", "touchcancel"].forEach((ev) => el.addEventListener(ev, () => clearTimeout(t), { passive: true }));
+  el.addEventListener("click", (e) => { if (el.__held && Date.now() - el.__held < 900) { e.stopPropagation(); e.preventDefault(); } }, true);
+  el.addEventListener("contextmenu", (e) => { if (el.__held && Date.now() - el.__held < 900) { e.preventDefault(); e.stopPropagation(); } }, true);
 }
 function showMenu(x, y, items) {
   const m = $("#ctx"); m.innerHTML = "";
-  items.forEach(([t, fn]) => { const d = document.createElement("div"); d.textContent = t; d.onclick = () => { m.classList.remove("on"); fn(); }; m.appendChild(d); });
+  items.forEach(([t, fn, cls]) => { const d = document.createElement("div"); d.textContent = t; if (cls) d.className = cls; if (fn) d.onclick = () => { m.classList.remove("on"); fn(); }; m.appendChild(d); });
   m.classList.add("on");
-  m.style.left = Math.min(x, innerWidth - 170) + "px"; m.style.top = Math.min(y, innerHeight - m.offsetHeight - 6) + "px";
+  m.style.left = Math.max(6, Math.min(x, innerWidth - m.offsetWidth - 6)) + "px"; m.style.top = Math.min(y, innerHeight - m.offsetHeight - 6) + "px";
 }
 $("#ltabs").addEventListener("wheel", (e) => { if (e.deltaY && !e.deltaX) { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; } }, { passive: false });
 document.addEventListener("pointerdown", (e) => { if (!e.target.closest("#ctx")) $("#ctx").classList.remove("on"); });
@@ -1239,11 +1272,12 @@ async function restoreTabs() {
   } finally { tabRestoring = false; saveTabs(); }
 }
 const tabCls = (d) => d.kind === "adm" ? "k-adm" : d.kind === "ordin" ? "k-ord" : /시행규칙$/.test(d.name) ? "k-rule" : /시행령$/.test(d.name) ? "k-dec" : "k-law";
+const tabKL = (d) => ({ "k-adm": "행정", "k-ord": "자치", "k-rule": "칙", "k-dec": "령", "k-law": "법" })[tabCls(d)];
 const ltName = (n) => String(n).replace(/\s*시행령$/, "(령)").replace(/\s*시행규칙$/, "(칙)");
 function paintLTabs() {
   saveTabs();
   const bar = $("#ltabs");
-  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + ltabs.map((t, i) => '<div class="lt ' + tabCls(t.d) + (t.d === cur.doc && !SUMACT ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><span>' + esc(ltName(t.d.name)) + '</span><b data-x="' + i + '">✕</b></div>').join("");
+  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + ltabs.map((t, i) => '<div class="lt ' + tabCls(t.d) + (t.d === cur.doc && !SUMACT ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><i class="lk">' + tabKL(t.d) + '</i><span>' + esc(String(t.d.name).replace(/\s*(시행령|시행규칙)$/, "")) + '</span><b data-x="' + i + '">✕</b></div>').join("");
   bar.querySelectorAll(".lt").forEach((el) => (el.onclick = (e) => {
     if (el.dataset.s) { if (e.target.dataset.xs !== undefined) return closeSumTab(); return showSumTab(); }
     const i = +el.dataset.i;
@@ -1979,7 +2013,7 @@ $("#audCopy").onclick = () => { const t = $("#audOut").textContent; if (t) copyT
 
 // ---------------------------------------------------------------- 3단 비교
 let TT = null, TTI = 0, TTCOLS = [];
-const TTCOL = ["var(--law)", "#2F6FB0", "var(--ordin)"];
+const TTCOL = ["#1565C0", "#2E7D32", "#EF6C00"];
 $("#bTT").onclick = async () => {
   if (needOC()) return;
   const d = cur.doc, base = d.refname.replace(/\s*(시행령|시행규칙)$/, "");
@@ -1989,15 +2023,24 @@ $("#bTT").onclick = async () => {
   TT = { base, ...r }; show("tt", "3단 비교");
   ttShow(r.start);
 };
+let TTK = LS.get("lv_ttk", "0");
+function ttTab(k) {                                              // 모바일: 법·령·칙 중 하나만(또는 모두) 보기
+  TTK = String(k); LS.set("lv_ttk", TTK);
+  const v = $("#tt");
+  v.querySelectorAll(".ttk button").forEach((b) => b.classList.toggle("on", b.dataset.k === TTK));
+  v.querySelectorAll(".ttg .col").forEach((c) => c.classList.toggle("off", TTK !== "a" && c.dataset.ci !== TTK));
+  if (!isDT()) v.scrollTop = 0;
+}
 async function ttShow(i) {
   i = Math.max(0, Math.min(TT.rows.length - 1, i)); TTI = i;
   const r = await call("tt_row", [TT.base, i], "");
   CITES = CITES.slice(0, 0); TTCOLS = r.cols;
   const row = TT.rows[i];
-  let h = '<div class="nav"><button class="sm" id="tP">◀</button><div class="mid">' + esc(row.label + " " + row.title) + '<div class="muted" style="font-weight:400;font-size:.8em">' + (i + 1) + " / " + TT.rows.length + '</div></div><button class="sm" id="ttN">▶</button><input id="tJ" inputmode="numeric" placeholder="조"><button class="sm" id="tG">이동</button></div>';
+  let h = '<div class="tth"><div class="nav"><button class="sm" id="tP">◀</button><div class="mid">' + esc(row.label + " " + row.title) + '<div class="muted" style="font-weight:400;font-size:.8em">' + (i + 1) + " / " + TT.rows.length + '</div></div><button class="sm" id="ttN">▶</button><input id="tJ" inputmode="numeric" placeholder="조"><button class="sm" id="tG">이동</button></div>';
+  h += '<div class="ttk">' + r.cols.map((c, ci) => '<button data-k="' + ci + '" style="--kc:' + TTCOL[ci] + '">' + ["법", "령", "칙"][ci] + ' <small>' + (c.none ? "없음" : c.arts.length + "개") + "</small></button>").join("") + '<button data-k="a" style="--kc:var(--sub)">모두</button></div></div>';
   h += '<div class="ttg"><svg class="ttl"></svg>';
   r.cols.forEach((c, ci) => {
-    h += '<div class="col"><div class="ch" style="background:' + TTCOL[ci] + '">' + esc(c.name) + "</div><div class=\"cb\">";
+    h += '<div class="col" data-ci="' + ci + '"><div class="ch" style="background:' + TTCOL[ci] + '">' + esc(c.name) + "</div><div class=\"cb\">";
     if (c.none) h += '<div class="muted" style="padding:8px 0">이 법령을 찾지 못했습니다</div>';
     else if (!c.arts.length) h += '<div class="muted" style="padding:8px 0">— 해당 조문 없음</div>';
     else c.arts.forEach((a) => { h += '<div class="ta" data-ci="' + ci + '" data-id="' + ci + ":" + a.key + '" data-rel="' + esc((a.rel || []).join(",")) + '"><div class="at" data-n="' + esc(c.name) + '" data-k="' + a.key + '">' + esc(a.label + " " + a.title) + " ↗</div>" + artHTML(a, c.mst, { idp: "t" + ci + "-", self: c.name }) + "</div>"; });
@@ -2006,6 +2049,8 @@ async function ttShow(i) {
   h += "</div>";
   const v = $("#tt"); v.innerHTML = h; v.scrollTop = 0;
   bindCites(v);
+  v.querySelectorAll(".ttk button").forEach((b) => (b.onclick = () => ttTab(b.dataset.k)));
+  ttTab(TTK);
   $("#tP").onclick = () => ttShow(TTI - 1); $("#ttN").onclick = () => ttShow(TTI + 1);
   $("#tG").onclick = () => { const n = parseInt($("#tJ").value, 10); if (!n) return; const k = TT.rows.findIndex((x) => x.key.split(":")[0] == n); if (k < 0) return toast("그 조문이 없습니다", true); ttShow(k); };
   v.querySelectorAll(".at").forEach((e) => (e.onclick = (ev) => { ev.stopPropagation(); openByName(e.dataset.n, e.dataset.k); }));
@@ -2020,12 +2065,19 @@ async function ttGoKey(key) {                                    // 3단 비교�
 function ttLinks(v) {
   const g = v.querySelector(".ttg"), svg = g.querySelector(".ttl"), tas = [...g.querySelectorAll(".ta")];
   let pin = null;
+  const showIn = (el, from) => {                                 // 칸마다 따로 스크롤(PC): 연결된 곳이 그 칸 화면 밖이면 그 칸만 살짝 굴려 보여 준다
+    const c = el && el.closest(".col"); if (!c || (from && from.closest(".col") === c) || c.scrollHeight <= c.clientHeight + 4) return;
+    const cr = c.getBoundingClientRect(), er = el.getBoundingClientRect(), top = cr.top + (c.querySelector(".ch") ? c.querySelector(".ch").offsetHeight : 0);
+    if (er.top >= top && er.bottom <= cr.bottom) return;
+    c.scrollTo({ top: c.scrollTop + er.top - top - Math.min(80, cr.height / 4), behavior: "smooth" });
+  };
   const clear = () => { svg.innerHTML = ""; g.classList.remove("ttf"); tas.forEach((t) => t.classList.remove("src", "rel")); };
   const draw = (src) => {
     clear(); if (!src) return;
     const want = new Set((src.dataset.rel || "").split(",").filter(Boolean)), rel = tas.filter((t) => want.has(t.dataset.id));
     if (!rel.length) return;
     g.classList.add("ttf"); src.classList.add("src"); rel.forEach((t) => t.classList.add("rel"));
+    const seen = new Set(); rel.forEach((t) => { const c = t.closest(".col"); if (!seen.has(c)) { seen.add(c); showIn(t, src); } });
   };
   tas.forEach((t) => {
     t.addEventListener("mouseenter", () => { if (!pin) draw(t); });
@@ -2035,7 +2087,7 @@ function ttLinks(v) {
   v.onscroll = () => { if (pin) draw(pin); };
   // ---- 항·호 단위 연결: 시행령·시행규칙의 인용('법 제12조제1항제5호')이 가리키는 법 조문의 그 줄 <-> 그 인용이 든 조문
   const HLC = {};                                                // 인용마다 한 번만 물어본다
-  const clearX = () => { g.querySelectorAll(".ln.hlx").forEach((e) => e.classList.remove("hlx")); g.querySelectorAll("a.c.hlc").forEach((e) => e.classList.remove("hlc")); };
+  const clearX = () => { g.querySelectorAll(".ta.wh").forEach((e) => e.classList.remove("wh")); g.querySelectorAll(".ln.hlx").forEach((e) => e.classList.remove("hlx")); g.querySelectorAll("a.c.hlc").forEach((e) => e.classList.remove("hlc")); };
   const target = (a) => {                                        // 이 인용이 가리키는 (같은 줄의 다른 칸) 조문 -> {ta, name, c, tcol}
     const c = CITES[+a.dataset.c]; if (!c || c.kind || !c.n) return null;
     const name = c.law || c.self, tcol = TT.names.findIndex((x) => sameLaw(x, name));
@@ -2052,8 +2104,12 @@ function ttLinks(v) {
   const buildMap = () => (MAP || (MAP = (async () => {
     const m = new Map(), jobs = [];
     g.querySelectorAll(".ta a.c").forEach((a) => {
-      const t = target(a); if (!t || !t.c.sub) return;
+      const t = target(a); if (!t) return;
       const from = a.closest(".ta");
+      if (!t.c.sub) {                                            // 조 전체 인용('법 제36조'): 그 조의 모든 줄과 잇는다
+        t.ta.querySelectorAll(".ln").forEach((ln) => { const k = t.ta.dataset.id + "#" + ln.dataset.i; if (!m.has(k)) m.set(k, []); m.get(k).push({ ta: from, a, whole: true }); });
+        return;
+      }
       jobs.push(ranges(t).then((r) => { if (r && r.hl) r.hl.forEach(([x, y]) => { for (let i = x; i < y; i++) { const k = t.ta.dataset.id + "#" + i; if (!m.has(k)) m.set(k, []); m.get(k).push({ ta: from, a }); } }); }));
     });
     await Promise.all(jobs); return m;
@@ -2062,11 +2118,13 @@ function ttLinks(v) {
     const a = e.target.closest("a.c");
     if (a) {                                                     // 인용에 올림 -> 가리키는 줄 강조
       const t = target(a); if (!t) return;
+      if (!t.c.sub) { clearX(); t.ta.classList.add("wh"); showIn(t.ta, a); return; }   // 조 전체 인용 -> 그 조 전체를 옅게 강조
       const r = await ranges(t);
       if (!r || !r.hl || !r.hl.length || a !== document.querySelector("a.c:hover")) return;
       clearX();
       const lines = [...t.ta.querySelectorAll(".ln")];
       r.hl.forEach(([x, y]) => { for (let i = x; i < y; i++) if (lines[i]) lines[i].classList.add("hlx"); });
+      showIn(t.ta.querySelector(".ln.hlx"), a);
       return;
     }
     const ln = e.target.closest(".ln"), ta = ln && ln.closest(".ta");
@@ -2078,6 +2136,7 @@ function ttLinks(v) {
     clear(); clearX();
     g.classList.add("ttf"); ta.classList.add("src"); ln.classList.add("hlx");
     hits.forEach((h) => { h.ta.classList.add("rel"); h.a.classList.add("hlc"); });
+    const seen = new Set(); hits.forEach((h) => { const c = h.a.closest(".col"); if (!seen.has(c)) { seen.add(c); showIn(h.a, ln); } });
   });
   g.addEventListener("mouseout", (e) => { if (e.target.closest("a.c")) clearX(); else if (e.target.closest(".ln") && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(".ln"))) { clearX(); if (!pin) clear(); } });
 }
