@@ -63,6 +63,9 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .fgh .tag{font-size:.78em;padding:0 5px;margin:0}
 .fgh .sm{min-width:34px;height:28px;font-size:.8em;border:0;background:var(--soft);padding:0}
 .card.fi{margin-left:10px;padding:7px 10px;margin-bottom:4px;border-radius:8px}
+.tag.fb{min-width:1.3em;text-align:center;padding:1px 5px;margin-right:6px}
+.tag.fb.rl{background:var(--law)}.tag.fb.ry{background:#d9822b}.tag.fb.rc{background:#7a5ac8}
+.card.fi .nm{display:flex;align-items:center}
 .card .sm{min-width:32px;height:30px;font-size:.85em}
 .muted{color:var(--muted)}
 .grp{margin:14px 2px 6px;font-weight:700;color:var(--acc-d)}
@@ -484,7 +487,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.38";
+const VERSION = "10.39";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
