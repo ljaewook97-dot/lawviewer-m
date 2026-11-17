@@ -260,7 +260,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   .fv{min-width:22px;height:22px;font-size:1em}
   .head{margin:12px 0 4px;font-size:1em}
   #ltabs{display:flex;position:fixed;top:var(--hh);left:var(--lw);right:var(--rw);height:var(--th);z-index:15;background:var(--soft);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap;align-items:flex-end}
-  #ltabs .lt{--tc:#1565C0;display:flex;align-items:center;gap:4px;padding:0 4px 0 11px;margin:6px 2px 0;height:calc(100% - 6px);box-sizing:border-box;flex:none;border:1.5px solid color-mix(in srgb,var(--tc) 55%,transparent);border-bottom:0;border-radius:11px 11px 0 0;background:color-mix(in srgb,var(--tc) 9%,var(--soft));color:var(--sub);cursor:pointer;max-width:300px;font-size:.8em}
+  #ltabs .lt{--tc:#1565C0;display:flex;align-items:center;gap:4px;padding:0 4px 0 11px;margin:6px 2px 0;height:calc(100% - 6px);box-sizing:border-box;flex:none;border:1.5px solid color-mix(in srgb,var(--tc) 55%,transparent);border-bottom:0;border-radius:5px 5px 0 0;background:color-mix(in srgb,var(--tc) 9%,var(--soft));color:var(--sub);cursor:pointer;max-width:300px;font-size:.8em}
   #ltabs .lt:first-child{margin-left:6px}
   #ltabs .lt span{overflow:hidden;text-overflow:ellipsis}
   #ltabs .lt:hover{background:color-mix(in srgb,var(--tc) 16%,var(--soft))}
@@ -443,7 +443,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.6";
+const VERSION = "10.7";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
