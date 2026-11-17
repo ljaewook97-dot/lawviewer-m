@@ -369,6 +369,19 @@ def cite_titles(items):
     return out
 
 
+def fav_rel(oc, base):
+    """본법 이름 -> 시행령·시행규칙 [{name,mst,date}] (없으면 건너뜀)"""
+    out = []
+    for suf in ("시행령", "시행규칙"):
+        try:
+            f = L.find_law(oc, base + " " + suf, getter)
+        except Exception:  # noqa: BLE001
+            continue
+        if L._nospace(f["name"]) == L._nospace(base + " " + suf):
+            out.append({"name": f["name"], "mst": f["mst"], "date": f.get("date", "")})
+    return out
+
+
 def tt_open(oc, base, cur_name, cur_mst, cur_key):
     """3단 비교표 줄 목록과 시작 줄"""
     tt = L.three_tier(oc, base, getter)
@@ -615,7 +628,7 @@ def web_url(kind, name, key=""):
 
 
 FUNCS = {"cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "compare_ver": compare_ver, "chain": chain, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
-         "tt_open": tt_open, "tt_row": tt_row, "set_api_base": set_api_base}
+         "tt_open": tt_open, "fav_rel": fav_rel, "tt_row": tt_row, "set_api_base": set_api_base}
 
 
 def call(fn, args_json):

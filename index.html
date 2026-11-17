@@ -475,7 +475,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.35";
+const VERSION = "10.36";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1060,8 +1060,17 @@ function favIdx(kind, rawmst, key) { return favs.findIndex((f) => f.kind === kin
 function toggleFav(d, key) {
   const i = favIdx(d.kind, d.rawmst, key);
   if (i >= 0) { favs.splice(i, 1); toast("즐겨찾기에서 뺐습니다"); }
-  else { favs.push({ kind: d.kind, rawmst: d.rawmst, lawname: d.name, date: d.date, key: key || "", label: key ? d.arts[key].label + " " + d.arts[key].title : "" }); toast("즐겨찾기에 담았습니다"); }
+  else { favs.push({ kind: d.kind, rawmst: d.rawmst, lawname: d.name, date: d.date, key: key || "", label: key ? d.arts[key].label + " " + d.arts[key].title : "" }); toast("즐겨찾기에 담았습니다"); if (!key && d.kind === "law" && !/시행(령|규칙)$/.test(d.name)) favAddRel(d.name); }
   saveFavs();
+}
+async function favAddRel(base) {
+  if (!OC) return;
+  try {
+    const r = await call("fav_rel", [OC, base], "");
+    let n = 0;
+    (r || []).forEach((x) => { if (favIdx("law", x.mst, "") < 0 && !favs.some((f) => f.kind === "law" && f.lawname === x.name && !f.key)) { favs.push({ kind: "law", rawmst: x.mst, lawname: x.name, date: x.date || "", key: "", label: "" }); n++; } });
+    if (n) { saveFavs(); if (tab === "f") paintFavs(); toast("시행령·시행규칙 " + n + "개도 함께 담았습니다"); }
+  } catch (e) {}
 }
 
 // ---------------------------------------------------------------- 본문 그리기
