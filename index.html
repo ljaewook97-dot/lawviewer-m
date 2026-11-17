@@ -252,7 +252,13 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #ctx.on{display:block}
   #ctx div{padding:5px 14px;font-size:.88em;cursor:pointer}
   #ctx div:hover{background:var(--acc-soft)}
-  .card.dov{box-shadow:inset 0 3px 0 #E0A800}
+  .card.dov,.fgh.dov{box-shadow:inset 0 3px 0 #E0A800}
+.fgh{display:flex;align-items:center;gap:6px;padding:6px 8px;margin:8px 0 3px;border-radius:7px;background:var(--line);font-weight:700;cursor:pointer;user-select:none}
+.fgh .gn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fgh .gc{font-weight:400;opacity:.6;font-size:.85em}
+.fgh .ar{opacity:.6;font-size:.85em}
+.fgh .sm{border:0;background:none;color:var(--muted);padding:0 3px}
+.card.fi{margin-left:10px}
   #busy{inset:auto;left:0;bottom:0;width:max(var(--lw),270px);background:none;display:none;pointer-events:none;z-index:65}
   #busy.on{display:block}
   #busy .bx{max-width:none;width:100%;border-radius:0;padding:6px 10px 7px;text-align:left;box-shadow:0 -2px 10px rgba(0,0,0,.15);border-top:1px solid var(--line);position:relative;overflow:hidden}
@@ -290,9 +296,11 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #list .card[data-ci] .nm{display:flex;align-items:baseline;overflow:hidden;min-width:0;font-weight:600;font-size:.88em}
   #list .card[data-ci] .nm .tag{flex:0 0 auto}
   #list .card[data-ci] .nm .h{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-  #list .card[data-ci] .nm .t{flex:0 0 auto;white-space:nowrap}
-  #list .card[data-ci] .nm .t.ry{color:#fff;background:#d9822b;border-radius:5px;padding:0 4px;margin-left:4px;font-size:.9em}
-  #list .card[data-ci] .nm .t.rc{color:#fff;background:#7a5ac8;border-radius:5px;padding:0 4px;margin-left:4px;font-size:.9em}
+  #list .card[data-ci] .nm .h{min-width:3em}
+  #list .card[data-ci] .nm .tag.fb{min-width:1.3em;text-align:center;padding:1px 4px;margin-right:5px}
+  #list .card[data-ci] .nm .tag.fb.rl{background:var(--law)}
+  #list .card[data-ci] .nm .tag.fb.ry{background:#d9822b}
+  #list .card[data-ci] .nm .tag.fb.rc{background:#7a5ac8}
   #list .card[data-ci] .in:empty{display:none}
   #list .card[data-ci] .in{white-space:nowrap;flex:0 0 auto;margin:0;font-size:.74em}
   #list .card[data-ci] .sm{min-width:18px;height:18px;font-size:.72em;border:0;background:none;color:var(--muted);padding:0}
@@ -464,7 +472,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.31";
+const VERSION = "10.33";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -992,29 +1000,48 @@ async function revCheck(force) {
     if (m) { REV = { ts: Date.now(), m }; LS.set("lv_rev", REV); if (tab === "f") paintFavs(); }
   } finally { revBusy = false; }
 }
-function favNm(n) { n = String(n); const m = n.match(/(\((령|칙)\)|\s*시행령|\s*시행규칙)$/); let h, t, c = ""; if (m) { h = n.slice(0, m.index); t = m[0].trim(); c = /령/.test(t) ? " ry" : " rc"; } else { h = n.slice(0, -2); t = n.slice(-2); if (h.length < 3) { h = n; t = ""; } } return '<span class="h">' + esc(h) + "</span>" + (t ? '<span class="t' + c + '">' + esc(t) + "</span>" : ""); }
+function favBadge(n, kind) { n = String(n); if (kind !== "law") return ""; const c = /시행령$/.test(n) ? ["령", "ry"] : /시행규칙$/.test(n) ? ["칙", "rc"] : ["법", "rl"]; return '<span class="tag fb ' + c[1] + '">' + c[0] + "</span>"; }
+function favNm(n, kind) { n = String(n); if (kind === "law") n = n.replace(/\s*(시행령|시행규칙)$/, ""); return '<span class="h">' + esc(n) + "</span>"; }
+const favBase = (f) => (f.kind === "law" ? String(f.lawname).replace(/\s*(시행령|시행규칙)$/, "") : String(f.lawname));
+const favRank = (f) => (f.kind !== "law" ? 0 : /시행령$/.test(f.lawname) ? 1 : /시행규칙$/.test(f.lawname) ? 2 : 0);
+let favClosed = LS.get("lv_favc", []);
+function favGroups() {
+  const gs = [], mp = {};
+  favs.forEach((f, i) => { const k = f.kind + "|" + favBase(f); if (!mp[k]) { mp[k] = { k, b: favBase(f), kind: f.kind, it: [] }; gs.push(mp[k]); } mp[k].it.push(i); });
+  gs.forEach((g) => g.it.sort((x, y) => favRank(favs[x]) - favRank(favs[y]) || (favs[x].key ? 1 : 0) - (favs[y].key ? 1 : 0) || x - y));
+  return gs;
+}
+function favApply(gs) { favs = gs.flatMap((g) => g.it.map((i) => favs[i])); saveFavs(); paintFavs(); }
+function favMoveGroup(k, to) { const gs = favGroups(), i = gs.findIndex((g) => g.k === k); if (i < 0) return; to = Math.max(0, Math.min(gs.length - 1, to)); if (to === i) return; const [g] = gs.splice(i, 1); gs.splice(to, 0, g); favApply(gs); }
 function paintFavs() {
   const L = $("#list");
   if (!favs.length) { L.innerHTML = '<div class="empty">즐겨찾기가 없습니다.<br>법령 화면 위의 ☆(법령 전체)나<br>조문 옆의 ☆(조문)를 눌러 담으세요.</div>'; return; }
-  L.innerHTML = favs.map((f, i) => '<div class="card" draggable="true" data-ci="' + i + '" title="' + esc(f.lawname + (f.key ? " " + (f.label || "") : "")) + '"><div class="m" data-i="' + i + '"><div class="nm"><span class="tag ' + f.kind + '">' + KIND[f.kind][0] + "</span>" + favNm(isDT() ? ltName(f.lawname) : f.lawname) + '</div><div class="in">' + (f.key ? esc(f.label || "") : (isDT() ? "" : "법령 전체")) + revTag(f, i) + '</div></div><button class="sm" data-u="' + i + '">▲</button><button class="sm" data-d="' + i + '">▼</button><button class="sm" data-x="' + i + '">✕</button></div>').join("");
+  const gs = favGroups(), gk = gs.map((g) => g.k);
+  L.innerHTML = gs.map((g, gi) => {
+    const shut = favClosed.includes(g.k);
+    let h = '<div class="fgh" draggable="true" data-g="' + gi + '" title="' + esc(g.b) + '"><span class="ar">' + (shut ? "▸" : "▾") + "</span>" + (g.kind === "law" ? "" : '<span class="tag ' + g.kind + '">' + KIND[g.kind][0] + "</span>") + '<span class="gn">' + esc(g.b) + '</span><span class="gc">' + g.it.length + '</span><button class="sm" data-gu="' + gi + '">▲</button><button class="sm" data-gd="' + gi + '">▼</button></div>';
+    if (!shut) h += g.it.map((i) => { const f = favs[i]; return '<div class="card fi" data-ci="' + i + '" title="' + esc(f.lawname + (f.key ? " " + (f.label || "") : "")) + '"><div class="m" data-i="' + i + '"><div class="nm">' + favBadge(f.lawname, f.kind) + '<span class="h">' + esc(f.key ? f.label || "" : "법령 전체") + '</span></div><div class="in">' + revTag(f, i) + '</div></div><button class="sm" data-x="' + i + '">✕</button></div>'; }).join("");
+    return h;
+  }).join("");
   L.querySelectorAll("[data-i]").forEach((c) => (c.onclick = () => { const f = favs[+c.dataset.i]; openDoc(f.kind, f.rawmst, f.lawname, f.date, f.key); }));
   L.querySelectorAll("[data-rv]").forEach((c) => (c.onclick = (e) => { e.stopPropagation(); openCmp(favs[+c.dataset.rv]); }));
-  L.querySelectorAll("[data-u]").forEach((c) => (c.onclick = () => mv(+c.dataset.u, -1)));
-  L.querySelectorAll("[data-d]").forEach((c) => (c.onclick = () => mv(+c.dataset.d, 1)));
+  L.querySelectorAll("[data-gu]").forEach((c) => (c.onclick = (e) => { e.stopPropagation(); favMoveGroup(gk[+c.dataset.gu], +c.dataset.gu - 1); }));
+  L.querySelectorAll("[data-gd]").forEach((c) => (c.onclick = (e) => { e.stopPropagation(); favMoveGroup(gk[+c.dataset.gd], +c.dataset.gd + 1); }));
   L.querySelectorAll("[data-x]").forEach((c) => (c.onclick = () => { favs.splice(+c.dataset.x, 1); saveFavs(); paintFavs(); }));
   let from = -1;
-  L.querySelectorAll(".card[data-ci]").forEach((c) => {
-    const i = +c.dataset.ci;
-    c.ondragstart = (e) => { from = i; e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", String(i)); } catch (x) {} };
+  L.querySelectorAll(".fgh").forEach((c) => {
+    const gi = +c.dataset.g;
+    c.onclick = () => { const k = gk[gi], i = favClosed.indexOf(k); if (i >= 0) favClosed.splice(i, 1); else favClosed.push(k); LS.set("lv_favc", favClosed); paintFavs(); };
+    c.ondragstart = (e) => { from = gi; e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", String(gi)); } catch (x) {} };
     c.ondragover = (e) => { if (from < 0) return; e.preventDefault(); c.classList.add("dov"); };
     c.ondragleave = () => c.classList.remove("dov");
-    c.ondrop = (e) => { e.preventDefault(); c.classList.remove("dov"); if (from < 0 || from === i) return; const [m] = favs.splice(from, 1); favs.splice(i, 0, m); from = -1; saveFavs(); paintFavs(); };
+    c.ondrop = (e) => { e.preventDefault(); c.classList.remove("dov"); if (from < 0 || from === gi) return; const f0 = from; from = -1; favMoveGroup(gk[f0], gi); };
     c.ondragend = () => { from = -1; L.querySelectorAll(".dov").forEach((x) => x.classList.remove("dov")); };
-    c.oncontextmenu = (e) => {
-      e.preventDefault();
-      const to = (j) => () => { j = Math.max(0, Math.min(favs.length - 1, j)); if (j === i) return; const [m] = favs.splice(i, 1); favs.splice(j, 0, m); saveFavs(); paintFavs(); };
-      showMenu(e.clientX, e.clientY, [["맨 위로", to(0)], ["위로", to(i - 1)], ["아래로", to(i + 1)], ["맨 아래로", to(favs.length - 1)], ["즐겨찾기에서 빼기", () => { favs.splice(i, 1); saveFavs(); paintFavs(); }]]);
-    };
+    c.oncontextmenu = (e) => { e.preventDefault(); const k = gk[gi]; showMenu(e.clientX, e.clientY, [["맨 위로", () => favMoveGroup(k, 0)], ["위로", () => favMoveGroup(k, gi - 1)], ["아래로", () => favMoveGroup(k, gi + 1)], ["맨 아래로", () => favMoveGroup(k, gs.length - 1)]]); };
+  });
+  L.querySelectorAll(".card[data-ci]").forEach((c) => {
+    const i = +c.dataset.ci;
+    c.oncontextmenu = (e) => { e.preventDefault(); showMenu(e.clientX, e.clientY, [["즐겨찾기에서 빼기", () => { favs.splice(i, 1); saveFavs(); paintFavs(); }]]); };
   });
 }
 function showMenu(x, y, items) {
