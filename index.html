@@ -265,6 +265,9 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #ltabs .lt.sm{background:var(--acc-soft,var(--soft));color:var(--acc-d);font-weight:700}
   #ltabs .lt.sm.on{background:var(--surf)}
   #ltabs .lt.on{background:var(--surf);color:var(--acc-d);font-weight:700;box-shadow:inset 0 -3px 0 var(--acc)}
+  #ltabs .lt{--tc:#1565C0;box-shadow:inset 0 3px 0 var(--tc);background:color-mix(in srgb,var(--tc) 7%,transparent)}
+  #ltabs .lt.k-dec{--tc:#2E7D32}#ltabs .lt.k-rule{--tc:#EF6C00}#ltabs .lt.k-adm{--tc:#7B1FA2}#ltabs .lt.k-ord{--tc:#00838F}
+  #ltabs .lt.on{box-shadow:inset 0 3px 0 var(--tc),inset 0 -3px 0 var(--acc);background:var(--surf)}
   #ltabs .lt b{font-weight:400;opacity:.6;padding:1px 5px;border-radius:5px}
   #ltabs .lt b:hover{background:var(--line);opacity:1}
   #dtEmpty{display:block;position:fixed;top:calc(var(--hh) + var(--th) + var(--bh));left:var(--lw);right:var(--rw);bottom:0;padding:90px 30px;text-align:center;color:var(--muted);line-height:1.8;z-index:1;pointer-events:none}
@@ -309,6 +312,14 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .accF{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}.accCf{flex-basis:100%;margin-top:6px;padding:8px 10px;border:1px solid #e5484d;border-radius:10px;font-size:.85em;line-height:1.5}.accCf div{display:flex;gap:6px;margin-top:6px}.accCf .btn{min-height:34px;padding:0 12px}
 #bSet.accDot{position:relative}#bSet.accDot::after{content:"";position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:#e53935;box-shadow:0 0 0 2px var(--acc)}
 #ovCmp .modal{display:flex;flex-direction:column;padding:14px}#ovCmp .cmpl{flex:1;min-height:0;overflow:auto;margin-top:6px}
+#cpv{position:fixed;z-index:60;max-width:470px;min-width:240px;background:var(--surf);color:var(--text);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 22px rgba(0,0,0,.22);padding:8px 11px;font-size:.84em;line-height:1.55;pointer-events:none;display:none}
+#cpv.on{display:block}#cpv .pt{font-weight:700;color:var(--acc-d);margin-bottom:3px}#cpv .pl{margin:1px 0}#cpv .pl.h{background:var(--acc-soft);border-radius:4px}#cpv .pm{color:var(--muted)}
+.chb{min-width:34px;height:34px;color:var(--muted);font-size:1.05em}.chb:hover{color:var(--acc)}
+@media (min-width:900px){.chb{min-width:22px;height:22px;font-size:.9em}}
+#ovChain .modal{display:flex;flex-direction:column;padding:14px}#ovChain .chl{flex:1;min-height:0;overflow:auto;margin-top:6px}
+.chh{font-size:.78em;font-weight:700;color:var(--sub);margin:10px 0 4px}.chn{display:flex;gap:6px;align-items:baseline;padding:6px 8px;border:1px solid var(--line);border-radius:8px;margin:3px 0;cursor:pointer;background:var(--bg);font-size:.88em;line-height:1.45}
+.chn:hover{background:var(--acc-soft)}.chn.r{border-color:var(--acc);background:var(--acc-soft);cursor:default;font-weight:700}.chn .tg{flex:none;font-size:.72em;padding:0 6px;border-radius:9px;color:#fff;background:#1565C0}
+.chn .tg.k-dec{background:#2E7D32}.chn .tg.k-rule{background:#EF6C00}.chn .tg.k-adm{background:#7B1FA2}.chn .sn{color:var(--muted);font-size:.9em}.chk{margin-left:16px;border-left:2px solid var(--line);padding-left:8px}.chk .chk{margin-left:12px}
 .cmpa{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:var(--bg)}
 .cmpa .ch{display:flex;gap:8px;align-items:center;font-weight:700;margin-bottom:4px;font-size:.92em}
 .cmpa .st{font-size:.72em;padding:0 7px;border-radius:9px;color:#fff;background:#E65100}.cmpa .st.n{background:#2E7D32}.cmpa .st.d{background:#B71C1C}
@@ -411,6 +422,12 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <textarea id="memoTa" placeholder="이 부분에 대한 메모를 적으세요"></textarea>
   <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" style="flex:1" id="memoOk">저장</button><button class="btn g" id="memoDel" hidden>메모 지우기</button><button class="btn g" id="memoNo">취소</button></div>
 </div></div>
+<div class="over" id="ovChain"><div class="modal">
+  <h3 id="chT">위임 사슬</h3>
+  <div class="muted" id="chS" style="font-size:.82em;line-height:1.5">이 조문을 누가 구체화하는지 — 법 → 시행령 → 시행규칙, 그리고 관련 지침·고시. 항목을 누르면 새 탭으로 엽니다.</div>
+  <div class="chl" id="chL"></div>
+  <div style="display:flex;gap:8px;margin-top:10px"><button class="btn g" id="chNo" style="flex:1">닫기</button></div>
+</div></div>
 <div class="over" id="ovCmp"><div class="modal">
   <h3 id="cmpT">신구 비교</h3>
   <div class="muted" id="cmpS" style="font-size:.82em;line-height:1.5"></div>
@@ -427,7 +444,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.0";
+const VERSION = "10.4";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -649,24 +666,24 @@ function sumHTML(page) {                                         // 검색 결�
   });
   return h + "</div>";
 }
-let wheelAt = 0, wheelMv = 0, wheelDir = 0, altHeld = false, altUsed = false;
-document.addEventListener("keydown", (e) => { if (e.key === "Alt") { altHeld = true; altUsed = false; } }, true);
-document.addEventListener("keyup", (e) => { if (e.key === "Alt") { altHeld = false; if (altUsed) { e.preventDefault(); altUsed = false; } } }, true);   // Alt를 떼면 브라우저 메뉴가 잡혀 다음 Alt+휠이 안 먹는 것을 막는다
+let wheelTs = 0, wheelMvTs = 0, wheelDir = 0, altHeld = false, altUsed = false;
+window.addEventListener("keydown", (e) => { if (e.key === "Alt") { if (!e.repeat) { altHeld = true; altUsed = false; } if (isDT()) e.preventDefault(); } }, true);   // Alt만 눌렀다 뗄 때 브라우저 메뉴가 잡혀 화면 클릭 뒤 Alt+휠이 어색해지는 것을 막는다
+window.addEventListener("keyup", (e) => { if (e.key === "Alt") { altHeld = false; altUsed = false; if (isDT()) e.preventDefault(); } }, true);
 window.addEventListener("blur", () => { altHeld = false; });
-document.addEventListener("wheel", (e) => {                       // Alt + 마우스 휠: 본문 탭 이동(검색 요약 탭 포함). Alt를 계속 누른 채로 휠을 굴릴 때마다 한 칸씩
+window.addEventListener("wheel", (e) => {                         // Alt + 마우스 휠: 본문 탭 이동(검색 요약 탭 포함). Alt를 누른 채 휠을 한 칸 굴릴 때마다 한 탭씩
   if (!(e.altKey || altHeld) || !isDT() || !e.deltaY) return;
   const items = (SUMTAB ? [{ s: 1 }] : []).concat(ltabs.map((t, i) => ({ i })));
   if (items.length < 2) return;
-  e.preventDefault(); altUsed = true;
-  const now = Date.now(), dir = e.deltaY > 0 ? 1 : -1, gap = now - wheelAt; wheelAt = now;
-  if (dir === wheelDir && (gap < 90 || now - wheelMv < 160)) return;   // 한 번 굴린 휠의 꼬리(관성)는 무시, 새로 굴리면 바로 다음 탭
-  wheelDir = dir; wheelMv = now;
+  e.preventDefault(); e.stopPropagation(); altUsed = true;
+  const ts = e.timeStamp, dir = e.deltaY > 0 ? 1 : -1, gap = ts - wheelTs; wheelTs = ts;   // 이벤트가 만들어진 시각으로 판단(화면을 다시 그리느라 늦게 처리돼도 휠 꼬리와 새 휠을 구별)
+  if (dir === wheelDir && (gap < 90 || ts - wheelMvTs < 140)) return;
+  wheelDir = dir; wheelMvTs = ts;
   let k = SUMACT ? 0 : items.findIndex((x) => x.i !== undefined && ltabs[x.i].d === cur.doc);
   if (k < 0) k = 0;
   k = (k + dir + items.length) % items.length;
   const x = items[k]; if (x.s) showSumTab(); else switchLTab(x.i);
   const on = $("#ltabs .lt.on"); if (on) on.scrollIntoView({ block: "nearest", inline: "nearest" });
-}, { passive: false });
+}, { passive: false, capture: true });
 document.addEventListener("click", (e) => {                      // 검색 요약(본문 탭·폰 목록 안 모두)
   const c = e.target.closest && e.target.closest("[data-hi]");
   if (c) { e.stopPropagation(); return void openHitArt(hits[+c.dataset.hi]); }
@@ -870,6 +887,77 @@ $("#cmpL").addEventListener("click", async (e) => {
   const x = CMPF.ch[+g.dataset.cg]; $("#ovCmp").classList.remove("on");
   await openDoc(CMPF.f.kind, CMPF.r.rawmst, CMPF.f.lawname, CMPF.r.date, x.key);
 });
+// ---- 위임 사슬
+let CHN = [];
+const chTag = (n) => n.kind === "adm" ? ["지침", "k-adm"] : /시행규칙$/.test(n.lawname) ? ["규칙", "k-rule"] : /시행령$/.test(n.lawname) ? ["시행령", "k-dec"] : ["법", ""];
+function chNode(n) {
+  const i = CHN.push(n) - 1, t = chTag(n);
+  return '<div class="chn" data-chi="' + i + '"><span class="tg ' + t[1] + '">' + t[0] + "</span><span><b>" + esc(n.lawname) + " " + esc(n.label) + "</b> " + esc(n.title || "") + (n.snippet ? '<div class="sn">' + esc(String(n.snippet).slice(0, 90)) + "</div>" : "") + "</span></div>";
+}
+async function openChain(key) {
+  const d = cur.doc; if (!d || needOC()) return;
+  const r = await call("chain", [OC, d.mst, key], "위임 사슬 찾는 중…");
+  CHN = [];
+  $("#chT").textContent = "위임 사슬 · " + r.root.lawname + " " + r.root.label;
+  let h = '<div class="chn r"><span class="tg">' + chTag({ lawname: r.root.lawname, kind: "law" })[0] + "</span><span>" + esc(r.root.lawname) + " " + esc(r.root.label) + " " + esc(r.root.title || "") + "</span></div>";
+  if (r.deleg.length) {
+    h += '<div class="chh">▼ 위임받은 하위 법령 조문</div><div class="chk">';
+    r.deleg.forEach((n) => { h += chNode(n); const k = n.kids; if (k && k.deleg.length) h += '<div class="chk">' + k.deleg.map(chNode).join("") + "</div>"; });
+    h += "</div>";
+  }
+  if (r.adm.length) h += '<div class="chh">▼ 관련 지침·고시 (이름·제목으로 찾은 것 — 위임 관계가 확정된 것은 아닙니다)</div><div class="chk">' + r.adm.map(chNode).join("") + "</div>";
+  if (r.note) h += '<div class="empty">' + esc(r.note) + "</div>";
+  $("#chL").innerHTML = h; $("#chL").scrollTop = 0; $("#ovChain").classList.add("on");
+}
+$("#chNo").onclick = () => $("#ovChain").classList.remove("on");
+$("#chL").addEventListener("click", async (e) => { const n = e.target.closest("[data-chi]"); if (!n) return; const x = CHN[+n.dataset.chi]; $("#ovChain").classList.remove("on"); await openHitArt(x); });
+document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest(".chb"); if (b) { e.stopPropagation(); openChain(b.dataset.ck); } });
+
+// ---- 인용 링크 미리보기 (마우스를 올리면)
+const cpv = document.createElement("div"); cpv.id = "cpv"; document.body.appendChild(cpv);
+let cpvT = null, cpvId = "", CPC = {};
+function cpvHide() { clearTimeout(cpvT); cpvId = ""; cpv.classList.remove("on"); }
+function cpvPaint(r, a) {
+  if (!r || !r.art) return cpvHide();
+  const L = r.art.lines, hl = (r.hl || []).length ? r.hl : [], pick = [];
+  L.forEach((l, i) => { if (i === 0 || hl.some((x) => i >= x[0] && i < x[1])) pick.push(i); });
+  if (pick.length < 4) for (let i = 1; i < L.length && pick.length < 4; i++) if (!pick.includes(i)) pick.push(i);
+  pick.sort((x, y) => x - y);
+  let h = '<div class="pt">' + esc(r.lawname || "") + " · " + esc(r.art.label) + " " + esc(r.art.title || "") + "</div>", prev = -1, n = 0;
+  for (const i of pick) {
+    if (n >= 8) { h += '<div class="pm">…</div>'; break; }
+    if (prev >= 0 && i > prev + 1) h += '<div class="pm">⋮</div>';
+    h += '<div class="pl' + (hl.some((x) => i >= x[0] && i < x[1]) ? " h" : "") + '">' + esc(String(L[i][1]).slice(0, 220)) + "</div>"; prev = i; n++;
+  }
+  if (L.length > prev + 1 && n < 9) h += '<div class="pm">…</div>';
+  cpv.innerHTML = h; cpv.classList.add("on");
+  const rc = a.getBoundingClientRect(), w = cpv.offsetWidth, hh = cpv.offsetHeight;
+  let x = Math.max(8, Math.min(rc.left, innerWidth - w - 8)), y = rc.bottom + 6;
+  if (y + hh > innerHeight - 8) y = Math.max(8, rc.top - hh - 6);
+  cpv.style.left = x + "px"; cpv.style.top = y + "px";
+}
+async function cpvShow(a, id) {
+  const c = CITES[+id]; if (!c) return;
+  let r = null;
+  if (c.kind === "c") { const d = cur.doc, art = d && c.ctx === d.mst && d.arts[c.to]; if (art) r = { lawname: d.name, art, hl: [] }; }
+  else if (!c.kind) {
+    const name = c.law || c.self || (cur.doc && cur.doc.name); if (!name) return;
+    const ck = [name, c.n, c.b, c.sub || "", c.ctx || (cur.doc && cur.doc.mst)].join("|");
+    r = CPC[ck];
+    if (!r) { r = await callQuiet("open_cite", [OC, name, c.n, c.b, c.sub ? [c.sub] : null, c.ctx || (cur.doc && cur.doc.mst)]); if (r) CPC[ck] = r; }
+  } else return;
+  if (cpvId !== id) return;
+  cpvPaint(r, a);
+}
+document.addEventListener("mouseover", (e) => {
+  if (!isDT() || !OC || !window.matchMedia("(hover:hover)").matches) return;
+  const a = e.target.closest && e.target.closest("a.c[data-c]");
+  if (!a) { if (cpvId) cpvHide(); return; }
+  const id = a.dataset.c; if (id === cpvId) return;
+  cpvHide(); cpvId = id; cpvT = setTimeout(() => cpvShow(a, id), 350);
+});
+document.addEventListener("mousedown", cpvHide, true);
+document.addEventListener("scroll", cpvHide, true);
 let revBusy = false;
 async function revCheck(force) {
   if (revBusy || !OC || !favs.length) return;
@@ -966,7 +1054,7 @@ function artHTML(a, ctx, opt) {
     let lh = lineHTML(l[1], l[2], l[0], ctx, opt.self, a.key);
     if (i === 0) lh = lh.replace(/^(제\d+(?:조|장|절|편)(?:의\d+)?|\d+(?:-\d+)+\.?|\d+\.)(?=\s|\(|<|$)/, '<b class="al">$1</b>');
     const body = '<div class="ln l' + Math.min(l[0], 4) + (hl ? " hl" : "") + '" data-k="' + a.key + '" data-i="' + i + '">' + lh + "</div>";
-    h += i === 0 && opt.fav ? '<div class="ah">' + body + '<button class="fv' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? " on" : "") + '" data-fk="' + a.key + '">' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? "★" : "☆") + "</button></div>" : body;
+    h += i === 0 && opt.fav ? '<div class="ah">' + body + '<button class="fv' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? " on" : "") + '" data-fk="' + a.key + '">' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? "★" : "☆") + "</button>" + (cur.doc.kind === "law" ? '<button class="chb" data-ck="' + a.key + '" title="위임 사슬: 이 조문이 시행령·시행규칙·지침 어디서 구체화되는지">⛓</button>' : "") + "</div>" : body;
   });
   if (fold) h += '</div><button class="mrb" data-n="' + (a.lines.length - FOLD) + '">▼ 나머지 ' + (a.lines.length - FOLD) + '줄 펼치기</button>';
   return h + "</div>";
@@ -1043,11 +1131,12 @@ async function restoreTabs() {
     }
   } finally { tabRestoring = false; saveTabs(); }
 }
+const tabCls = (d) => d.kind === "adm" ? "k-adm" : d.kind === "ordin" ? "k-ord" : /시행규칙$/.test(d.name) ? "k-rule" : /시행령$/.test(d.name) ? "k-dec" : "k-law";
 const ltName = (n) => String(n).replace(/\s*시행령$/, "(령)").replace(/\s*시행규칙$/, "(칙)");
 function paintLTabs() {
   saveTabs();
   const bar = $("#ltabs");
-  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + ltabs.map((t, i) => '<div class="lt' + (t.d === cur.doc && !SUMACT ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><span>' + esc(ltName(t.d.name)) + '</span><b data-x="' + i + '">✕</b></div>').join("");
+  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + ltabs.map((t, i) => '<div class="lt ' + tabCls(t.d) + (t.d === cur.doc && !SUMACT ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><span>' + esc(ltName(t.d.name)) + '</span><b data-x="' + i + '">✕</b></div>').join("");
   bar.querySelectorAll(".lt").forEach((el) => (el.onclick = (e) => {
     if (el.dataset.s) { if (e.target.dataset.xs !== undefined) return closeSumTab(); return showSumTab(); }
     const i = +el.dataset.i;

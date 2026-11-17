@@ -486,6 +486,48 @@ def compare_ver(oc, kind, name, old_mst, old_date, new_mst, new_date, key=""):
             "old_date": old_date, "new_date": new_date}
 
 
+def chain(oc, mst, key):
+    """조문 하나가 어디서 구체화되는지 한눈에: 이 조문 -> (시행령 -> 시행규칙) 위임 조문 + 관련 지침·고시"""
+    law, a = _cur_art(mst, key)
+    nm = law["name"]
+    out = {"root": {"lawname": nm, "label": a["label"], "title": a.get("title", ""), "mst": mst, "key": key}, "deleg": [], "adm": [], "note": ""}
+    isrule = nm.endswith("시행규칙")
+    isdec = nm.endswith("시행령")
+    if not isrule:
+        try:
+            r1 = L.deleg_lookup(oc, nm, "시행규칙" if isdec else "시행령", a["n"], a["b"], a.get("title", ""), getter)
+        except Exception:  # noqa: BLE001
+            r1 = {"hits": []}
+        seen = set()
+        for h in r1["hits"]:
+            if str(h["mst"]) == str(mst) or (h["mst"], h.get("key")) in seen:
+                continue
+            seen.add((h["mst"], h.get("key")))
+            out["deleg"].append(_hit(h))
+            if len(out["deleg"]) >= 12:
+                break
+        if not isdec:                                                    # 법 -> 시행령 조문 밑에 다시 시행규칙
+            for node in [x for x in out["deleg"] if x["lawname"].endswith("시행령")][:4]:
+                node["kids"] = {"deleg": [], "adm": []}
+                try:
+                    r2 = L.deleg_lookup(oc, node["lawname"], "시행규칙", int(node["key"].split(":")[0]), int(node["key"].split(":")[1] or 0), node["title"], getter)
+                except Exception:  # noqa: BLE001
+                    continue
+                for h in r2["hits"]:
+                    if len(node["kids"]["deleg"]) >= 6:
+                        break
+                    if h["lawname"].endswith("시행규칙"):
+                        node["kids"]["deleg"].append(_hit(h))
+    try:
+        ra = L.adm_search(oc, a.get("title", ""), nm, a.get("scan", ""), line="", cite=(nm, a["n"], a["b"]), getter=getter)
+        out["adm"] = [_hit(h) for h in ra["hits"][:6]]
+    except Exception:  # noqa: BLE001
+        pass
+    if not out["deleg"] and not out["adm"]:
+        out["note"] = "이 조문에서 이어지는 하위 법령·지침을 찾지 못했습니다"
+    return out
+
+
 def web_url(kind, name, key=""):
     """법제처에서 열기 주소"""
     n = b = None
@@ -499,7 +541,7 @@ def web_url(kind, name, key=""):
     return L.web_url(L.parse_query(q))
 
 
-FUNCS = {"cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "compare_ver": compare_ver, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
+FUNCS = {"cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "compare_ver": compare_ver, "chain": chain, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
          "tt_open": tt_open, "tt_row": tt_row, "set_api_base": set_api_base}
 
 
