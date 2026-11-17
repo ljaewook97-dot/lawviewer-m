@@ -446,7 +446,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.16";
+const VERSION = "10.17";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1043,6 +1043,25 @@ function lineHTML(text, spans, lv, ctx, self, akey) {
   emit(pos, text.length);
   return mk ? '<span class="mk">' + esc(mk) + '</span><span class="mt">' + out + "</span>" : out;
 }
+function annexHTML(x, i, idp) {
+  let h = '<div class="art" id="' + idp + i + '"><div class="ln l0"><b>[' + esc(x.label) + "] " + esc(x.title) + "</b></div>";
+  if (x.deleted) h += '<div class="ln l1 muted">삭제</div>';
+  let tb = false;
+  x.lines.forEach((l) => {
+    if (l[0] === 9) {
+      let row = []; try { row = JSON.parse(l[1]); } catch (e) { row = [[1, l[1]]]; }
+      if (!tb) { h += '<div class="axw"><table class="axt">'; tb = true; }
+      const hd = h.endsWith('<table class="axt">');
+      h += "<tr>" + row.map((c) => "<" + (hd ? "th" : "td") + (c[0] > 1 ? ' colspan="' + c[0] + '"' : "") + ">" + esc(c[1]).replace(/\n/g, "<br>") + "</" + (hd ? "th" : "td") + ">").join("") + "</tr>";
+      return;
+    }
+    if (tb) { h += "</table></div>"; tb = false; }
+    h += '<div class="ln l' + Math.min(l[0], 4) + '">' + esc(l[1]) + "</div>";
+  });
+  if (tb) h += "</table></div>";
+  if (x.url) h += '<a class="axl" href="' + esc(x.url) + '" target="_blank" rel="noopener">원본 파일 열기 ▸</a>';
+  return h + "</div>";
+}
 function artHTML(a, ctx, opt) {
   opt = opt || {};
   const FOLD = 6, fold = false;   // 본문은 항상 펼쳐 보여 준다(긴 조문 접기는 쓰지 않음)   // 긴 조문은 앞 6줄만 보이고 나머지는 접는다
@@ -1174,25 +1193,7 @@ function showDoc(d, kind, rawmst, key, fromTab) {
   d.items.forEach((it) => { h += it.k === "h" ? '<div class="head">' + esc(it.t) + "</div>" : artHTML(d.arts[it.key], d.mst, { fav: true, self: d.kind === "adm" && d.adm_base ? d.adm_base : d.name }); });
   if ((d.annex || []).length) {
     h += '<div class="head">별표·서식 (' + d.annex.length + ")</div>";
-    d.annex.forEach((x, i) => {
-      h += '<div class="art" id="ax-' + i + '"><div class="ln l0"><b>[' + esc(x.label) + "] " + esc(x.title) + "</b></div>";
-      if (x.deleted) h += '<div class="ln l1 muted">삭제</div>';
-      let tb = false;
-      x.lines.forEach((l) => {
-        if (l[0] === 9) {                               // 표 한 행: JSON [[칸수, 글], ...]
-          let row = []; try { row = JSON.parse(l[1]); } catch (e) { row = [[1, l[1]]]; }
-          if (!tb) { h += '<div class="axw"><table class="axt">'; tb = true; }
-          const hd = h.endsWith('<table class="axt">');
-          h += "<tr>" + row.map((c) => "<" + (hd ? "th" : "td") + (c[0] > 1 ? ' colspan="' + c[0] + '"' : "") + ">" + esc(c[1]).replace(/\n/g, "<br>") + "</" + (hd ? "th" : "td") + ">").join("") + "</tr>";
-          return;
-        }
-        if (tb) { h += "</table></div>"; tb = false; }
-        h += '<div class="ln l' + Math.min(l[0], 4) + '">' + esc(l[1]) + "</div>";
-      });
-      if (tb) h += "</table></div>";
-      if (x.url) h += '<a class="axl" href="' + esc(x.url) + '" target="_blank" rel="noopener">원본 파일 열기 ▸</a>';
-      h += "</div>";
-    });
+    d.annex.forEach((x, i) => { h += annexHTML(x, i, "ax-"); });
   }
   const b = $("#docBody"); b.innerHTML = h;
   b.onclick = (e) => { if (!isDT() || e.target.closest("a,button")) return; const art = e.target.closest(".art"); if (art && art.id.startsWith("a-")) setCurArt(art.id.slice(2)); };
@@ -1266,11 +1267,11 @@ function layoutPanes() {
 async function openCite(c, n, noPush) {
   if (needOC()) return;
   if (c.kind === "c") return openCodePane(c, n, noPush);
-  if (c.kind === "x") return openJump(c);
-  if (c.kind === "n") return openNamed(c);
-  if (c.kind === "k") return openNamedCode(c);
-  if (c.kind === "j") return openNamedAnnex(c);
-  if (c.kind) return openList(c);
+  if (c.kind === "x") return openJump(c, n);
+  if (c.kind === "n") return openNamed(c, n);
+  if (c.kind === "k") return openNamedCode(c, n);
+  if (c.kind === "j") return openNamedAnnex(c, n);
+  if (c.kind) return openList(c, n);
   n = isDT() ? (n || 1) : 1;
   const pn = PN[n];
   const name = c.law || c.self || cur.doc.name;
@@ -1282,9 +1283,15 @@ async function openCite(c, n, noPush) {
 function paintPane(n, r) {
   const pn = PN[n]; pn.now = r;
   pn.T.textContent = r.lawname + " · " + (r.art ? r.art.label + " " + r.art.title : r.label);
+  if (r.annex || r.list) pn.T.textContent = r.lawname + " · " + r.label;
   pn.S.style.display = r.summary ? "" : "none";
   pn.S.textContent = r.summary || "";
-  if (!r.art) pn.C.innerHTML = '<div class="empty">이 법령에는 ' + esc(r.label) + " 이(가) 없습니다.</div>";
+  if (r.annex) { pn.C.innerHTML = annexHTML(r.annex, 0, pn.idp + "ax-"); }
+  else if (r.list) {
+    pn.C.innerHTML = '<div class="ln l1 muted">' + esc(r.note || "") + "</div>" + r.list.map((x, i) => '<div class="ln l1"><a href="#" class="pl" data-i="' + i + '">' + esc(x.lawname) + (x.label ? " · " + esc(x.label) : "") + (x.title ? " " + esc(x.title) : "") + "</a></div>").join("");
+    pn.C.querySelectorAll("a.pl").forEach((a) => (a.onclick = (e) => { e.preventDefault(); paneOpenHit(n, r.list[+a.dataset.i]); }));
+  }
+  else if (!r.art) pn.C.innerHTML = '<div class="empty">이 법령에는 ' + esc(r.label) + " 이(가) 없습니다.</div>";
   else { pn.C.innerHTML = artHTML(r.art, r.mst, { hl: r.hl, idp: pn.idp, self: r.lawname }); bindCites(pn.C); }
   pn.el.classList.add("on");
   pn.C.scrollTop = 0;
@@ -1347,53 +1354,68 @@ function setSheetH(p) {
 });
 
 // ---------------------------------------------------------------- '대통령령으로'·'고시'·'조례' 눌렀을 때 관련 조문 목록
-async function openNamed(c) {                 // 본문에 이름이 적힌 지침('지구단위계획수립지침')은 그 지침 자체를 연다
+// ---- 모든 인용 링크는 본문을 옮기지 않고 아래(PC는 떠 있는) 창에 내용을 띄운다
+function toPane(n, r) { n = isDT() ? (n || 1) : 1; const pn = PN[n]; if (pn.now) pn.hist.push(pn.now); paintPane(n, r); }
+function artPane(d, key) { const a = d.arts[key]; return a ? { lawname: d.name, mst: d.mst, art: a, hl: [], summary: "", label: a.label } : null; }
+async function paneOpenHit(n, x) {
+  const d = x.key ? await call("open_cached", [x.mst, x.key], (x.lawname || "") + " 여는 중…")
+    : await call("open_doc", [OC, x.kind || "law", x.rawmst, x.lawname, x.date || ""], (x.lawname || "") + " 받는 중…");
+  const k = x.key && d.arts[x.key] ? x.key : (d.items.find((it) => it.k !== "h") || {}).key;
+  const r = k && artPane(d, k);
+  if (r) toPane(n, r); else toast("조문을 찾지 못했습니다", true);
+}
+function listPane(n, label, name, r, note) {
+  toPane(n, { lawname: name, mst: "", label, list: r.hits, note: note || (r.total + "건 · " + (r.note || "")), art: null });
+}
+async function openNamed(c, n) {
   const r = await call("find_adm", [OC, c.to], c.to + " 찾는 중…");
   if (!r.hits.length) return toast("'" + c.to + "' 을(를) 찾지 못했습니다", true);
-  if (r.exact) { const h = r.hits[0]; return openDoc("adm", h.rawmst, h.lawname, h.date, ""); }
-  hits = r.hits; hitNote = r.total + "건 · " + (r.note || ""); hitToks = []; setTab("r"); if (!isDT()) show("home");
+  if (r.exact) { const h = r.hits[0]; return paneOpenHit(n, h); }
+  listPane(n, c.to, "지침 찾기", r);
 }
-async function openNamedAnnex(c) {                            // '「건축법 시행령」 별표 1' -> 그 법령을 열어 그 법령의 별표 1 로
+async function openNamedAnnex(c, n) {
   const [nm, lab] = String(c.to).split("|");
-  await openByName(nm, "");
-  const d = cur.doc, i = d && (d.annex || []).findIndex((x) => x.label === lab);
-  if (i >= 0) goKey("ax:" + i); else toast(nm + " 에서 " + lab + " 을(를) 찾지 못했습니다", true);
+  const d = await call("open_by_name", [OC, nm], nm + " 받는 중…");
+  const x = (d.annex || []).find((y) => y.label === lab);
+  if (x) toPane(n, { lawname: d.name, mst: d.mst, label: x.label + " " + x.title, annex: x, art: null });
+  else toast(nm + " 에서 " + lab + " 을(를) 찾지 못했습니다", true);
 }
-async function openNamedCode(c) {             // '「광역도시계획수립지침」 3-5-3' : 이름이 적힌 그 지침을 열어 그 번호 조항으로(지금 보는 지침의 3-5-3 이 아님)
+async function openNamedCode(c, n) {
   const [nm, code] = String(c.to).split("|");
   const r = await call("find_adm", [OC, nm], nm + " 찾는 중…");
   if (!r.hits.length) return toast("'" + nm + "' 을(를) 찾지 못했습니다", true);
-  if (!r.exact) { hits = r.hits; hitNote = r.total + "건 · '" + nm + "' 을(를) 이름으로 찾았습니다 — 맞는 지침을 눌러 여세요"; hitToks = []; setTab("r"); if (!isDT()) show("home"); return; }
+  if (!r.exact) return listPane(n, nm, "지침 찾기", r, "'" + nm + "' 을(를) 이름으로 찾았습니다 — 맞는 지침을 누르세요");
   const h = r.hits[0];
-  await openDoc("adm", h.rawmst, h.lawname, h.date, "");
-  const key = cur.doc && Object.keys(cur.doc.arts).find((k) => cur.doc.arts[k].label === code);
-  if (key) goKey(key); else toast("'" + (cur.doc ? cur.doc.name : nm) + "' 에서 " + code + " 을(를) 찾지 못했습니다", true);
+  const d = await call("open_doc", [OC, "adm", h.rawmst, h.lawname, h.date || ""], h.lawname + " 받는 중…");
+  const key = Object.keys(d.arts).find((k) => d.arts[k].label === code);
+  const p = key && artPane(d, key);
+  if (p) toPane(n, p); else toast("'" + d.name + "' 에서 " + code + " 을(를) 찾지 못했습니다", true);
 }
-async function openList(c) {
+async function openList(c, n) {
   const fn = c.kind === "d" ? "list_deleg" : c.kind === "o" ? "list_ordin" : "list_adm";
   const args = c.kind === "d" ? [OC, c.ctx, c.akey, c.to] : c.kind === "o" ? [OC, c.ctx, c.akey, LS.get("lv_city", "고양시")] : [OC, c.ctx, c.akey, c.line || ""];
   const r = await call(fn, args, c.kind === "d" ? c.to + " 에서 위임받은 조문을 찾는 중…" : c.kind === "o" ? "조례를 찾는 중…" : "지침·고시를 찾는 중…");
   if (!r.hits.length) return toast("관련 조문을 찾지 못했습니다", true);
-  hits = r.hits; hitNote = r.total + "건 · " + (r.note || ""); hitToks = []; setTab("r");
-  if (c.kind !== "a") await openHitArt(r.hits[0]);                      // 위임·조례: 맨 위 조문을 새 탭(본문)으로 — 보던 법은 탭에 그대로 남음
-  else if (!isDT()) show("home");
+  if (r.hits.length === 1) return paneOpenHit(n, r.hits[0]);
+  listPane(n, c.kind === "d" ? c.to : c.kind === "o" ? "조례" : "지침·고시", "관련 조문", r);
 }
-async function openCodePane(c, n, noPush) {      // 지침 안의 '3-2-3' 같은 번호 링크: 본문을 옮기지 않고 아래 미리보기 창에 그 조항을 띄운다
+async function openCodePane(c, n, noPush) {
   let d = cur.doc;
   if (c.ctx && (!d || d.mst !== c.ctx)) d = await call("open_cached", [c.ctx, ""], "여는 중…");
-  const a = d && d.arts[c.to];
-  if (!a) return toast("이 지침에서 " + (c.to || "") + " 을(를) 찾지 못했습니다", true);
+  const p = d && artPane(d, c.to);
+  if (!p) return toast("이 지침에서 " + (c.to || "") + " 을(를) 찾지 못했습니다", true);
   n = isDT() ? (n || 1) : 1;
   const pn = PN[n];
   if (pn.now && !noPush) pn.hist.push(pn.now);
-  paintPane(n, { lawname: d.name, mst: d.mst, art: a, hl: [], summary: "", label: a.label });
+  paintPane(n, p);
 }
-async function openJump(c) {                 // 별표·서식 / 지침 번호 링크: 이 법령 안에서 그 자리로
+async function openJump(c, n) {
   let d = cur.doc;
-  if (c.ctx && (!d || d.mst !== c.ctx)) { const dd = await call("open_cached", [c.ctx, ""], "여는 중…"); showDoc(dd, dd.kind, dd.rawmst, ""); d = dd; }
-  if (c.kind === "c") return goKey(c.to);
-  const i = (d.annex || []).findIndex((x) => x.label === c.to);
-  if (i >= 0) goKey("ax:" + i); else toast("이 법령에서 " + c.to + " 을(를) 찾지 못했습니다", true);
+  if (c.ctx && (!d || d.mst !== c.ctx)) d = await call("open_cached", [c.ctx, ""], "여는 중…");
+  if (c.kind === "c") return openCodePane(c, n);
+  const x = (d.annex || []).find((y) => y.label === c.to);
+  if (x) toPane(n, { lawname: d.name, mst: d.mst, label: x.label + " " + x.title, annex: x, art: null });
+  else toast("이 법령에서 " + c.to + " 을(를) 찾지 못했습니다", true);
 }
 async function openHitArt(x) {
   if (needOC()) return;

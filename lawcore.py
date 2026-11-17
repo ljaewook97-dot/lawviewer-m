@@ -518,7 +518,7 @@ def _format_annex_text(raw, title=""):
 
 
 _VB = set("│┃|")                                   # 세로줄
-_JB = set("┌┐└┘├┤┬┴┼╋┏┓┗┛┣┫┳┻")                       # 모서리·교차
+_JB = set("┌┐└┘├┤┬┴┼╋┏┓┗┛┣┫┳┻┿┠┨┯┷┝┥╂╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬")                       # 모서리·교차
 _HB = set("─━═-")                                   # 가로줄
 _BOXCH = _VB | _JB | _HB | set("+ \t")
 _ITEM = re.compile(r"^(?:\d+\.|[가-하]\.|\d+\)|[가-하]\)|\(\d+\)|[①-⑳]|[※■□▣◆●○ㆍ·]|\-\s|비고|주\b)")
@@ -539,16 +539,26 @@ def _is_trow(ln):
     return sum(c in "│┃" for c in st) >= 2 or (st.count("|") >= 2 and not st.startswith("※")) or _is_border(ln)
 
 
+_JUNK = re.compile(r"[─━═║┌┐└┘├┤┬┴┼╋┏┓┗┛┣┫┳┻┿┠┨┯┷┝┥╂╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬│┃]+|-{3,}|={3,}|_{3,}")
+
+
 def _bars(ln):
-    """한 줄에서 세로줄(칸 경계)의 화면 칸 위치와, 그 사이의 글(칸 내용)"""
-    pos, col, cuts = [], 0, []
+    """한 줄에서 세로줄(칸 경계)의 화면 칸 위치와, 그 사이의 글(칸 내용). 줄 앞뒤의 바깥 글도 한 칸으로, 칸 안의 선 조각은 지운다"""
+    col, cuts = 0, []
     for i, c in enumerate(ln):
         if c in _VB or (c in _JB):
             cuts.append((col, i))
         col += _dw(c)
+    if not cuts:
+        return []
+    st = ln.strip()
+    if st and st[0] not in _VB and st[0] not in _JB:
+        cuts.insert(0, (0, -1))
+    if st and st[-1] not in _VB and st[-1] not in _JB:
+        cuts.append((col, len(ln)))
     cells = []
     for a, b in zip(cuts, cuts[1:]):
-        cells.append((a[0], b[0], ln[a[1] + 1:b[1]].strip()))
+        cells.append((a[0], b[0], _JUNK.sub("", ln[a[1] + 1:b[1]]).strip()))
     return cells
 
 
@@ -633,7 +643,8 @@ def format_annex(raw, title=""):
     def flush_tbl():
         nonlocal tbl
         if tbl:
-            rows = _format_table(tbl) if sum(1 for x in tbl if not _is_border(x)) >= 2 else None
+            nb = sum(1 for x in tbl if _is_border(x))
+            rows = _format_table(tbl) if (sum(1 for x in tbl if not _is_border(x)) >= 2 or nb >= 1) else None
             if rows:
                 flush_text()
                 for r in rows:
