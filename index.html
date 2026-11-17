@@ -282,8 +282,9 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #doc .body{max-width:var(--bw,none)}
   .fv{min-width:22px;height:22px;font-size:1em}
   .head{margin:12px 0 4px;font-size:1em}
-  #ltabs{display:flex;position:fixed;top:var(--hh);left:var(--lw);right:var(--rw);height:var(--th);z-index:15;background:var(--soft);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap;align-items:flex-end}
-  #ltabs .lt{--tc:#1565C0;display:flex;align-items:center;gap:4px;padding:0 4px 0 11px;margin:6px 2px 0;height:calc(100% - 6px);box-sizing:border-box;flex:none;border:1.5px solid color-mix(in srgb,var(--tc) 55%,transparent);border-bottom:0;border-radius:5px 5px 0 0;background:var(--soft);color:var(--sub);cursor:pointer;max-width:300px;font-size:.8em}
+  #ltabs{display:flex;position:fixed;top:var(--hh);left:var(--lw);right:var(--rw);height:var(--th);z-index:15;background:var(--soft);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap;align-items:flex-end;scrollbar-width:none}
+  #ltabs::-webkit-scrollbar{display:none}
+  #ltabs .lt{--tc:#1565C0;display:flex;align-items:center;gap:4px;padding:0 4px 0 11px;margin:6px 2px 0;height:calc(100% - 6px);box-sizing:border-box;flex:none;border:1.5px solid color-mix(in srgb,var(--tc) 55%,transparent);border-bottom:0;border-radius:5px 5px 0 0;background:var(--soft);color:var(--sub);cursor:pointer;max-width:200px;font-size:.8em}
   #ltabs .lt:first-child{margin-left:6px}
   #ltabs .lt span{overflow:hidden;text-overflow:ellipsis}
   #ltabs .lt:hover{background:var(--line)}
@@ -475,7 +476,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.36";
+const VERSION = "10.37";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1054,6 +1055,7 @@ function showMenu(x, y, items) {
   m.classList.add("on");
   m.style.left = Math.min(x, innerWidth - 170) + "px"; m.style.top = Math.min(y, innerHeight - m.offsetHeight - 6) + "px";
 }
+$("#ltabs").addEventListener("wheel", (e) => { if (e.deltaY && !e.deltaX) { e.preventDefault(); e.currentTarget.scrollLeft += e.deltaY; } }, { passive: false });
 document.addEventListener("pointerdown", (e) => { if (!e.target.closest("#ctx")) $("#ctx").classList.remove("on"); });
 function mv(i, d) { const j = i + d; if (j < 0 || j >= favs.length) return; [favs[i], favs[j]] = [favs[j], favs[i]]; saveFavs(); paintFavs(); }
 function favIdx(kind, rawmst, key) { return favs.findIndex((f) => f.kind === kind && f.rawmst === rawmst && (f.key || "") === (key || "")); }
