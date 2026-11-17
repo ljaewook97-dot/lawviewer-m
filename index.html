@@ -412,7 +412,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "9.4";
+const VERSION = "9.5";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -640,7 +640,7 @@ document.addEventListener("wheel", (e) => {                       // Alt + 마�
   const items = (SUMTAB ? [{ s: 1 }] : []).concat(ltabs.map((t, i) => ({ i })));
   if (items.length < 2) return;
   e.preventDefault();
-  const now = Date.now(); if (now - wheelAt < 140) return; wheelAt = now;
+  const now = Date.now(), gap = now - wheelAt; wheelAt = now; if (gap < 220) return;   // 휠이 계속 이어지는 동안은 한 번만 이동(멈췄다가 다시 굴리면 다음 탭)
   let k = SUMACT ? 0 : items.findIndex((x) => x.i !== undefined && ltabs[x.i].d === cur.doc);
   if (k < 0) k = 0;
   k = (k + (e.deltaY > 0 ? 1 : -1) + items.length) % items.length;
