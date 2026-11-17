@@ -287,7 +287,12 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #dtEmpty.off{display:none}
   #list .card[data-ci]{padding:2px 4px 2px 7px;margin-bottom:1px;border-radius:4px}
   #list .card[data-ci] .m{display:flex;align-items:baseline;gap:6px;overflow:hidden}
-  #list .card[data-ci] .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;font-weight:600;font-size:.88em}
+  #list .card[data-ci] .nm{display:flex;align-items:baseline;overflow:hidden;min-width:0;font-weight:600;font-size:.88em}
+  #list .card[data-ci] .nm .tag{flex:0 0 auto}
+  #list .card[data-ci] .nm .h{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  #list .card[data-ci] .nm .t{flex:0 0 auto;white-space:nowrap}
+  #list .card[data-ci] .nm .t.ry{color:#fff;background:#d9822b;border-radius:5px;padding:0 4px;margin-left:4px;font-size:.9em}
+  #list .card[data-ci] .nm .t.rc{color:#fff;background:#7a5ac8;border-radius:5px;padding:0 4px;margin-left:4px;font-size:.9em}
   #list .card[data-ci] .in:empty{display:none}
   #list .card[data-ci] .in{white-space:nowrap;flex:0 0 auto;margin:0;font-size:.74em}
   #list .card[data-ci] .sm{min-width:18px;height:18px;font-size:.72em;border:0;background:none;color:var(--muted);padding:0}
@@ -459,7 +464,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.30";
+const VERSION = "10.31";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -987,10 +992,11 @@ async function revCheck(force) {
     if (m) { REV = { ts: Date.now(), m }; LS.set("lv_rev", REV); if (tab === "f") paintFavs(); }
   } finally { revBusy = false; }
 }
+function favNm(n) { n = String(n); const m = n.match(/(\((령|칙)\)|\s*시행령|\s*시행규칙)$/); let h, t, c = ""; if (m) { h = n.slice(0, m.index); t = m[0].trim(); c = /령/.test(t) ? " ry" : " rc"; } else { h = n.slice(0, -2); t = n.slice(-2); if (h.length < 3) { h = n; t = ""; } } return '<span class="h">' + esc(h) + "</span>" + (t ? '<span class="t' + c + '">' + esc(t) + "</span>" : ""); }
 function paintFavs() {
   const L = $("#list");
   if (!favs.length) { L.innerHTML = '<div class="empty">즐겨찾기가 없습니다.<br>법령 화면 위의 ☆(법령 전체)나<br>조문 옆의 ☆(조문)를 눌러 담으세요.</div>'; return; }
-  L.innerHTML = favs.map((f, i) => '<div class="card" draggable="true" data-ci="' + i + '" title="' + esc(f.lawname + (f.key ? " " + (f.label || "") : "")) + '"><div class="m" data-i="' + i + '"><div class="nm"><span class="tag ' + f.kind + '">' + KIND[f.kind][0] + "</span>" + esc(isDT() ? ltName(f.lawname) : f.lawname) + '</div><div class="in">' + (f.key ? esc(f.label || "") : (isDT() ? "" : "법령 전체")) + revTag(f, i) + '</div></div><button class="sm" data-u="' + i + '">▲</button><button class="sm" data-d="' + i + '">▼</button><button class="sm" data-x="' + i + '">✕</button></div>').join("");
+  L.innerHTML = favs.map((f, i) => '<div class="card" draggable="true" data-ci="' + i + '" title="' + esc(f.lawname + (f.key ? " " + (f.label || "") : "")) + '"><div class="m" data-i="' + i + '"><div class="nm"><span class="tag ' + f.kind + '">' + KIND[f.kind][0] + "</span>" + favNm(isDT() ? ltName(f.lawname) : f.lawname) + '</div><div class="in">' + (f.key ? esc(f.label || "") : (isDT() ? "" : "법령 전체")) + revTag(f, i) + '</div></div><button class="sm" data-u="' + i + '">▲</button><button class="sm" data-d="' + i + '">▼</button><button class="sm" data-x="' + i + '">✕</button></div>').join("");
   L.querySelectorAll("[data-i]").forEach((c) => (c.onclick = () => { const f = favs[+c.dataset.i]; openDoc(f.kind, f.rawmst, f.lawname, f.date, f.key); }));
   L.querySelectorAll("[data-rv]").forEach((c) => (c.onclick = (e) => { e.stopPropagation(); openCmp(favs[+c.dataset.rv]); }));
   L.querySelectorAll("[data-u]").forEach((c) => (c.onclick = () => mv(+c.dataset.u, -1)));
