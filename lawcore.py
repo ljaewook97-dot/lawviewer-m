@@ -1120,6 +1120,20 @@ _MOK_CH = "가나다라마바사아자차카타파하"
 _MARK = re.compile(r"(?P<h>[①-⑳])|\((?P<p>\d{1,2})\)|(?<![0-9-])(?P<o>\d{1,2})\.(?=\s*[^\s\d.])|(?<![가-힣0-9])(?P<m>[가나다라마바사아자차카타파하])\.(?=[\s「『(])|(?P<m2>[가나다라마바사아자차카타파하])\.(?=[\s「『(])")
 
 
+_REF_NOSP = re.compile(r"^(?:[,·)]|(?:의|과|와|및|또는|부터|까지|에도|에서|에|을|를|은|는|이|가|로|으로|도|만|중)(?=[\s,.)·]|$))")
+_REF_SP = re.compile(r"^\s*(?:[,·]|(?:의|과|와|및|또는|부터|까지)(?=[\s,.)·]|$))")
+
+
+def _is_ref_marker(text, start, end, plen=1):
+    """①②(원숫자)·(n)이 새 항의 머리가 아니라 다른 조항을 가리키는 말('3-2-3(4)①의 규정', '①, ②의 경우')인지"""
+    before, after = text[:start], text[end:]
+    if re.search(r"\d-\d+(?:\(\d{1,2}\))?$", before):                   # 번호 인용 바로 뒤에 붙음
+        return True
+    if after[:1] and not after[:1].isspace():
+        return bool(_REF_NOSP.match(after))
+    return bool(_REF_SP.match(after))
+
+
 def split_flat_article(text):
     """한 줄로 이어 붙은 행정규칙 조문('① … ② … 1. … 2. … 가. …')을 항·호·목으로 나눈다.
     번호가 차례대로 이어지는 것만(항 ①②…, 호 1.2.…, 목 가.나.…) 표지로 받아들여 '제35조의2.' 같은 우연한 글자에 속지 않는다.
@@ -1129,10 +1143,13 @@ def split_flat_article(text):
     paren, circ, circ_used = False, 0, False                 # (1)(2)… 밑에서 ①②… 가 새로 시작하면 그 항의 호로 본다
     for m in _MARK.finditer(text):
         if m.group("p"):                                    # (1) (2) … 도 항처럼 차례대로 이어질 때만
-            if int(m.group("p")) == par and not re.search(r"\d-\d+\.$", text[:m.start()]):        # '3-5-1.(1)' 같은 번호 인용 뒤의 (1)은 항이 아님
+            if int(m.group("p")) == par and not re.search(r"\d-\d+\.$", text[:m.start()]) \
+                    and not _is_ref_marker(text, m.start(), m.end()):        # '3-5-1.(1)' 같은 번호 인용 뒤의 (1)은 항이 아님
                 marks.append((m.start(), "h")); par += 1; ho, mok, sub = 1, 0, 1
                 paren, circ, circ_used = True, 0, False
         elif m.group("h"):
+            if _is_ref_marker(text, m.start(), m.end()):    # '①, ②의 경우'·'3-2-3(4)①의 규정' 같은 인용은 항이 아님
+                continue
             idx = max(_HANG_CH.find(m.group("h")), 0)
             if paren and idx == circ:                       # (n) 밑의 ①②③ -> 호
                 marks.append((m.start(), "o")); circ = idx + 1; circ_used = True; mok = 0; sub = 1
