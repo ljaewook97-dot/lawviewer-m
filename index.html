@@ -454,7 +454,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.20";
+const VERSION = "10.21";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -608,7 +608,7 @@ function paintToc() {
   const els = [...L.querySelectorAll(".it")];
   els.forEach((el, i) => {
     if (el.classList.contains("h")) { const nx = els.slice(i + 1).find((x) => x.dataset.k); el.dataset.k = nx ? nx.dataset.k : ""; }
-    el.onclick = () => { if (el.dataset.k) goKey(el.dataset.k); };
+    el.onclick = () => { if (!el.dataset.k) return; if (TT && $("#tt").classList.contains("on")) ttGoKey(el.dataset.k); else goKey(el.dataset.k); };
     el.classList.add("fit");
   });
   fitToc();
@@ -1918,6 +1918,11 @@ async function ttShow(i) {
   ttLinks(v);
 }
 // 3단 비교: 조문 위에 마우스를 올리면(폰은 한 번 누르면) 같은 줄의 나머지 조문만 남기고 지시선으로 이어 준다
+async function ttGoKey(key) {                                    // 3단 비교를 보는 중에 목차에서 조를 고르면 그 조의 3단 비교로
+  let i = cur.doc && cur.doc.name === TT.names[0] ? TT.rows.findIndex((r) => r.key === key) : -1;
+  if (i < 0) { try { i = (await call("tt_open", [OC, TT.base, cur.doc.name, cur.doc.mst, key], "")).start; } catch (e) { return; } }
+  ttShow(i);
+}
 function ttLinks(v) {
   const g = v.querySelector(".ttg"), svg = g.querySelector(".ttl"), tas = [...g.querySelectorAll(".ta")];
   let pin = null;
