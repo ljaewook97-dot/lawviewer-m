@@ -412,7 +412,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "9.5";
+const VERSION = "9.6";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1121,6 +1121,7 @@ async function openCite(c, n, noPush) {
   if (c.kind === "c") return openCodePane(c, n, noPush);
   if (c.kind === "x") return openJump(c);
   if (c.kind === "n") return openNamed(c);
+  if (c.kind === "k") return openNamedCode(c);
   if (c.kind) return openList(c);
   n = isDT() ? (n || 1) : 1;
   const pn = PN[n];
@@ -1203,6 +1204,16 @@ async function openNamed(c) {                 // 본문에 이름이 적힌 지�
   if (!r.hits.length) return toast("'" + c.to + "' 을(를) 찾지 못했습니다", true);
   if (r.exact) { const h = r.hits[0]; return openDoc("adm", h.rawmst, h.lawname, h.date, ""); }
   hits = r.hits; hitNote = r.total + "건 · " + (r.note || ""); hitToks = []; setTab("r"); if (!isDT()) show("home");
+}
+async function openNamedCode(c) {             // '「광역도시계획수립지침」 3-5-3' : 이름이 적힌 그 지침을 열어 그 번호 조항으로(지금 보는 지침의 3-5-3 이 아님)
+  const [nm, code] = String(c.to).split("|");
+  const r = await call("find_adm", [OC, nm], nm + " 찾는 중…");
+  if (!r.hits.length) return toast("'" + nm + "' 을(를) 찾지 못했습니다", true);
+  if (!r.exact) { hits = r.hits; hitNote = r.total + "건 · '" + nm + "' 을(를) 이름으로 찾았습니다 — 맞는 지침을 눌러 여세요"; hitToks = []; setTab("r"); if (!isDT()) show("home"); return; }
+  const h = r.hits[0];
+  await openDoc("adm", h.rawmst, h.lawname, h.date, "");
+  const key = cur.doc && Object.keys(cur.doc.arts).find((k) => cur.doc.arts[k].label === code);
+  if (key) goKey(key); else toast("'" + (cur.doc ? cur.doc.name : nm) + "' 에서 " + code + " 을(를) 찾지 못했습니다", true);
 }
 async function openList(c) {
   const fn = c.kind === "d" ? "list_deleg" : c.kind === "o" ? "list_ordin" : "list_adm";

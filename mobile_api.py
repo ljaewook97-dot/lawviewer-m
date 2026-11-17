@@ -116,6 +116,10 @@ def _spans(text, selfname, law=None, lv=0):
                         continue
                     if text[:m.start()].strip() == "" and text[m.end():m.end() + 1] == ".":
                         continue
+                    nmk = _named_before_code(text, m.start(), selfname)       # '「광역도시계획수립지침」 3-5-3' -> 그 지침의 3-5-3 (이 지침 안의 번호가 아님)
+                    if nmk:
+                        out.append([nmk[0], m.end(), "@k", nmk[1] + "|" + m.group(0), 0, None]); taken.append((nmk[0], m.end()))
+                        continue
                     out.append([m.start(), m.end(), "@c", codes[m.group(0)], 0, None]); taken.append((m.start(), m.end()))
         except Exception:  # noqa: BLE001
             pass
@@ -147,6 +151,22 @@ def _adm_name_before(text, a, b):
     if not m or m.group(1) in _ADM_NAME_BAD:
         return ""
     return m.group(1)
+
+
+def _named_before_code(text, pos, selfname):
+    """번호(text[pos:]) 바로 앞에 다른 지침 이름이 있으면 (이름 시작 위치, 이름) — '「광역도시계획수립지침」 3-5-3', '광역도시계획수립지침 3-5-3', '…지침」의 3-5-3'"""
+    import re as _re
+    m = _re.search(r"(?:「([^」]{2,40})」|([가-힣ㆍ·]{2,30}))(?:의)?\s*$", text[:pos])
+    if not m:
+        return None
+    nm = m.group(1) or m.group(2)
+    if not nm.endswith("지침") or nm in _ADM_NAME_BAD:
+        return None
+    norm = lambda x: _re.sub(r"[\sㆍ·]", "", x or "")
+    me = norm(selfname)
+    if me and (norm(nm) == me or me.endswith(norm(nm))):         # 지금 보는 지침 자신이면 보통 번호 링크
+        return None
+    return (m.start(), nm)
 
 
 def _art_json(a, selfname, spans=True, law=None):
