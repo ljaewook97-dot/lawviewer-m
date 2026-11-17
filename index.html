@@ -59,6 +59,9 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .muted{color:var(--muted)}
 .grp{margin:14px 2px 6px;font-weight:700;color:var(--acc-d)}
 #doc{background:color-mix(in srgb,var(--surf) 94%,gray)}
+.axw{overflow-x:auto;margin:6px 0 10px}.axt{border-collapse:collapse;font-size:.92em;line-height:1.55;min-width:60%}
+.axt th,.axt td{border:1px solid var(--line);padding:5px 8px;vertical-align:top;text-align:left;word-break:keep-all;overflow-wrap:anywhere}
+.axt th{background:color-mix(in srgb,var(--text) 6%,transparent);font-weight:700}
 #doc .body{padding:4px 14px 120px}
 .head{margin:26px 0 10px;text-align:left;font-weight:700;color:var(--acc-d);font-size:1.08em;border-left:3px solid var(--acc);padding:1px 0 1px 8px}
 .art{padding:14px 0 12px;border-bottom:1px solid var(--line)}b.al,.ln.l0>b:first-child{font-weight:800;color:var(--acc-d);font-size:1.04em}
@@ -443,7 +446,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.14";
+const VERSION = "10.15";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1174,7 +1177,19 @@ function showDoc(d, kind, rawmst, key, fromTab) {
     d.annex.forEach((x, i) => {
       h += '<div class="art" id="ax-' + i + '"><div class="ln l0"><b>[' + esc(x.label) + "] " + esc(x.title) + "</b></div>";
       if (x.deleted) h += '<div class="ln l1 muted">삭제</div>';
-      x.lines.forEach((l) => (h += '<div class="ln l' + Math.min(l[0], 4) + '">' + esc(l[1]) + "</div>"));
+      let tb = false;
+      x.lines.forEach((l) => {
+        if (l[0] === 9) {                               // 표 한 행: JSON [[칸수, 글], ...]
+          let row = []; try { row = JSON.parse(l[1]); } catch (e) { row = [[1, l[1]]]; }
+          if (!tb) { h += '<div class="axw"><table class="axt">'; tb = true; }
+          const hd = h.endsWith('<table class="axt">');
+          h += "<tr>" + row.map((c) => "<" + (hd ? "th" : "td") + (c[0] > 1 ? ' colspan="' + c[0] + '"' : "") + ">" + esc(c[1]).replace(/\n/g, "<br>") + "</" + (hd ? "th" : "td") + ">").join("") + "</tr>";
+          return;
+        }
+        if (tb) { h += "</table></div>"; tb = false; }
+        h += '<div class="ln l' + Math.min(l[0], 4) + '">' + esc(l[1]) + "</div>";
+      });
+      if (tb) h += "</table></div>";
       if (x.url) h += '<a class="axl" href="' + esc(x.url) + '" target="_blank" rel="noopener">원본 파일 열기 ▸</a>';
       h += "</div>";
     });

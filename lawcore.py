@@ -477,7 +477,7 @@ def _ax_val(kind, g):
     return int(g)
 
 
-def format_annex(raw, title=""):
+def _format_annex_text(raw, title=""):
     """별표 본문(줄 목록) -> [(단계, 글)]. 번호(1. 가. 1) 가) (1) ①)를 보고 들여쓸 단계를 정하되, 번호가 차례(1,2,3 / 가,나,다)로 이어질 때만 번호로 인정한다
     ('…이하 같\n다) 및 …'처럼 잘린 줄의 '다)'를 번호로 착각하지 않게). 번호 없이 이어지는 줄(고정 너비로 잘린 줄 바꿈)은 앞 줄에 이어 붙인다.
     HTML 문자(&lt; 등)는 풀고, 첫머리의 중복된 제목 줄은 뺀다."""
@@ -515,6 +515,144 @@ def format_annex(raw, title=""):
             continue
         out.append((lv, st, len(st)))
     return [(lv, t) for lv, t, _w in out]
+
+
+_VB = set("│┃|")                                   # 세로줄
+_JB = set("┌┐└┘├┤┬┴┼╋┏┓┗┛┣┫┳┻")                       # 모서리·교차
+_HB = set("─━═-")                                   # 가로줄
+_BOXCH = _VB | _JB | _HB | set("+ \t")
+_ITEM = re.compile(r"^(?:\d+\.|[가-하]\.|\d+\)|[가-하]\)|\(\d+\)|[①-⑳]|[※■□▣◆●○ㆍ·]|\-\s|비고|주\b)")
+
+
+def _dw(ch):
+    import unicodedata
+    return 2 if unicodedata.east_asian_width(ch) in ("W", "F") else 1
+
+
+def _is_border(ln):
+    st = ln.strip()
+    return len(st) >= 3 and all(c in _BOXCH for c in st) and sum(c in _HB or c in _JB for c in st) >= 3
+
+
+def _is_trow(ln):
+    st = ln.strip()
+    return sum(c in "│┃" for c in st) >= 2 or (st.count("|") >= 2 and not st.startswith("※")) or _is_border(ln)
+
+
+def _bars(ln):
+    """한 줄에서 세로줄(칸 경계)의 화면 칸 위치와, 그 사이의 글(칸 내용)"""
+    pos, col, cuts = [], 0, []
+    for i, c in enumerate(ln):
+        if c in _VB or (c in _JB):
+            cuts.append((col, i))
+        col += _dw(c)
+    cells = []
+    for a, b in zip(cuts, cuts[1:]):
+        cells.append((a[0], b[0], ln[a[1] + 1:b[1]].strip()))
+    return cells
+
+
+def _join_cell(lines):
+    """한 칸 안의 줄들을 문단으로: 번호로 시작하면 새 문단, 아니면 앞 줄에 이어 붙임(조사·어미 뒤면 띄우고 낱말 가운데면 붙임)"""
+    out = []
+    for t in lines:
+        if not t:
+            continue
+        if not out or _ITEM.match(t):
+            out.append(t)
+            continue
+        prev = out[-1]
+        joiner = " " if ((re.search(r"(를|을|는|은|에|의|와|과|로|고|며|서|면|도)$|하여$|하고$|하는$", prev) and not re.match(r"^[)\]」·,.]|^(이|가|을|를|은|는|의|에|로|와|과|도|만)(\s|$)", t)) or re.search(r"[,;:]$", prev)) else ""
+        out[-1] = prev + joiner + t
+    return "\n".join(out)
+
+
+def _format_table(block):
+    """글자로 그린 표(│ ─ ┬ ┼)를 칸 단위로 다시 읽어 [[칸수, 글], ...] 행 목록으로"""
+    groups, cur, has_sep = [], [], False
+    for ln in block:
+        if _is_border(ln):
+            has_sep = True
+            if cur:
+                groups.append(cur)
+                cur = []
+        elif ln.strip():
+            cur.append(ln)
+    if cur:
+        groups.append(cur)
+    if not has_sep:                                   # 가로줄이 없으면 한 줄이 한 행
+        groups = [[g] for grp in groups for g in grp]
+    ncell = {len(_bars(ln)) for g in groups for ln in g}
+    if len(ncell) == 1 and ncell != {0}:             # 모든 줄의 칸 수가 같으면 '몇 번째 칸'으로 맞춘다(글자 폭 계산 오차에 안전)
+        n = ncell.pop()
+        rows = []
+        for g in groups:
+            cols = [[] for _ in range(n)]
+            for ln in g:
+                for j, (_a, _b, t) in enumerate(_bars(ln)):
+                    cols[j].append(t)
+            row = [[1, _join_cell(c)] for c in cols]
+            if any(t for _sp, t in row):
+                rows.append(row)
+        return rows
+    # 전체 칸 경계(화면 칸 위치) 모으기
+    allb = sorted({x for g in groups for ln in g for a, b, _t in _bars(ln) for x in (a, b)})
+    if len(allb) < 3:
+        return None
+    idx = {x: i for i, x in enumerate(allb)}
+    rows = []
+    for g in groups:
+        cols = {}                                       # 시작 경계 -> [끝 경계, [줄들]]
+        for ln in g:
+            for a, b, t in _bars(ln):
+                if a not in cols:
+                    cols[a] = [b, []]
+                else:
+                    cols[a][0] = max(cols[a][0], b) if cols[a][0] == b else cols[a][0]
+                cols[a][1].append(t)
+        row = []
+        for a in sorted(cols):
+            b, texts = cols[a]
+            row.append([idx[b] - idx[a], _join_cell(texts)])
+        if any(t for _sp, t in row):
+            rows.append(row)
+    return rows
+
+
+def format_annex(raw, title=""):
+    """별표 본문: 글자로 그린 표는 표로, 나머지는 번호 들여쓰기 글로. 표 한 행은 (9, JSON[[칸수,글],...])"""
+    import json
+    import html
+    raw = [html.unescape(x) for x in raw]
+    out, buf, tbl, i = [], [], [], 0
+    def flush_text():
+        nonlocal buf
+        if buf:
+            out.extend(_format_annex_text(buf, title if not out else ""))
+            buf = []
+    def flush_tbl():
+        nonlocal tbl
+        if tbl:
+            rows = _format_table(tbl) if sum(1 for x in tbl if not _is_border(x)) >= 2 else None
+            if rows:
+                flush_text()
+                for r in rows:
+                    out.append((9, json.dumps(r, ensure_ascii=False)))
+            else:
+                buf.extend(tbl)
+            tbl = []
+    for ln in raw:
+        if _is_trow(ln):
+            tbl.append(ln)
+        elif not ln.strip() and tbl:
+            continue
+        else:
+            flush_tbl()
+            buf.append(ln)
+    flush_tbl()
+    flush_text()
+    return out
+
 
 
 def extract_annex(d):
