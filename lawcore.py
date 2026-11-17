@@ -271,7 +271,8 @@ TOKEN = re.compile(
     r"|(?<![가-힣])(?P<abbr>법|영)(?=\s*제\d+조)"
     r"|제(?P<n>\d+)조(?:의(?P<b>\d+))?"
 )
-GAP_STRIP = re.compile(r"제\d+[항호](?:의\d+)?|[가-힣]목|ㆍ|,|및|또는|부터|까지|과|와|의|\s+")
+ALIAS_RE = re.compile(r"\s*\(이하\s*[\"“']?([^)\"”']{1,20})[\"”']?(?:이?라\s*한다|이?라\s*함|이?라\s*약칭한다)\)")
+GAP_STRIP = re.compile(r"\(이하\s*[\"“']?[^)\"”']{1,20}[\"”']?(?:이?라\s*한다|이?라\s*함|이?라\s*약칭한다)\)|제\d+[항호](?:의\d+)?|[가-힣]목|ㆍ|,|및|또는|부터|까지|과|와|의|\s+")
 DELEG_RE = re.compile(
     r"(대통령령|총리령|[가-힣]{2,12}부령|부령|조례|규칙|고시)"
     r"(?:으로|로)\s*(?:따로\s*|각각\s*)?(?:정|위임)"
@@ -794,7 +795,11 @@ def cite_spans(text, selfname=""):
     base, sfx = _split_name(selfname)
     clean = AMEND_RE.sub(lambda m: " " * len(m.group(0)), text)
 
+    aliases = {}                                                # '「국토의 계획 및 이용에 관한 법률」(이하 "법"이라 한다)' -> 이 줄에서 '법' 은 그 법률
+
     def abbr(tok):
+        if tok in aliases:
+            return aliases[tok]
         if tok in ("법", "이 법"):
             return None if not sfx else base
         if tok in ("영", "이 영"):
@@ -809,6 +814,9 @@ def cite_spans(text, selfname=""):
         if m.group("law"):
             cur = m.group("law").strip()
             last_ext, last_end, tok_start = cur, m.end(), m.start()
+            am = ALIAS_RE.match(clean, m.end())
+            if am:
+                aliases[am.group(1).strip()] = cur
             continue
         tok = m.group("same") or m.group("abbr")
         if tok:
