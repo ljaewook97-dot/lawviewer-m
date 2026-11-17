@@ -878,29 +878,40 @@ def format_annex(raw, title=""):
     raw = [re.sub(r"(?<=[가-힣])\?(?=[가-힣])", "ㆍ", re.sub(r"(?:(?<=^)|(?<=[│┃|\s]))\?(?=[가-힣\s])", "○", x)) for x in raw]     # 원본에서 ○·ㆍ 가 '?' 로 깨져 온 것을 되돌린다
     segs, cur = [], []
 
+    def one_run(cur, near):
+        """상자 그림이 있는 줄만 이어진 덩어리 하나 -> 표(g)로 읽히면 g, 아니면 글(t/th)"""
+        boxy = [any(_strokes(c) & {"U", "D"} for c in ln) for ln in cur]          # 세로 획이 있는 줄(│ ┬ ┴ ├ …)
+        rows, head, tail = None, [], []
+        if sum(boxy) >= 2:
+            a0 = boxy.index(True)
+            b0 = len(boxy) - boxy[::-1].index(True)
+            head, body, tail = cur[:a0], cur[a0:b0], cur[b0:]
+            try:
+                rows = _grid_best(body)
+            except Exception:  # noqa: BLE001
+                rows = None
+        if rows:
+            if head:
+                segs.append(("th", head))
+            segs.append(("g", rows))
+            if tail:
+                segs.append(("th", tail))
+        else:
+            keep = [ln for ln in cur if not (len(ln.strip()) >= 3 and all(c in " ─━═-" for c in ln))]     # 장식용 가로줄만 있는 줄은 뺀다
+            keep = [re.sub(r"[─━═]{3,}", "", ln).rstrip() if not re.search(r"[│┃┌┐└┘├┤┬┴┼]", ln) else ln for ln in keep]
+            segs.append(("th" if near else "t", keep))
+
     def end_chunk():
         nonlocal cur
         if cur:
-            boxy = [any(_strokes(c) & {"U", "D"} for c in ln) for ln in cur]          # 세로 획이 있는 줄(│ ┬ ┴ ├ …)
-            rows, head, tail = None, [], []
-            if sum(boxy) >= 2:
-                a = boxy.index(True)
-                b = len(boxy) - boxy[::-1].index(True)
-                head, body, tail = cur[:a], cur[a:b], cur[b:]
-                try:
-                    rows = _grid_best(body)
-                except Exception:  # noqa: BLE001
-                    rows = None
-            if rows:
-                if head:
-                    segs.append(("th", head))
-                segs.append(("g", rows))
-                if tail:
-                    segs.append(("th", tail))
-            else:
-                keep = [ln for ln in cur if not (len(ln.strip()) >= 3 and all(c in " ─━═-" for c in ln))]     # 장식용 가로줄만 있는 줄은 뺀다
-                keep = [re.sub(r"[─━═]{3,}", "", ln).rstrip() if not re.search(r"[│┃┌┐└┘├┤┬┴┼]", ln) else ln for ln in keep]
-                segs.append(("t", keep))
+            isb = [bool(re.search(r"[─━═│┃┌┐└┘├┤┬┴┼┏┓┗┛┣┫┳┻┝┥┯┷┿╂]", ln)) for ln in cur]
+            k = 0
+            while k < len(cur):                                      # 상자 그림 줄 덩어리와 그냥 글 줄 덩어리로 나눈다(표 사이에 낀 소제목이 표를 깨지 않게)
+                m = k
+                while m < len(cur) and isb[m] == isb[k]:
+                    m += 1
+                one_run(cur[k:m], near=any(isb) and not all(isb))
+                k = m
             cur = []
     for ln in raw:
         if not ln.strip():
@@ -927,6 +938,9 @@ def format_annex(raw, title=""):
             flush_t()
         else:
             flush_t()
+            if len(v) <= 2 and any(c[1] in ("직인", "인", "(인)", "서명", "(서명 또는 인)") for r in v for c in r):
+                out.append((0, " ".join(c[1] for r in v for c in r if c[1]).replace("직인", "[직인]")))      # 직인 상자는 표로 만들지 않고 글로
+                continue
             if out and out[-1][0] == 9:
                 out.append((0, ""))                               # 붙어 있는 두 표는 사이를 띄운다
             for r in v:
