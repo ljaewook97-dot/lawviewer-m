@@ -175,6 +175,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .hr .h1{font-weight:700;line-height:1.3;font-size:.92em}.hr .h1 span{font-weight:600;color:var(--sub)}
 .hr .hs{color:var(--muted);font-size:.8em;margin-top:2px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.hs mark{background:var(--hl);color:inherit;border-radius:2px}
 .sumbox:empty,.sumbox.off{display:none}
+.stk{position:sticky;top:0;z-index:4;margin:0 0 6px;padding:5px 12px;background:color-mix(in srgb,var(--surf) 92%,transparent);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:8px;font-size:.88em;font-weight:700;color:var(--acc-d);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 6px rgba(0,0,0,.08)}
 .sumbox{margin:0 0 10px;background:var(--surf);border:1px solid var(--acc);border-radius:12px;padding:12px 14px}
 .sumbox.page{border:0;border-radius:0;background:transparent;padding:18px 22px 40px;max-width:1500px;margin:0 auto}
 .sp-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px}.sp-t{font-size:1.25em;font-weight:800;color:var(--acc-d)}.sp-s{color:var(--muted);font-size:.9em}.sp-head .sx{margin-left:auto;cursor:pointer;color:var(--muted);padding:0 6px}
@@ -373,7 +374,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
 </div>
 <div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="ctx"></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
-<div class="view" id="doc"><div id="sumBox" class="sumbox"></div><div class="body" id="docBody"></div></div>
+<div class="view" id="doc"><div id="sumBox" class="sumbox"></div><div id="stk" class="stk" style="display:none"></div><div class="body" id="docBody"></div></div>
 <div class="view tt" id="tt"></div>
 
 <div id="pbox"><div class="sheet" id="sheet"></div><div class="sheet" id="sheet2"></div></div>
@@ -391,6 +392,8 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
     <input id="city" placeholder="예) 고양시" autocomplete="off">
   </section>
   <section class="sg"><h4>화면</h4>
+    <label>읽기 모드 (한 번에 바꾸기)</label>
+    <div id="presets" style="display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px"><button class="sm" data-p="paper">종이</button><button class="sm" data-p="dark">어둡게</button><button class="sm" data-p="big">큰 글씨</button><button class="sm" data-p="reset">기본</button></div>
     <label>색상 테마</label>
     <select id="theme"><option value="">기본 (청록)</option><option value="light">밝은 파랑</option><option value="paper">종이</option><option value="dark">남색 (어두움)</option><option value="graphite">차콜 (어두움)</option><option value="nord">노드 (어두움)</option><option value="sage">세이지 (연한 녹색)</option><option value="lavender">라벤더 (연보라)</option><option value="rose">로즈 (연분홍)</option><option value="forest">숲 (어두운 녹색)</option><option value="midnight">미드나이트 (검정)</option><option value="solar">솔라 (어두운 청록)</option></select>
     <div class="g2">
@@ -454,7 +457,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.24";
+const VERSION = "10.25";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -526,6 +529,12 @@ function applyPrefs() {
   if (mc) mc.content = getComputedStyle(document.documentElement).getPropertyValue("--acc").trim() || "#0E7C6B";
 }
 applyPrefs();
+const PRESETS = { paper: ["paper", 14, "1.7", "900"], dark: ["graphite", 14, "1.7", "900"], big: ["", 18, "1.7", "720"], reset: ["", null, "", ""] };
+document.querySelectorAll("#presets button").forEach((b) => (b.onclick = () => {
+  const p = PRESETS[b.dataset.p]; LS.set("lv_theme", p[0]); LS.set(FSK(), p[1] || FSD()); LS.set("lv_lh", p[2]); LS.set("lv_bw", p[3]);
+  $("#theme").value = p[0]; $("#fsz").value = p[1] || FSD(); $("#lhs").value = p[2]; $("#bws").value = p[3];
+  applyPrefs(); toast(b.textContent + " 모드로 바꿨습니다");
+}));
 $("#bSet").onclick = () => { $("#oc").value = OC; $("#syRepo").value = LS.get("lv_syrepo", ""); $("#syTok").value = LS.get("lv_sytok", ""); $("#theme").value = LS.get("lv_theme", ""); $("#fsz").value = LS.get(FSK(), FSD()); $("#lhs").value = LS.get("lv_lh", ""); $("#bws").value = LS.get("lv_bw", ""); $("#city").value = LS.get("lv_city", "고양시"); $("#ver").textContent = "법령 뷰어 모바일 v" + VERSION + " · 법제처 국가법령정보센터 Open API"; $("#ovSet").classList.add("on"); };
 $("#syNow").onclick = () => { LS.set("lv_syrepo", $("#syRepo").value.trim()); LS.set("lv_sytok", $("#syTok").value.trim()); OC = $("#oc").value.trim() || OC; syncNow(true).then(() => syncNotes(true)); };
 $("#setNo").onclick = () => $("#ovSet").classList.remove("on");
@@ -1132,6 +1141,17 @@ function savePos() {
   const ks = Object.keys(POS); if (ks.length > 60) { ks.sort((x, y) => POS[x].t - POS[y].t).slice(0, ks.length - 60).forEach((k) => delete POS[k]); }
   LS.set("lv_pos", POS);
 }
+let stkRaf = 0, stkKey = "";
+function paintStk() {
+  stkRaf = 0; const el = $("#stk"); if (!el) return;
+  if (!cur.doc || !$("#doc").classList.contains("on") || $("#doc").scrollTop < 120) { el.style.display = "none"; stkKey = ""; return; }
+  const k = curKey(), a = k && cur.doc.arts[k];
+  if (!a) { el.style.display = "none"; return; }
+  if (k !== stkKey) { stkKey = k; el.textContent = a.label + " " + (a.title || ""); el.dataset.k = k; }
+  el.style.display = "";
+}
+$("#stk").onclick = () => { const k = $("#stk").dataset.k; if (k) goKey(k); };
+$("#doc").addEventListener("scroll", () => { if (!stkRaf) stkRaf = requestAnimationFrame(paintStk); });
 $("#doc").addEventListener("scroll", () => { clearTimeout(saveTm); saveTm = setTimeout(saveTabs, 600); clearTimeout(posTm); posTm = setTimeout(savePos, 500); });
 addEventListener("pagehide", saveTabs);
 document.addEventListener("visibilitychange", () => { if (document.hidden) saveTabs(); });
@@ -1919,7 +1939,7 @@ async function ttShow(i) {
     h += '<div class="col"><div class="ch" style="background:' + TTCOL[ci] + '">' + esc(c.name) + "</div><div class=\"cb\">";
     if (c.none) h += '<div class="muted" style="padding:8px 0">이 법령을 찾지 못했습니다</div>';
     else if (!c.arts.length) h += '<div class="muted" style="padding:8px 0">— 해당 조문 없음</div>';
-    else c.arts.forEach((a) => { h += '<div class="ta" data-ci="' + ci + '"><div class="at" data-n="' + esc(c.name) + '" data-k="' + a.key + '">' + esc(a.label + " " + a.title) + " ↗</div>" + artHTML(a, c.mst, { idp: "t" + ci + "-", self: c.name }) + "</div>"; });
+    else c.arts.forEach((a) => { h += '<div class="ta" data-ci="' + ci + '" data-id="' + ci + ":" + a.key + '" data-rel="' + esc((a.rel || []).join(",")) + '"><div class="at" data-n="' + esc(c.name) + '" data-k="' + a.key + '">' + esc(a.label + " " + a.title) + " ↗</div>" + artHTML(a, c.mst, { idp: "t" + ci + "-", self: c.name }) + "</div>"; });
     h += "</div></div>";
   });
   h += "</div>";
@@ -1942,7 +1962,7 @@ function ttLinks(v) {
   const clear = () => { svg.innerHTML = ""; g.classList.remove("ttf"); tas.forEach((t) => t.classList.remove("src", "rel")); };
   const draw = (src) => {
     clear(); if (!src) return;
-    const rel = tas.filter((t) => t !== src && t.dataset.ci !== src.dataset.ci);
+    const want = new Set((src.dataset.rel || "").split(",").filter(Boolean)), rel = tas.filter((t) => want.has(t.dataset.id));
     if (!rel.length) return;
     g.classList.add("ttf"); src.classList.add("src"); rel.forEach((t) => t.classList.add("rel"));
   };

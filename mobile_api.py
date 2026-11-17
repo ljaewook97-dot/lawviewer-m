@@ -355,13 +355,22 @@ def tt_open(oc, base, cur_name, cur_mst, cur_key):
 def tt_row(base, i):
     tt = L._TT_CACHE[L._split_name(base)[0]]
     r = tt["rows"][i]
+    rc = tt.get("rcite") or {}
     cols = []
     for ci, keys in enumerate(([r["key"]], r["dec"], r["rule"])):
         law = tt["laws"][ci]
         arts = []
         if law:
             for k in keys:
-                arts.append(_art_json(law["arts"][k], tt["names"][ci]))
+                aj = _art_json(law["arts"][k], tt["names"][ci])
+                if ci == 0:                                     # 법 조문 -> 이 줄의 시행령·시행규칙 조문 모두
+                    rel = ["1:" + x for x in r["dec"]] + ["2:" + x for x in r["rule"]]
+                elif ci == 1:                                   # 시행령 조문 -> 법 조문 + 그 조를 인용한 시행규칙 조문
+                    rel = ["0:" + r["key"]] + ["2:" + x for x in r["rule"] if k in rc.get(x, [])]
+                else:                                           # 시행규칙 조문 -> 법 조문 + 그 조문이 인용한 시행령 조문
+                    rel = ["0:" + r["key"]] + ["1:" + x for x in rc.get(k, []) if x in r["dec"]]
+                aj["rel"] = rel
+                arts.append(aj)
         cols.append({"name": tt["names"][ci], "mst": (law or {}).get("mst", ""), "arts": arts, "none": law is None})
     return {"cols": cols}
 

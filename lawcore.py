@@ -2186,6 +2186,7 @@ def three_tier(oc, base, getter=None):
         byn[(a["n"], a["b"])] = k
     dec = {k: [] for k in law0["order"]}
     rule = {k: [] for k in law0["order"]}
+    rcite = {}                                                  # 시행규칙 조문 키 -> 그 조문이 인용한 시행령 조문 키 목록(3단 비교에서 어느 조가 어느 조를 가리키는지)
     dkey = {}
     if law1:
         for k in law1["order"]:
@@ -2198,7 +2199,12 @@ def three_tier(oc, base, getter=None):
     if law2:
         for k in law2["order"]:
             a = law2["arts"][k]
+            rcite[k] = []
             for nm, n, b in _cites_to(a, names[2], [names[0], names[1]]):
+                if nm == names[1]:
+                    dk0 = dkey.get((n, b)) or dkey.get((n, 0))
+                    if dk0 and dk0 not in rcite[k]:
+                        rcite[k].append(dk0)
                 if nm == names[0]:
                     lks = [byn.get((n, b)) or byn.get((n, 0))]
                 else:
@@ -2207,7 +2213,7 @@ def three_tier(oc, base, getter=None):
                 for lk in lks:
                     if lk and k not in rule[lk]:
                         rule[lk].append(k)
-    out = {"names": names, "laws": laws, "rows": [{"key": k, "dec": dec[k], "rule": rule[k]} for k in law0["order"]]}
+    out = {"names": names, "laws": laws, "rcite": rcite, "rows": [{"key": k, "dec": dec[k], "rule": rule[k]} for k in law0["order"]]}
     _TT_CACHE[base] = out
     return out
 
