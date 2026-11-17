@@ -459,7 +459,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.29";
+const VERSION = "10.30";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1062,7 +1062,7 @@ function lineHTML(text, spans, lv, ctx, self, akey) {
   emit(pos, text.length);
   return mk ? '<span class="mk">' + esc(mk) + '</span><span class="mt">' + out + "</span>" : out;
 }
-function annexHTML(x, i, idp) {
+function annexHTML(x, i, idp, ctx, self) {
   let h = '<div class="art" id="' + idp + i + '"><div class="ln l0"><b>[' + esc(x.label) + "] " + esc(x.title) + "</b></div>";
   if (x.deleted) h += '<div class="ln l1 muted">삭제</div>';
   let tb = false;
@@ -1071,11 +1071,11 @@ function annexHTML(x, i, idp) {
       let row = []; try { row = JSON.parse(l[1]); } catch (e) { row = [[1, l[1]]]; }
       if (!tb) { h += '<div class="axw"><table class="axt">'; tb = true; }
       const hd = h.endsWith('<table class="axt">');
-      h += "<tr>" + row.map((c) => "<" + (hd ? "th" : "td") + (c[0] > 1 ? ' colspan="' + c[0] + '"' : "") + (c[2] > 1 ? ' rowspan="' + c[2] + '"' : "") + ">" + esc(c[1]).replace(/\n/g, "<br>") + "</" + (hd ? "th" : "td") + ">").join("") + "</tr>";
+      h += "<tr>" + row.map((c) => "<" + (hd ? "th" : "td") + (c[0] > 1 ? ' colspan="' + c[0] + '"' : "") + (c[2] > 1 ? ' rowspan="' + c[2] + '"' : "") + ">" + (c[3] && c[3].length ? lineHTML(c[1], c[3], 4, ctx, self, "") : esc(c[1])).replace(/\n/g, "<br>") + "</" + (hd ? "th" : "td") + ">").join("") + "</tr>";
       return;
     }
     if (tb) { h += "</table></div>"; tb = false; }
-    h += '<div class="ln l' + Math.min(l[0], 4) + '">' + esc(l[1]) + "</div>";
+    h += '<div class="ln l' + Math.min(l[0], 4) + '">' + (l[2] && l[2].length ? lineHTML(l[1], l[2], l[0], ctx, self, "") : esc(l[1])) + "</div>";
   });
   if (tb) h += "</table></div>";
   if (x.url) h += '<a class="axl" href="' + esc(x.url) + '" target="_blank" rel="noopener">원본 파일 열기 ▸</a>';
@@ -1223,7 +1223,7 @@ function showDoc(d, kind, rawmst, key, fromTab) {
   d.items.forEach((it) => { h += it.k === "h" ? '<div class="head">' + esc(it.t) + "</div>" : artHTML(d.arts[it.key], d.mst, { fav: true, self: d.kind === "adm" && d.adm_base ? d.adm_base : d.name }); });
   if ((d.annex || []).length) {
     h += '<div class="head">별표·서식 (' + d.annex.length + ")</div>";
-    d.annex.forEach((x, i) => { h += annexHTML(x, i, "ax-"); });
+    d.annex.forEach((x, i) => { h += annexHTML(x, i, "ax-", d.mst, d.kind === "adm" && d.adm_base ? d.adm_base : d.name); });
   }
   const b = $("#docBody"); b.innerHTML = h;
   b.onclick = (e) => { if (!isDT() || e.target.closest("a,button")) return; const art = e.target.closest(".art"); if (art && art.id.startsWith("a-")) setCurArt(art.id.slice(2)); };
@@ -1316,7 +1316,7 @@ function paintPane(n, r) {
   if (r.annex || r.list) pn.T.textContent = r.lawname + " · " + r.label;
   pn.S.style.display = r.summary ? "" : "none";
   pn.S.textContent = r.summary || "";
-  if (r.annex) { pn.C.innerHTML = annexHTML(r.annex, 0, pn.idp + "ax-"); }
+  if (r.annex) { pn.C.innerHTML = annexHTML(r.annex, 0, pn.idp + "ax-", r.mst, r.lawname); bindCites(pn.C); }
   else if (r.list) {
     pn.C.innerHTML = '<div class="ln l1 muted">' + esc(r.note || "") + "</div>" + r.list.map((x, i) => '<div class="ln l1"><a href="#" class="pl" data-i="' + i + '">' + esc(x.lawname) + (x.label ? " · " + esc(x.label) : "") + (x.title ? " " + esc(x.title) : "") + "</a></div>").join("");
     pn.C.querySelectorAll("a.pl").forEach((a) => (a.onclick = (e) => { e.preventDefault(); paneOpenHit(n, r.list[+a.dataset.i]); }));

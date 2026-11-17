@@ -212,6 +212,35 @@ def _art_json(a, selfname, spans=True, law=None):
             "inn": list(a.get("in_keys") or [])}
 
 
+_AX_QUICK = re.compile(r"제\s*\d|「|별표|서식|\d-\d|지침")
+
+
+def _ax_spans(t, refname, law):
+    """별표·서식 글 한 줄의 인용 위치(조문 인용·별표 이동·지침 이름). 위임·조례 목록(@d/@a/@o)은 조문 키가 있어야 해서 뺀다"""
+    if not t or not _AX_QUICK.search(t):
+        return []
+    try:
+        return [s for s in _spans(t, refname, law, 4) if str(s[2])[:2] not in ("@d", "@a", "@o")]
+    except Exception:  # noqa: BLE001
+        return []
+
+
+def _ax_lines(law, refname, x):
+    import json
+    out = []
+    for lv, t in x["text"]:
+        if lv == 9:
+            try:
+                row = json.loads(t)
+            except Exception:  # noqa: BLE001
+                out.append([lv, t])
+                continue
+            out.append([9, json.dumps([[c[0], c[1], (c[2] if len(c) > 2 else 1), _ax_spans(c[1], refname, law)] for c in row], ensure_ascii=False)])
+        else:
+            out.append([lv, t, _ax_spans(t, refname, law) if lv else []])
+    return out
+
+
 def _doc_json(law, selfname_target):
     refname = law.get("refname") or law["name"]
     arts = {}
@@ -223,7 +252,7 @@ def _doc_json(law, selfname_target):
     base = L._split_name(refname)[0] if law.get("kind") == "adm" else None
     annex = []
     for x in (law.get("annex") or []):
-        annex.append({"label": x["label"], "title": x["title"], "lines": [[lv, t] for lv, t in x["text"]],
+        annex.append({"label": x["label"], "title": x["title"], "lines": _ax_lines(law, refname, x),
                       "url": L.annex_url(x.get("pdf") or x.get("link") or ""), "deleted": bool(x.get("deleted"))})
     return {"name": law["name"], "kind": law.get("kind", "law"), "mst": law["mst"], "date": law.get("date", ""),
             "refname": refname, "adm_base": base, "items": items, "arts": arts, "annex": annex}
