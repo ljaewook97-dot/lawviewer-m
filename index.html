@@ -308,7 +308,15 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .accRow .bt{display:flex;gap:4px}.accRow .bt button,.accF button{height:30px;padding:0 9px;border:1px solid var(--line);border-radius:8px;background:var(--surf);color:var(--text);font-weight:600;font-size:.8em}.accRow .bt button[data-a=ok],.accF button.on{background:var(--acc);color:var(--acc-t);border-color:var(--acc)}
 .accF{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}.accCf{flex-basis:100%;margin-top:6px;padding:8px 10px;border:1px solid #e5484d;border-radius:10px;font-size:.85em;line-height:1.5}.accCf div{display:flex;gap:6px;margin-top:6px}.accCf .btn{min-height:34px;padding:0 12px}
 #bSet.accDot{position:relative}#bSet.accDot::after{content:"";position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:#e53935;box-shadow:0 0 0 2px var(--acc)}
-.revb{display:inline-block;margin-left:6px;padding:0 6px;border-radius:9px;background:#E65100;color:#fff;font-size:.78em;font-weight:700;vertical-align:1px}
+#ovCmp .modal{display:flex;flex-direction:column;padding:14px}#ovCmp .cmpl{flex:1;min-height:0;overflow:auto;margin-top:6px}
+.cmpa{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:var(--bg)}
+.cmpa .ch{display:flex;gap:8px;align-items:center;font-weight:700;margin-bottom:4px;font-size:.92em}
+.cmpa .st{font-size:.72em;padding:0 7px;border-radius:9px;color:#fff;background:#E65100}.cmpa .st.n{background:#2E7D32}.cmpa .st.d{background:#B71C1C}
+.cmpa .cs{font-size:.86em;line-height:1.6;margin:3px 0;padding:4px 6px;border-radius:6px}.cmpa .cs b{display:inline-block;min-width:2.2em;font-size:.82em;color:var(--muted)}
+.cmpa .co{background:color-mix(in srgb,#B71C1C 7%,transparent)}.cmpa .cn{background:color-mix(in srgb,#2E7D32 8%,transparent)}
+.cmpa del{background:color-mix(in srgb,#B71C1C 28%,transparent);text-decoration:line-through}.cmpa ins{background:color-mix(in srgb,#2E7D32 30%,transparent);text-decoration:none}
+.cmpa .go{margin-left:auto;font-size:.74em;font-weight:600;color:var(--acc);cursor:pointer;text-decoration:underline}
+.revb{cursor:pointer;display:inline-block;margin-left:6px;padding:0 6px;border-radius:9px;background:#E65100;color:#fff;font-size:.78em;font-weight:700;vertical-align:1px}
 .art.fold .more{display:none}
 .mrb{display:block;width:100%;margin-top:6px;padding:7px;border:1px dashed var(--line);border-radius:8px;background:transparent;color:var(--acc-d);font:inherit;font-size:.86em;font-weight:700;cursor:pointer}
 .art.fold .mrb{background:linear-gradient(var(--bg0,transparent),transparent)}
@@ -403,6 +411,12 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <textarea id="memoTa" placeholder="이 부분에 대한 메모를 적으세요"></textarea>
   <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" style="flex:1" id="memoOk">저장</button><button class="btn g" id="memoDel" hidden>메모 지우기</button><button class="btn g" id="memoNo">취소</button></div>
 </div></div>
+<div class="over" id="ovCmp"><div class="modal">
+  <h3 id="cmpT">신구 비교</h3>
+  <div class="muted" id="cmpS" style="font-size:.82em;line-height:1.5"></div>
+  <div class="cmpl" id="cmpL"></div>
+  <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" style="flex:1" id="cmpOpen">새 시행본 열기</button><button class="btn g" id="cmpNo">닫기</button></div>
+</div></div>
 <div class="over" id="ovRep"><div class="modal">
   <h3>이상한 줄 신고 목록</h3>
   <div class="muted" style="font-size:.82em;line-height:1.5;margin-bottom:6px">본문에서 줄을 드래그해 ⚑를 누르면 여기에 쌓입니다. 「전체 복사」로 복사해 Claude에게 붙여넣으면 어느 줄이 문제인지 바로 알 수 있습니다.</div>
@@ -413,7 +427,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "9.8";
+const VERSION = "10.0";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -635,16 +649,21 @@ function sumHTML(page) {                                         // 검색 결�
   });
   return h + "</div>";
 }
-let wheelAt = 0;
-document.addEventListener("wheel", (e) => {                       // Alt + 마우스 휠: 본문 탭 이동(검색 요약 탭 포함)
-  if (!e.altKey || !isDT() || !e.deltaY) return;
+let wheelAt = 0, wheelMv = 0, wheelDir = 0, altHeld = false, altUsed = false;
+document.addEventListener("keydown", (e) => { if (e.key === "Alt") { altHeld = true; altUsed = false; } }, true);
+document.addEventListener("keyup", (e) => { if (e.key === "Alt") { altHeld = false; if (altUsed) { e.preventDefault(); altUsed = false; } } }, true);   // Alt를 떼면 브라우저 메뉴가 잡혀 다음 Alt+휠이 안 먹는 것을 막는다
+window.addEventListener("blur", () => { altHeld = false; });
+document.addEventListener("wheel", (e) => {                       // Alt + 마우스 휠: 본문 탭 이동(검색 요약 탭 포함). Alt를 계속 누른 채로 휠을 굴릴 때마다 한 칸씩
+  if (!(e.altKey || altHeld) || !isDT() || !e.deltaY) return;
   const items = (SUMTAB ? [{ s: 1 }] : []).concat(ltabs.map((t, i) => ({ i })));
   if (items.length < 2) return;
-  e.preventDefault();
-  const now = Date.now(), gap = now - wheelAt; wheelAt = now; if (gap < 220) return;   // 휠이 계속 이어지는 동안은 한 번만 이동(멈췄다가 다시 굴리면 다음 탭)
+  e.preventDefault(); altUsed = true;
+  const now = Date.now(), dir = e.deltaY > 0 ? 1 : -1, gap = now - wheelAt; wheelAt = now;
+  if (dir === wheelDir && (gap < 90 || now - wheelMv < 160)) return;   // 한 번 굴린 휠의 꼬리(관성)는 무시, 새로 굴리면 바로 다음 탭
+  wheelDir = dir; wheelMv = now;
   let k = SUMACT ? 0 : items.findIndex((x) => x.i !== undefined && ltabs[x.i].d === cur.doc);
   if (k < 0) k = 0;
-  k = (k + (e.deltaY > 0 ? 1 : -1) + items.length) % items.length;
+  k = (k + dir + items.length) % items.length;
   const x = items[k]; if (x.s) showSumTab(); else switchLTab(x.i);
   const on = $("#ltabs .lt.on"); if (on) on.scrollIntoView({ block: "nearest", inline: "nearest" });
 }, { passive: false });
@@ -824,7 +843,33 @@ function revNew(f) {
   const a = digs(r.date), b = digs(f.date);
   return r.rawmst && String(r.rawmst) !== String(f.rawmst) && a && b && a > b ? r : null;
 }
-const revTag = (f) => { const r = revNew(f); return r ? ' <span class="revb" title="즐겨찾기에 담은 뒤 새 시행본이 나왔습니다">개정 ' + esc(r.date.length === 8 ? r.date.slice(0, 4) + "." + r.date.slice(4, 6) + "." + r.date.slice(6) : r.date) + "</span>" : ""; };
+const revTag = (f, i) => { const r = revNew(f); return r ? ' <span class="revb" data-rv="' + i + '" title="눌러서 이전 시행본과 신구 비교">개정 ' + esc(r.date.length === 8 ? r.date.slice(0, 4) + "." + r.date.slice(4, 6) + "." + r.date.slice(6) : r.date) + "</span>" : ""; };
+const dfmt = (d) => { d = digs(d); return d.length === 8 ? d.slice(0, 4) + "." + d.slice(4, 6) + "." + d.slice(6) : d || "?"; };
+const cmpSeg = (a) => a.map((x) => x[0] === "=" ? esc(x[1]) : x[0] === "-" ? "<del>" + esc(x[1]) + "</del>" : "<ins>" + esc(x[1]) + "</ins>").join("");
+let CMPF = null;
+async function openCmp(f) {                                   // 개정 배지: 담아 둔 시행본 ↔ 새 시행본 신구 비교
+  const r = f && revNew(f); if (!r || needOC()) return;
+  CMPF = { f, r };
+  const c = await call("compare_ver", [OC, f.kind, f.lawname, f.rawmst, f.date || "", r.rawmst, r.date || "", f.key || ""], f.lawname + " 신구 비교 중…");
+  $("#cmpT").textContent = f.lawname + " 신구 비교";
+  $("#cmpS").textContent = "이전 " + dfmt(f.date) + " → 현재 " + dfmt(r.date) + " · 바뀐 조문 " + c.total + "개" + (c.same ? " (그대로 " + c.same + "개)" : "") + (c.truncated ? " · 앞의 300개만 표시" : "");
+  $("#cmpL").innerHTML = c.changes.length ? c.changes.map((x, i) => {
+    const cl = x.st === "신설" ? "n" : x.st === "삭제" ? "d" : "";
+    return '<div class="cmpa"><div class="ch"><span>' + esc(x.label) + (x.title ? " " + esc(x.title) : "") + '</span><span class="st ' + cl + '">' + x.st + "</span>" + (x.st !== "삭제" ? '<span class="go" data-cg="' + i + '">본문에서 보기</span>' : "") + "</div>" +
+      (x.otitle ? '<div class="cs co"><b>제목</b><del>' + esc(x.otitle) + "</del></div>" : "") +
+      (x.old.length ? '<div class="cs co"><b>이전</b>' + cmpSeg(x.old) + "</div>" : "") +
+      (x.new.length ? '<div class="cs cn"><b>현재</b>' + cmpSeg(x.new) + "</div>" : "") + "</div>";
+  }).join("") : '<div class="empty">조문 내용은 바뀐 곳이 없습니다.<br>(별표·부칙만 바뀌었을 수 있습니다)</div>';
+  CMPF.ch = c.changes;
+  $("#cmpL").scrollTop = 0; $("#ovCmp").classList.add("on");
+}
+$("#cmpNo").onclick = () => $("#ovCmp").classList.remove("on");
+$("#cmpOpen").onclick = async () => { const z = CMPF; if (!z) return; $("#ovCmp").classList.remove("on"); await openDoc(z.f.kind, z.r.rawmst, z.f.lawname, z.r.date, z.f.key || ""); };
+$("#cmpL").addEventListener("click", async (e) => {
+  const g = e.target.closest("[data-cg]"); if (!g || !CMPF) return;
+  const x = CMPF.ch[+g.dataset.cg]; $("#ovCmp").classList.remove("on");
+  await openDoc(CMPF.f.kind, CMPF.r.rawmst, CMPF.f.lawname, CMPF.r.date, x.key);
+});
 let revBusy = false;
 async function revCheck(force) {
   if (revBusy || !OC || !favs.length) return;
@@ -839,8 +884,9 @@ async function revCheck(force) {
 function paintFavs() {
   const L = $("#list");
   if (!favs.length) { L.innerHTML = '<div class="empty">즐겨찾기가 없습니다.<br>법령 화면 위의 ☆(법령 전체)나<br>조문 옆의 ☆(조문)를 눌러 담으세요.</div>'; return; }
-  L.innerHTML = favs.map((f, i) => '<div class="card" draggable="true" data-ci="' + i + '" title="' + esc(f.lawname + (f.key ? " " + (f.label || "") : "")) + '"><div class="m" data-i="' + i + '"><div class="nm"><span class="tag ' + f.kind + '">' + KIND[f.kind][0] + "</span>" + esc(isDT() ? ltName(f.lawname) : f.lawname) + '</div><div class="in">' + (f.key ? esc(f.label || "") : (isDT() ? "" : "법령 전체")) + revTag(f) + '</div></div><button class="sm" data-u="' + i + '">▲</button><button class="sm" data-d="' + i + '">▼</button><button class="sm" data-x="' + i + '">✕</button></div>').join("");
+  L.innerHTML = favs.map((f, i) => '<div class="card" draggable="true" data-ci="' + i + '" title="' + esc(f.lawname + (f.key ? " " + (f.label || "") : "")) + '"><div class="m" data-i="' + i + '"><div class="nm"><span class="tag ' + f.kind + '">' + KIND[f.kind][0] + "</span>" + esc(isDT() ? ltName(f.lawname) : f.lawname) + '</div><div class="in">' + (f.key ? esc(f.label || "") : (isDT() ? "" : "법령 전체")) + revTag(f, i) + '</div></div><button class="sm" data-u="' + i + '">▲</button><button class="sm" data-d="' + i + '">▼</button><button class="sm" data-x="' + i + '">✕</button></div>').join("");
   L.querySelectorAll("[data-i]").forEach((c) => (c.onclick = () => { const f = favs[+c.dataset.i]; openDoc(f.kind, f.rawmst, f.lawname, f.date, f.key); }));
+  L.querySelectorAll("[data-rv]").forEach((c) => (c.onclick = (e) => { e.stopPropagation(); openCmp(favs[+c.dataset.rv]); }));
   L.querySelectorAll("[data-u]").forEach((c) => (c.onclick = () => mv(+c.dataset.u, -1)));
   L.querySelectorAll("[data-d]").forEach((c) => (c.onclick = () => mv(+c.dataset.d, 1)));
   L.querySelectorAll("[data-x]").forEach((c) => (c.onclick = () => { favs.splice(+c.dataset.x, 1); saveFavs(); paintFavs(); }));

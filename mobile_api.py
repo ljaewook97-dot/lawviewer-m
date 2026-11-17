@@ -433,6 +433,59 @@ def rev_check(oc, items):
     return out
 
 
+def _tok_diff(a, b):
+    """두 글을 낱말 단위로 비교 -> (옛 글 조각, 새 글 조각). 조각 = [종류('=','-','+'), 글]"""
+    import difflib
+    ta, tb = re.findall(r"\S+|\s+", a), re.findall(r"\S+|\s+", b)
+    sm = difflib.SequenceMatcher(None, ta, tb, autojunk=False)
+    oa, ob = [], []
+    for op, i1, i2, j1, j2 in sm.get_opcodes():
+        x, y = "".join(ta[i1:i2]), "".join(tb[j1:j2])
+        if op == "equal":
+            oa.append(["=", x]); ob.append(["=", y])
+        else:
+            if x:
+                oa.append(["-", x])
+            if y:
+                ob.append(["+", y])
+    return oa, ob
+
+
+def _load_ver(oc, kind, rawmst, name, date):
+    if kind == "ordin":
+        return L.load_ordin(oc, rawmst, name, getter)
+    if kind == "adm":
+        return L.load_adm(oc, rawmst, name, date, getter)
+    return L.load_whole(oc, rawmst, name, getter)
+
+
+def compare_ver(oc, kind, name, old_mst, old_date, new_mst, new_date, key=""):
+    """같은 법령의 옛 시행본과 새 시행본을 조문별로 비교 -> 바뀐 조문만(수정·신설·삭제) 낱말 단위 차이와 함께"""
+    A = _load_ver(oc, kind, old_mst, name, old_date)
+    B = _load_ver(oc, kind, new_mst, name, new_date)
+    flat = lambda a: re.sub(r"\s+", " ", " ".join(t for _, t in a["lines"])).strip()
+    order = list(B["order"]) + [k for k in A["order"] if k not in B["arts"]]
+    out, same = [], 0
+    for k in order:
+        a, b = A["arts"].get(k), B["arts"].get(k)
+        if a and b:
+            ta, tb = flat(a), flat(b)
+            if ta == tb and (a["title"] or "") == (b["title"] or ""):
+                same += 1
+                continue
+            oa, ob = _tok_diff(ta, tb)
+            out.append({"key": k, "label": b["label"], "title": b["title"], "st": "수정", "old": oa, "new": ob,
+                        "otitle": a["title"] if (a["title"] or "") != (b["title"] or "") else ""})
+        elif b:
+            out.append({"key": k, "label": b["label"], "title": b["title"], "st": "신설", "old": [], "new": [["+", flat(b)]], "otitle": ""})
+        else:
+            out.append({"key": k, "label": a["label"], "title": a["title"], "st": "삭제", "old": [["-", flat(a)]], "new": [], "otitle": ""})
+    if key:
+        out.sort(key=lambda x: 0 if x["key"] == key else 1)
+    return {"changes": out[:300], "total": len(out), "same": same, "truncated": len(out) > 300,
+            "old_date": old_date, "new_date": new_date}
+
+
 def web_url(kind, name, key=""):
     """법제처에서 열기 주소"""
     n = b = None
@@ -446,7 +499,7 @@ def web_url(kind, name, key=""):
     return L.web_url(L.parse_query(q))
 
 
-FUNCS = {"cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
+FUNCS = {"cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "compare_ver": compare_ver, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
          "tt_open": tt_open, "tt_row": tt_row, "set_api_base": set_api_base}
 
 
