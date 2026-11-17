@@ -446,7 +446,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.15";
+const VERSION = "10.16";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1269,6 +1269,7 @@ async function openCite(c, n, noPush) {
   if (c.kind === "x") return openJump(c);
   if (c.kind === "n") return openNamed(c);
   if (c.kind === "k") return openNamedCode(c);
+  if (c.kind === "j") return openNamedAnnex(c);
   if (c.kind) return openList(c);
   n = isDT() ? (n || 1) : 1;
   const pn = PN[n];
@@ -1351,6 +1352,12 @@ async function openNamed(c) {                 // 본문에 이름이 적힌 지�
   if (!r.hits.length) return toast("'" + c.to + "' 을(를) 찾지 못했습니다", true);
   if (r.exact) { const h = r.hits[0]; return openDoc("adm", h.rawmst, h.lawname, h.date, ""); }
   hits = r.hits; hitNote = r.total + "건 · " + (r.note || ""); hitToks = []; setTab("r"); if (!isDT()) show("home");
+}
+async function openNamedAnnex(c) {                            // '「건축법 시행령」 별표 1' -> 그 법령을 열어 그 법령의 별표 1 로
+  const [nm, lab] = String(c.to).split("|");
+  await openByName(nm, "");
+  const d = cur.doc, i = d && (d.annex || []).findIndex((x) => x.label === lab);
+  if (i >= 0) goKey("ax:" + i); else toast(nm + " 에서 " + lab + " 을(를) 찾지 못했습니다", true);
 }
 async function openNamedCode(c) {             // '「광역도시계획수립지침」 3-5-3' : 이름이 적힌 그 지침을 열어 그 번호 조항으로(지금 보는 지침의 3-5-3 이 아님)
   const [nm, code] = String(c.to).split("|");

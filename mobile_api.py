@@ -101,11 +101,21 @@ def _spans(text, selfname, law=None, lv=0):
             labs = law.get("_axl")
             if labs is None:
                 labs = law["_axl"] = {x["label"] for x in (law.get("annex") or [])}
+            last_other = {}                                              # 한 문장에서 '「건축법 시행령」 별표 1 … 다만 별표 1의 …' 처럼 이름 없이 되풀이되는 별표는 같은 법령 것
             for m in _ANNEX_RE.finditer(text):
                 if m.start() < hdr:
                     continue
                 lab = ("별표 %s%s" % (m.group(1), ("의" + m.group(2)) if m.group(2) else "")) if m.group(1) else "서식 %s" % m.group(3)
-                if lab in labs:
+                if re.search(r"같은\s*법(?:\s*시행령|\s*시행규칙)?\s*$", text[:m.start()]):
+                    continue                                              # '같은 법 시행령 별표 1' — 어느 법인지 앞 문장에 달려 있어 잘못 잇는 것보다 잇지 않는다
+                other = _annex_owner(text, m.start(), selfname)          # '「건축법 시행령」 별표 1'·'영 별표 1' -> 보고 있는 법령이 아니라 그 법령의 별표
+                if other:
+                    last_other[lab] = other[1]
+                elif lab in last_other:
+                    other = (m.start(), last_other[lab])
+                if other:
+                    out.append([other[0], m.end(), "@j", other[1] + "|" + lab, 0, None]); taken.append((other[0], m.end()))
+                elif lab in labs:
                     out.append([m.start(), m.end(), "@x", lab, 0, None]); taken.append((m.start(), m.end()))
             if law.get("kind") == "adm":
                 codes = law.get("_cdm")
@@ -151,6 +161,31 @@ def _adm_name_before(text, a, b):
     if not m or m.group(1) in _ADM_NAME_BAD:
         return ""
     return m.group(1)
+
+
+def _annex_owner(text, pos, selfname):
+    """'별표 n' 바로 앞에 다른 법령 이름이 붙어 있으면 (시작 위치, 법령 이름). 없거나 지금 보는 법령이면 None.
+    「건축법 시행령」 별표 1 / 건축법 시행령 별표 1 / 영 별표 1 · 시행령 별표 1 · 규칙 별표 1 · 법 별표 1 (지금 보는 법령 기준)"""
+    before = text[:pos]
+    nz = lambda x: re.sub(r"\s+", "", x)
+    m = re.search(r"「([^」]{2,60})」\s*$", before)
+    if m:
+        nm = m.group(1).strip()
+        return None if nz(nm) == nz(selfname) else (m.start(), nm)
+    m = re.search(r"((?:[가-힣ㆍ·A-Za-z0-9]+\s)*[가-힣ㆍ·A-Za-z0-9]*(?:법|법률)\s*(?:시행령|시행규칙))\s*$", before)   # 괄호 없이 쓴 '건축법 시행령'
+    if m:
+        nm = re.sub(r"\s+", " ", m.group(1)).strip()
+        nm = re.sub(r"^(?:이|같은|위|해당|그)\s+", "", nm)
+        if len(nz(nm)) >= 6 and nz(nm) != nz(selfname) and not nm.startswith("법 "):
+            return (m.start(1) + (len(m.group(1)) - len(m.group(1).lstrip())), nm)
+    m = re.search(r"(?:^|(?<=[\s(「,·]))(시행령|시행규칙|영|규칙|법)\s*$", before)
+    if m:
+        base, sfx = L._split_name(selfname)
+        tok = m.group(1)
+        tgt = base + " 시행령" if tok in ("영", "시행령") else base + " 시행규칙" if tok in ("규칙", "시행규칙") else base
+        if nz(tgt) != nz(selfname) and base:
+            return (m.start(1), tgt)
+    return None
 
 
 def _named_before_code(text, pos, selfname):
