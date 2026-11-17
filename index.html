@@ -446,7 +446,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.18";
+const VERSION = "10.19";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1891,7 +1891,7 @@ async function ttShow(i) {
   const r = await call("tt_row", [TT.base, i], "");
   CITES = CITES.slice(0, 0);
   const row = TT.rows[i];
-  let h = '<div class="nav"><button class="sm" id="tP">◀</button><div class="mid">' + esc(row.label + " " + row.title) + '<div class="muted" style="font-weight:400;font-size:.8em">' + (i + 1) + " / " + TT.rows.length + '</div></div><button class="sm" id="tN">▶</button><input id="tJ" inputmode="numeric" placeholder="조"><button class="sm" id="tG">이동</button></div>';
+  let h = '<div class="nav"><button class="sm" id="tP">◀</button><div class="mid">' + esc(row.label + " " + row.title) + '<div class="muted" style="font-weight:400;font-size:.8em">' + (i + 1) + " / " + TT.rows.length + '</div></div><button class="sm" id="ttN">▶</button><input id="tJ" inputmode="numeric" placeholder="조"><button class="sm" id="tG">이동</button></div>';
   h += '<div class="ttg">';
   r.cols.forEach((c, ci) => {
     h += '<div class="col"><div class="ch" style="background:' + TTCOL[ci] + '">' + esc(c.name) + "</div><div class=\"cb\">";
@@ -1903,7 +1903,7 @@ async function ttShow(i) {
   h += "</div>";
   const v = $("#tt"); v.innerHTML = h; v.scrollTop = 0;
   bindCites(v);
-  $("#tP").onclick = () => ttShow(TTI - 1); $("#tN").onclick = () => ttShow(TTI + 1);
+  $("#tP").onclick = () => ttShow(TTI - 1); $("#ttN").onclick = () => ttShow(TTI + 1);
   $("#tG").onclick = () => { const n = parseInt($("#tJ").value, 10); if (!n) return; const k = TT.rows.findIndex((x) => x.key.split(":")[0] == n); if (k < 0) return toast("그 조문이 없습니다", true); ttShow(k); };
   v.querySelectorAll(".at").forEach((e) => (e.onclick = () => openByName(e.dataset.n, e.dataset.k)));
 }
