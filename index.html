@@ -454,7 +454,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.21";
+const VERSION = "10.23";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1572,22 +1572,34 @@ $("#dbWeb").onclick = async () => {
 $("#dbTT").onclick = () => { if (!cur.doc) return toast("먼저 법령을 여세요", true); $("#bTT").click(); };
 $("#dbFav").onclick = () => { if (!cur.doc) return toast("먼저 법령을 여세요", true); toggleFav(cur.doc, ""); paintDocFav(); };
 // ---- 이전에 보던 조문으로(◀ 뒤로, Alt+←)
-const navHist = []; let navBusy = false;
+const navHist = [], navFwdSt = []; let navBusy = false;
 function navPush() {
   if (navBusy || !cur.doc || !sideKey) return;
   const t = navHist[navHist.length - 1];
   if (t && t.mst === cur.doc.mst && t.key === sideKey) return;
   navHist.push({ mst: cur.doc.mst, key: sideKey }); if (navHist.length > 100) navHist.shift();
+  navFwdSt.length = 0;                                           // 새로 이동하면 '앞으로' 기록은 지운다
 }
-async function navBack() {
-  const t = navHist.pop();
-  if (!t) return toast("이전에 보던 조문이 없습니다");
+async function navGo(t) {
   navBusy = true;
   try {
     const i = ltabs.findIndex((x) => x.d.mst === t.mst);
     if (i >= 0) { if (ltabs[i].d !== cur.doc) switchLTab(i); goKey(t.key); }
     else { const d = await call("open_cached", [t.mst, t.key], "여는 중…"); showDoc(d, d.kind, d.rawmst, t.key); }
   } finally { navBusy = false; }
+}
+function navNow() { return cur.doc && sideKey ? { mst: cur.doc.mst, key: sideKey } : null; }
+async function navBack() {
+  const t = navHist.pop();
+  if (!t) return toast("이전에 보던 조문이 없습니다");
+  const n = navNow(); if (n) navFwdSt.push(n);
+  await navGo(t);
+}
+async function navFwd() {
+  const t = navFwdSt.pop();
+  if (!t) return toast("앞으로 갈 조문이 없습니다");
+  const n = navNow(); if (n) navHist.push(n);
+  await navGo(t);
 }
 $("#bHist").onclick = navBack;
 // ---- 글자 크기·테마 빠른 버튼
@@ -1647,6 +1659,7 @@ document.addEventListener("keydown", (e) => {
   else if (e.ctrlKey && (k === "l" || k === "L")) { e.preventDefault(); if (document.body.classList.contains("hl")) setPane("l", false); $("#q").focus(); $("#q").select(); }
   else if (k === "Escape" && document.activeElement !== $("#q") && document.activeElement !== $("#fq")) { findClr(); closeSheet(); $("#ctx").classList.remove("on"); }
   else if (e.altKey && k === "ArrowLeft") { e.preventDefault(); navBack(); }
+  else if (e.altKey && k === "ArrowRight") { e.preventDefault(); navFwd(); }
   else if (TT && $("#tt").classList.contains("on") && !e.ctrlKey && !e.altKey && !e.metaKey && (k === "ArrowLeft" || k === "ArrowRight") && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || "")) { e.preventDefault(); ttShow(TTI + (k === "ArrowRight" ? 1 : -1)); }
 });
 addEventListener("resize", () => { applyPrefs(); layoutPanes(); });
@@ -1917,7 +1930,7 @@ async function ttShow(i) {
   v.querySelectorAll(".at").forEach((e) => (e.onclick = (ev) => { ev.stopPropagation(); openByName(e.dataset.n, e.dataset.k); }));
   ttLinks(v);
 }
-// 3단 비교: 조문 위에 마우스를 올리면(폰은 한 번 누르면) 같은 줄의 나머지 조문만 남기고 지시선으로 이어 준다
+// 3단 비교: 조문 위에 마우스를 올리면(폰은 한 번 누르면) 같은 줄의 나머지 조문만 밝게 남기고 나머지는 흐리게(선은 긋지 않음)
 async function ttGoKey(key) {                                    // 3단 비교를 보는 중에 목차에서 조를 고르면 그 조의 3단 비교로
   let i = cur.doc && cur.doc.name === TT.names[0] ? TT.rows.findIndex((r) => r.key === key) : -1;
   if (i < 0) { try { i = (await call("tt_open", [OC, TT.base, cur.doc.name, cur.doc.mst, key], "")).start; } catch (e) { return; } }
@@ -1932,16 +1945,6 @@ function ttLinks(v) {
     const rel = tas.filter((t) => t !== src && t.dataset.ci !== src.dataset.ci);
     if (!rel.length) return;
     g.classList.add("ttf"); src.classList.add("src"); rel.forEach((t) => t.classList.add("rel"));
-    const gb = g.getBoundingClientRect(), sb = src.getBoundingClientRect(), sc = +src.dataset.ci;
-    let p = "";
-    const acc = getComputedStyle(document.documentElement).getPropertyValue("--acc").trim() || "#0E7C6B";
-    rel.forEach((t) => {
-      const tb = t.getBoundingClientRect(), tc = +t.dataset.ci, right = tc > sc;
-      const x1 = (right ? sb.right : sb.left) - gb.left, y1 = sb.top - gb.top + 14;
-      const x2 = (right ? tb.left : tb.right) - gb.left, y2 = tb.top - gb.top + 14, dx = Math.max(24, Math.abs(x2 - x1) / 2) * (right ? 1 : -1);
-      p += '<path d="M' + x1 + " " + y1 + " C" + (x1 + dx) + " " + y1 + " " + (x2 - dx) + " " + y2 + " " + x2 + " " + y2 + '" stroke="' + acc + '"/><circle cx="' + x2 + '" cy="' + y2 + '" r="3.5" fill="' + acc + '"/>';
-    });
-    svg.innerHTML = p;
   };
   tas.forEach((t) => {
     t.addEventListener("mouseenter", () => { if (!pin) draw(t); });
