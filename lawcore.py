@@ -652,7 +652,7 @@ def _prep_annex_lines(raw):
     return out
 
 
-def format_annex(raw, title=""):
+def _format_annex_old(raw, title=""):
     """별표 본문: 글자로 그린 표는 표로, 나머지는 번호 들여쓰기 글로. 표 한 행은 (9, JSON[[칸수,글],...])"""
     import json
     import html
@@ -687,6 +687,252 @@ def format_annex(raw, title=""):
     flush_text()
     return out
 
+
+
+import unicodedata as _ud
+_STK = {}
+
+
+def _strokes(ch):
+    """상자 그림 글자가 가진 선 방향 {'U','D','L','R'}"""
+    s = _STK.get(ch)
+    if s is None:
+        s = set()
+        if ch == "|":
+            s = {"U", "D"}
+        elif "\u2500" <= ch <= "\u257f":
+            try:
+                nm = _ud.name(ch)
+            except ValueError:
+                nm = ""
+            for w, k in (("UP", "U"), ("DOWN", "D"), ("LEFT", "L"), ("RIGHT", "R")):
+                if re.search(r"\b" + w + r"\b", nm):
+                    s.add(k)
+            if "HORIZONTAL" in nm:
+                s |= {"L", "R"}
+            if "VERTICAL" in nm:
+                s |= {"U", "D"}
+        s = _STK[ch] = frozenset(s)
+    return s
+
+
+def _cwf(amb, qw=1):
+    def f(c):
+        if c == "?" and qw == 2:                                  # 법제처 원본에서 ○·ㆍ 같은 글자가 '?' 로 깨져 온 자리(원래 폭 2)
+            return 2
+        e = _ud.east_asian_width(c)
+        return 2 if e in ("W", "F") or (amb == 2 and e == "A") else 1
+    return f
+
+
+def _grid_best(chunk):
+    """모호한 폭 글자(─ │ ① ㎡)를 2칸으로 세는 원본과 1칸으로 세는 원본 둘 다 읽어 보고, 세로줄이 더 잘 맞는(세로줄 위치가 적은) 쪽을 쓴다"""
+    best = None
+    for amb, qw in ((2, 2), (2, 1), (1, 2), (1, 1)):
+        try:
+            r = _grid_table(chunk, amb, qw)
+        except Exception:  # noqa: BLE001
+            r = None
+        if r and (best is None or r[1] < best[1]):
+            best = r
+    return best[0] if best else None
+
+
+def _grid_table(chunk, amb=2, qw=1):
+    """글자로 그린 표(빈 줄로 갈라진 한 덩어리)를 '화면 칸 위치'로 읽어 병합 칸(colspan·rowspan)까지 살린 행 목록 [[칸수, 글, 행수?], ...] 으로.
+    가로줄 사이를 띠로, 세로줄 사이를 칸으로 보고, 줄이 막지 않은 이웃 칸은 합친다. 못 읽으면 None."""
+    _cw = _cwf(amb, qw)
+    G = []
+    for ln in chunk:
+        row = []
+        for c in ln.rstrip("\r\n").replace("\t", " "):
+            row.append(c)
+            if _cw(c) == 2:
+                row.append(None)
+        G.append(row)
+    if not G:
+        return None
+    W = max(len(r) for r in G)
+    for r in G:
+        r.extend([" "] * (W - len(r)))
+
+    def st(r, c):
+        ch = G[r][c]
+        return _strokes(ch) if ch not in (None, " ") else frozenset()
+    rule = []                                                    # 가로줄이 낀 줄(글이 섞여 있어도 가로줄이 덮는 칸에서는 칸을 가른다)
+    for r in range(len(G)):
+        rule.append(sum(1 for c in G[r] if c not in (None, " ") and {"L", "R"} & _strokes(c)) >= 2)
+    if not any(rule):
+        return None                                              # 가로줄이 없으면 한 줄이 한 행 — 기존 방식으로
+    X = sorted({c for r in range(len(G)) for c in range(W) if st(r, c) & {"U", "D"}})
+    if not X or not any(not rule[r] and any(st(r, c) & {"U", "D"} for c in range(W)) for r in range(len(G))):
+        return None
+    cnt = {x: sum(1 for r in range(len(G)) if st(r, x) & {"U", "D"}) for x in X}
+    if sum(1 for r in range(len(G)) if any(st(r, c) & {"U", "D"} for c in range(W))) > 2 and any(v < 2 for v in cnt.values()):
+        return None                                              # 세로줄이 한 줄에만 있는 자리가 있으면 칸 위치가 어긋난 그림 — 이 방식으로는 읽지 않는다
+    bw = {}
+    for x in X:
+        ch = next((G[r][x] for r in range(len(G)) if G[r][x] not in (None, " ")), "|")
+        bw[x] = _cw(ch)
+
+    def txt(r, a, b):
+        return "".join(c for c in G[r][a:b] if c is not None and not _strokes(c)).strip()
+    cand = []
+    if X[0] > 0:
+        cand.append((0, X[0]))
+    for j in range(len(X) - 1):
+        cand.append((X[j] + bw[X[j]], X[j + 1]))
+    if X[-1] + bw[X[-1]] < W:
+        cand.append((X[-1] + bw[X[-1]], W))
+    bands, cur = [], []
+    for r in range(len(G)):
+        if rule[r]:
+            if cur:
+                bands.append(cur)
+                cur = []
+        else:
+            cur.append(r)
+    if cur:
+        bands.append(cur)
+    if not bands:
+        return None
+    I = []                                                       # 글도 가로줄도 없는 바깥 빈 칸은 뺀다
+    for a, b in cand:
+        has = any(txt(r, a, b) for r in range(len(G))) or any(rule[r] and any(st(r, c) & {"L", "R"} for c in range(a, b)) for r in range(len(G)))
+        if has and b > a:
+            I.append((a, b))
+    if not I:
+        return None
+    soft = set()                                                 # 가로줄 없이 '1. 서론 / 가. 목적' 처럼 번호로 줄이 갈리는 본문 띠는 번호 줄마다 한 행으로 쪼갠다
+    if len(I) >= 2:
+        nbands = []
+        for bd in bands:
+            mk = [r for r in bd if _ITEM.match(txt(r, I[0][0], I[0][1]))]
+            if len(mk) >= 2:
+                cut = sorted(set(mk) | {bd[0]})
+                for k, r0 in enumerate(cut):
+                    r1 = cut[k + 1] if k + 1 < len(cut) else bd[-1] + 1
+                    if k:
+                        soft.add(len(nbands) - 1)
+                    nbands.append([r for r in bd if r0 <= r < r1])
+            else:
+                nbands.append(bd)
+        bands = nbands
+    nb, nj = len(bands), len(I)
+    par = {(i, j): (i, j) for i in range(nb) for j in range(nj)}
+
+    def find(x):
+        while par[x] != x:
+            par[x] = par[par[x]]
+            x = par[x]
+        return x
+
+    def uni(a, b):
+        par[find(a)] = find(b)
+    for i, bd in enumerate(bands):
+        for j in range(nj - 1):
+            cols = list(range(I[j][1], I[j + 1][0])) or [I[j][1]]      # 두 칸 사이 세로줄 자리
+            if not any(st(r, c) & {"U", "D"} for r in bd for c in cols):
+                uni((i, j), (i, j + 1))
+    for i in range(nb - 1):
+        gap = [r for r in range(bands[i][-1] + 1, bands[i + 1][0]) if rule[r]]
+        for j in range(nj):
+            a, b = I[j]
+            cov = sum(1 for c in range(a, b) if any(st(r, c) & {"L", "R"} for r in gap))
+            if i not in soft and (not gap or cov * 2 < (b - a)):
+                uni((i, j), (i + 1, j))
+    comps = {}
+    for node in par:
+        comps.setdefault(find(node), []).append(node)
+    boxes = []
+    for nodes in comps.values():
+        i0, i1 = min(n[0] for n in nodes), max(n[0] for n in nodes)
+        j0, j1 = min(n[1] for n in nodes), max(n[1] for n in nodes)
+        if len(nodes) != (i1 - i0 + 1) * (j1 - j0 + 1):
+            return None
+        lines = []
+        for r in range(bands[i0][0], bands[i1][-1] + 1):             # 사이에 낀 글 섞인 가로줄 줄도 포함(칸 위치로 가려 읽음)
+            t = txt(r, I[j0][0], I[j1][1])
+            if t:
+                lines.append(t)
+        boxes.append((i0, i1, j0, j1, _join_cell(lines)))
+    rows = []
+    for i in range(nb):
+        touch = [b for b in boxes if b[0] <= i <= b[1]]
+        if all(b[0] == b[1] == i and not b[4] for b in touch):
+            continue                                             # 글 없는 빈 띠(칸 높이만 잡는 줄)는 뺀다
+        row = []
+        for b in sorted((b for b in boxes if b[0] == i), key=lambda b: b[2]):
+            cell = [b[3] - b[2] + 1, b[4]] + ([b[1] - b[0] + 1] if b[1] > b[0] else [])
+            row.append(cell)
+        rows.append(row)
+    return (rows, len(X)) if any(any(c[1] for c in r) for r in rows) else None
+
+
+def format_annex(raw, title=""):
+    """별표 본문. 빈 줄로 갈라진 덩어리 중 글자로 그린 표는 칸 위치로 읽어 표(병합 칸 포함)로, 나머지는 기존 방식(번호 들여쓰기 글)으로.
+    표 한 행은 (9, JSON[[칸수, 글, 행수?], ...])"""
+    import json
+    import html
+    raw = [html.unescape(x) for x in raw]
+    raw = [re.sub(r"(?<=[가-힣])\?(?=[가-힣])", "ㆍ", re.sub(r"(?:(?<=^)|(?<=[│┃|\s]))\?(?=[가-힣\s])", "○", x)) for x in raw]     # 원본에서 ○·ㆍ 가 '?' 로 깨져 온 것을 되돌린다
+    segs, cur = [], []
+
+    def end_chunk():
+        nonlocal cur
+        if cur:
+            boxy = [any(_strokes(c) & {"U", "D"} for c in ln) for ln in cur]          # 세로 획이 있는 줄(│ ┬ ┴ ├ …)
+            rows, head, tail = None, [], []
+            if sum(boxy) >= 2:
+                a = boxy.index(True)
+                b = len(boxy) - boxy[::-1].index(True)
+                head, body, tail = cur[:a], cur[a:b], cur[b:]
+                try:
+                    rows = _grid_best(body)
+                except Exception:  # noqa: BLE001
+                    rows = None
+            if rows:
+                if head:
+                    segs.append(("th", head))
+                segs.append(("g", rows))
+                if tail:
+                    segs.append(("th", tail))
+            else:
+                keep = [ln for ln in cur if not (len(ln.strip()) >= 3 and all(c in " ─━═-" for c in ln))]     # 장식용 가로줄만 있는 줄은 뺀다
+                keep = [re.sub(r"[─━═]{3,}", "", ln).rstrip() if not re.search(r"[│┃┌┐└┘├┤┬┴┼]", ln) else ln for ln in keep]
+                segs.append(("t", keep))
+            cur = []
+    for ln in raw:
+        if not ln.strip():
+            end_chunk()
+            segs.append(("t", [""]))
+        else:
+            cur.append(ln)
+    end_chunk()
+    out, tbuf = [], []
+
+    def flush_t():
+        nonlocal tbuf
+        if tbuf:
+            out.extend(_format_annex_old(tbuf, title if not out else ""))
+            tbuf = []
+    for kind, v in segs:
+        if kind == "t":
+            tbuf.extend(v)
+        elif kind == "th":                                        # 표 바로 앞뒤 글(제목·꼬리말)은 앞뒤 글과 이어 붙이지 않고 따로
+            flush_t()
+            keep = [ln for ln in v if not (len(ln.strip()) >= 3 and all(c in " ─━═-" for c in ln))]
+            keep = [re.sub(r"[─━═]{3,}", "", ln).rstrip() for ln in keep]
+            tbuf.extend(keep)
+            flush_t()
+        else:
+            flush_t()
+            if out and out[-1][0] == 9:
+                out.append((0, ""))                               # 붙어 있는 두 표는 사이를 띄운다
+            for r in v:
+                out.append((9, json.dumps(r, ensure_ascii=False)))
+    flush_t()
+    return out
 
 
 def extract_annex(d):

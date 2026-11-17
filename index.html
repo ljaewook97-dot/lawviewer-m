@@ -457,7 +457,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.25";
+const VERSION = "10.26";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1069,7 +1069,7 @@ function annexHTML(x, i, idp) {
       let row = []; try { row = JSON.parse(l[1]); } catch (e) { row = [[1, l[1]]]; }
       if (!tb) { h += '<div class="axw"><table class="axt">'; tb = true; }
       const hd = h.endsWith('<table class="axt">');
-      h += "<tr>" + row.map((c) => "<" + (hd ? "th" : "td") + (c[0] > 1 ? ' colspan="' + c[0] + '"' : "") + ">" + esc(c[1]).replace(/\n/g, "<br>") + "</" + (hd ? "th" : "td") + ">").join("") + "</tr>";
+      h += "<tr>" + row.map((c) => "<" + (hd ? "th" : "td") + (c[0] > 1 ? ' colspan="' + c[0] + '"' : "") + (c[2] > 1 ? ' rowspan="' + c[2] + '"' : "") + ">" + esc(c[1]).replace(/\n/g, "<br>") + "</" + (hd ? "th" : "td") + ">").join("") + "</tr>";
       return;
     }
     if (tb) { h += "</table></div>"; tb = false; }
