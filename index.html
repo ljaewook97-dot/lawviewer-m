@@ -145,6 +145,9 @@ a.c{color:color-mix(in srgb,var(--link) 75%,var(--text));font-weight:600;text-de
 .ttk button small{font-weight:400;opacity:.8}
 @media(max-width:999px){.tt .col.off{display:none}.tt .col .ch{position:static}}
 .tt .ta.wh .ln{background:color-mix(in srgb,var(--acc) 12%,transparent)}
+.tt .jmp{position:absolute;z-index:7;transform:translateX(-50%);display:flex;gap:4px;pointer-events:auto}
+.tt .jmp b{background:var(--acc);color:#fff;border-radius:14px;padding:3px 11px;font-size:.78em;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap}
+.tt .jmp b:hover{background:var(--acc-d)}
 .tt a.c.hlc{background:color-mix(in srgb,var(--acc) 26%,transparent);border-radius:3px}
 .tt .ln.hlx{background:color-mix(in srgb,var(--acc) 22%,transparent);border-radius:4px;box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 55%,transparent)}
 .nav{display:flex;gap:6px;padding:10px 12px;align-items:center;position:sticky;top:0;background:var(--bg);z-index:5}
@@ -508,7 +511,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.40";
+const VERSION = "10.41";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -2065,19 +2068,43 @@ async function ttGoKey(key) {                                    // 3단 비교�
 function ttLinks(v) {
   const g = v.querySelector(".ttg"), svg = g.querySelector(".ttl"), tas = [...g.querySelectorAll(".ta")];
   let pin = null;
-  const showIn = (el, from) => {                                 // 칸마다 따로 스크롤(PC): 연결된 곳이 그 칸 화면 밖이면 그 칸만 살짝 굴려 보여 준다
-    const c = el && el.closest(".col"); if (!c || (from && from.closest(".col") === c) || c.scrollHeight <= c.clientHeight + 4) return;
-    const cr = c.getBoundingClientRect(), er = el.getBoundingClientRect(), top = cr.top + (c.querySelector(".ch") ? c.querySelector(".ch").offsetHeight : 0);
-    if (er.top >= top && er.bottom <= cr.bottom) return;
-    c.scrollTo({ top: c.scrollTop + er.top - top - Math.min(80, cr.height / 4), behavior: "smooth" });
+  // 칸마다 따로 스크롤(PC): 지나가며 올린 것으로는 다른 칸을 움직이지 않는다. 연결된 곳이 그 칸 화면 밖이면 '▲ 위에 연결 N곳' 단추만 띄우고, 누르면 간다
+  const colTop = (c) => c.getBoundingClientRect().top + (c.querySelector(".ch") ? c.querySelector(".ch").offsetHeight : 0);
+  const goTo = (c, el) => c.scrollTo({ top: c.scrollTop + el.getBoundingClientRect().top - colTop(c) - Math.min(80, c.clientHeight / 4), behavior: "smooth" });
+  const pills = new Map(); let pillT = 0;
+  const dropPills = () => { pills.forEach((p) => p.remove()); pills.clear(); };
+  const fadePills = () => { clearTimeout(pillT); pillT = setTimeout(dropPills, 1600); };
+  const showIn = (els, from) => {
+    const by = new Map();
+    els.filter(Boolean).forEach((el) => { const c = el.closest(".col"); if (!c || (from && from.closest(".col") === c) || c.scrollHeight <= c.clientHeight + 4) return; if (!by.has(c)) by.set(c, []); by.get(c).push(el); });
+    by.forEach((list, c) => {
+      const top = colTop(c), bot = c.getBoundingClientRect().bottom;
+      if (list.some((el) => { const r = el.getBoundingClientRect(); return r.bottom > top + 4 && r.top < bot - 4; })) { if (pills.get(c)) { pills.get(c).remove(); pills.delete(c); } return; }
+      const up = list.filter((el) => el.getBoundingClientRect().bottom <= top + 4), dn = list.filter((el) => el.getBoundingClientRect().top >= bot - 4);
+      if (pills.get(c)) pills.get(c).remove();
+      const p = document.createElement("div"); p.className = "jmp";
+      const go = (el) => { goTo(c, el); p.remove(); pills.delete(c); };
+      p.innerHTML = (up.length ? '<b data-d="u">▲ 위에 연결 ' + up.length + "곳</b>" : "") + (dn.length ? '<b data-d="d">▼ 아래에 연결 ' + dn.length + "곳</b>" : "");
+      p.querySelectorAll("b").forEach((x) => (x.onclick = (e) => { e.stopPropagation(); go(x.dataset.d === "u" ? up[up.length - 1] : dn[0]); }));
+      p.onmouseenter = () => clearTimeout(pillT); p.onmouseleave = fadePills;
+      p.style.left = c.offsetLeft + c.offsetWidth / 2 + "px"; p.style.top = c.offsetTop + (c.querySelector(".ch") ? c.querySelector(".ch").offsetHeight : 0) + 8 + "px";
+      g.appendChild(p); pills.set(c, p); clearTimeout(pillT);
+    });
   };
-  const clear = () => { svg.innerHTML = ""; g.classList.remove("ttf"); tas.forEach((t) => t.classList.remove("src", "rel")); };
+  let dwT = 0;
+  const dwell = (a, el) => {                                     // 인용에 0.6초 머물면 그 칸을 가리키는 곳으로 굴린다(지나가기만 하면 단추만)
+    clearTimeout(dwT); if (!el) return;
+    showIn([el], a);
+    dwT = setTimeout(() => { if (a.matches(":hover")) { const c = el.closest(".col"); if (c && c !== a.closest(".col") && c.scrollHeight > c.clientHeight + 4) { const r = el.getBoundingClientRect(), top = colTop(c); if (r.bottom <= top + 4 || r.top >= c.getBoundingClientRect().bottom - 4) { goTo(c, el); const p = pills.get(c); if (p) { p.remove(); pills.delete(c); } } } } }, 600);
+  };
+  tas.forEach((t) => { const c = t.closest(".col"); if (c) c.addEventListener("scroll", () => { const p = pills.get(c); if (p) { p.remove(); pills.delete(c); } }, { passive: true }); });
+  const clear = () => { fadePills(); svg.innerHTML = ""; g.classList.remove("ttf"); tas.forEach((t) => t.classList.remove("src", "rel")); };
   const draw = (src) => {
     clear(); if (!src) return;
     const want = new Set((src.dataset.rel || "").split(",").filter(Boolean)), rel = tas.filter((t) => want.has(t.dataset.id));
     if (!rel.length) return;
     g.classList.add("ttf"); src.classList.add("src"); rel.forEach((t) => t.classList.add("rel"));
-    const seen = new Set(); rel.forEach((t) => { const c = t.closest(".col"); if (!seen.has(c)) { seen.add(c); showIn(t, src); } });
+    showIn(rel, src);
   };
   tas.forEach((t) => {
     t.addEventListener("mouseenter", () => { if (!pin) draw(t); });
@@ -2087,7 +2114,7 @@ function ttLinks(v) {
   v.onscroll = () => { if (pin) draw(pin); };
   // ---- 항·호 단위 연결: 시행령·시행규칙의 인용('법 제12조제1항제5호')이 가리키는 법 조문의 그 줄 <-> 그 인용이 든 조문
   const HLC = {};                                                // 인용마다 한 번만 물어본다
-  const clearX = () => { g.querySelectorAll(".ta.wh").forEach((e) => e.classList.remove("wh")); g.querySelectorAll(".ln.hlx").forEach((e) => e.classList.remove("hlx")); g.querySelectorAll("a.c.hlc").forEach((e) => e.classList.remove("hlc")); };
+  const clearX = () => { clearTimeout(dwT); g.querySelectorAll(".ta.wh").forEach((e) => e.classList.remove("wh")); g.querySelectorAll(".ln.hlx").forEach((e) => e.classList.remove("hlx")); g.querySelectorAll("a.c.hlc").forEach((e) => e.classList.remove("hlc")); };
   const target = (a) => {                                        // 이 인용이 가리키는 (같은 줄의 다른 칸) 조문 -> {ta, name, c, tcol}
     const c = CITES[+a.dataset.c]; if (!c || c.kind || !c.n) return null;
     const name = c.law || c.self, tcol = TT.names.findIndex((x) => sameLaw(x, name));
@@ -2118,13 +2145,13 @@ function ttLinks(v) {
     const a = e.target.closest("a.c");
     if (a) {                                                     // 인용에 올림 -> 가리키는 줄 강조
       const t = target(a); if (!t) return;
-      if (!t.c.sub) { clearX(); t.ta.classList.add("wh"); showIn(t.ta, a); return; }   // 조 전체 인용 -> 그 조 전체를 옅게 강조
+      if (!t.c.sub) { clearX(); t.ta.classList.add("wh"); dwell(a, t.ta); return; }   // 조 전체 인용 -> 그 조 전체를 옅게 강조
       const r = await ranges(t);
       if (!r || !r.hl || !r.hl.length || a !== document.querySelector("a.c:hover")) return;
       clearX();
       const lines = [...t.ta.querySelectorAll(".ln")];
       r.hl.forEach(([x, y]) => { for (let i = x; i < y; i++) if (lines[i]) lines[i].classList.add("hlx"); });
-      showIn(t.ta.querySelector(".ln.hlx"), a);
+      dwell(a, t.ta.querySelector(".ln.hlx"));
       return;
     }
     const ln = e.target.closest(".ln"), ta = ln && ln.closest(".ta");
@@ -2136,7 +2163,7 @@ function ttLinks(v) {
     clear(); clearX();
     g.classList.add("ttf"); ta.classList.add("src"); ln.classList.add("hlx");
     hits.forEach((h) => { h.ta.classList.add("rel"); h.a.classList.add("hlc"); });
-    const seen = new Set(); hits.forEach((h) => { const c = h.a.closest(".col"); if (!seen.has(c)) { seen.add(c); showIn(h.a, ln); } });
+    showIn(hits.map((h) => h.a), ln);
   });
   g.addEventListener("mouseout", (e) => { if (e.target.closest("a.c")) clearX(); else if (e.target.closest(".ln") && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(".ln"))) { clearX(); if (!pin) clear(); } });
 }
