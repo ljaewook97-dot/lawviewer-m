@@ -53,7 +53,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .card .m{flex:1;min-width:0}
 .card .nm{font-weight:700;line-height:1.35}
 .card .in{color:var(--muted);font-size:.82em;margin-top:2px}
-.tag{display:inline-block;color:#fff;border-radius:6px;font-size:.72em;font-weight:700;padding:1px 6px;margin-right:6px;vertical-align:1px}
+.tag{display:inline-block;white-space:nowrap;flex:none;color:#fff;border-radius:6px;font-size:.72em;font-weight:700;padding:1px 6px;margin-right:6px;vertical-align:1px}
 .tag.law{background:var(--law)}.tag.adm{background:var(--adm)}.tag.ordin{background:var(--ordin)}
 .sm{min-width:36px;height:36px;border-radius:8px;background:var(--soft);border:1px solid var(--line);color:var(--sub)}
 .fgh{display:flex;align-items:center;gap:8px;padding:7px 10px;margin:12px 0 4px;border-radius:8px;background:var(--line);font-weight:700;cursor:pointer;user-select:none;line-height:1.3}
@@ -154,7 +154,7 @@ a.c:hover{color:var(--link);border-bottom-color:var(--link);background:color-mix
 .tt .col .at:hover{color:var(--acc-d)}
 .rch{display:flex;align-items:center;justify-content:space-between;font-size:.78em;font-weight:700;color:var(--muted);margin:4px 2px 4px}
 .rch button{font-size:.95em;color:var(--muted);font-weight:400}.rch button:hover{color:var(--danger)}
-.card.rc{cursor:pointer;padding:6px 10px;margin-bottom:4px}.card.rc .nm{display:flex;align-items:center;min-width:0}.card.rc .h{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card.rc{cursor:pointer;padding:6px 10px;margin-bottom:4px}.card.rc .m{min-width:0;overflow:hidden}.card.rc .nm{display:flex;align-items:center;min-width:0;font-weight:600}.card.rc .h{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.card.rc .tag{margin-right:6px}
 .card.rc .ago{flex:none;font-size:.72em;color:var(--muted)}
 .card.rc:hover{border-color:var(--acc)}
 .tt .jmp{position:absolute;z-index:7;transform:translateX(-50%);display:flex;gap:4px;pointer-events:auto}
@@ -530,7 +530,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.42";
+const VERSION = "10.43";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -803,7 +803,7 @@ function noteRecent(d, kind, rawmst) {
 function paintRecent(L) {
   if (!RECENT.length) { L.innerHTML = '<div class="empty">법령·행정규칙·자치법규 이름을 치면<br>목록이 나옵니다.</div>'; return; }
   const ago = (t) => { const m = Math.round((Date.now() - t) / 60000); return m < 60 ? (m < 1 ? "방금" : m + "분 전") : m < 1440 ? Math.round(m / 60) + "시간 전" : Math.round(m / 1440) + "일 전"; };
-  L.innerHTML = '<div class="rch"><span>최근 연 법령</span><button id="rcClr">지우기</button></div>' + RECENT.map((x, i) => '<div class="card rc" data-r="' + i + '" title="' + esc(x.n) + '"><div class="m"><div class="nm">' + (x.k === "law" ? favBadge(x.n, "law") : '<span class="tag ' + x.k + '">' + KIND[x.k][0] + "</span>") + '<span class="h">' + esc(x.k === "law" ? String(x.n).replace(/\s*(시행령|시행규칙)$/, "") : x.n) + '</span></div></div><span class="ago">' + ago(x.t) + "</span></div>").join("");
+  L.innerHTML = '<div class="rch"><span>최근 연 법령</span><button id="rcClr">지우기</button></div>' + RECENT.map((x, i) => '<div class="card rc" data-r="' + i + '" title="' + esc(x.n) + " · " + ago(x.t) + '"><div class="m"><div class="nm">' + (x.k === "law" ? favBadge(x.n, "law") : '<span class="tag fb ' + x.k + '">' + (x.k === "adm" ? "행정" : "자치") + "</span>") + '<span class="h">' + esc(x.k === "law" ? String(x.n).replace(/\s*(시행령|시행규칙)$/, "") : x.n) + '</span></div></div></div>').join("");
   L.querySelectorAll(".rc").forEach((c) => (c.onclick = () => { const x = RECENT[+c.dataset.r]; openDoc(x.k, x.m, x.n, x.d); }));
   $("#rcClr").onclick = () => { RECENT = []; LS.set("lv_recent", RECENT); paintRecent(L); };
 }
