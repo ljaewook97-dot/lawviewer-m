@@ -544,7 +544,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.47";
+const VERSION = "10.48";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1881,7 +1881,26 @@ function wrapRange(ln, s, e, n) {
     const sp = document.createElement("span"); sp.className = "nt " + n.c; sp.dataset.id = n.id; if (n.m) sp.title = n.m; mid.parentNode.insertBefore(sp, mid); sp.appendChild(mid);
   });
 }
+function ttDoc(ci) {                                     // 3단 비교의 한 칸(법·령·칙)을 표시용 '법령'으로
+  const c = (TTCOLS || [])[ci]; if (!c || c.none) return null;
+  if (!c._dc) { const arts = {}; (c.arts || []).forEach((a) => (arts[a.key] = a)); c._dc = { kind: "law", name: c.name, rawmst: c.mst, date: "", arts }; }
+  return c._dc;
+}
+function applyNotesTT() {                                 // 3단 비교 칸에도 같은 법령의 표시를 칠한다
+  const v = $("#tt"); if (!TT || !v || !v.querySelector(".ttg")) return;
+  unwrapNotes(v);
+  v.querySelectorAll(".ttg .col[data-ci]").forEach((col) => {
+    const dc = ttDoc(+col.dataset.ci); if (!dc) return;
+    NOTES.filter((n) => n.law === dc.name && n.kind === "law").forEach((n) => {
+      const ln = col.querySelector('.ln[data-k="' + n.key + '"][data-i="' + n.li + '"]'); if (!ln) return;
+      const txt = ln.textContent; let s = n.s, e = n.e;
+      if (txt.slice(s, e) !== n.t) { const p = txt.indexOf(n.t); if (p < 0) return; s = p; e = p + n.t.length; }
+      wrapRange(ln, s, e, n);
+    });
+  });
+}
 function applyNotes() {
+  applyNotesTT();
   const d = cur.doc, root = $("#docBody"); if (!d) return;
   unwrapNotes(root);
   NOTES.filter((n) => n.law === d.name && n.kind === d.kind).forEach((n) => {
@@ -1891,22 +1910,26 @@ function applyNotes() {
     n.lost = 0; wrapRange(ln, s, e, n);
   });
 }
-function selParts() {                                    // 지금 드래그한 글을 줄 단위 조각으로
-  const sel = getSelection(); if (!sel || !sel.rangeCount || sel.isCollapsed || !cur.doc) return [];
-  const r = sel.getRangeAt(0), root = $("#docBody"); if (!root.contains(r.commonAncestorContainer)) return [];
+function selParts() {                                    // 지금 드래그한 글을 줄 단위 조각으로(본문, 또는 3단 비교의 한 칸)
+  const sel = getSelection(); if (!sel || !sel.rangeCount || sel.isCollapsed) return [];
+  const r = sel.getRangeAt(0), body = $("#docBody"), tt = $("#tt");
+  const inDoc = body.contains(r.commonAncestorContainer) && cur.doc, inTT = !inDoc && TT && tt.classList.contains("on") && tt.contains(r.commonAncestorContainer);
+  if (!inDoc && !inTT) return [];
+  const root = inDoc ? body : tt;
   const off = (ln, node, o) => { const q = document.createRange(); q.selectNodeContents(ln); q.setEnd(node, o); return q.toString().length; };
   const out = [];
   root.querySelectorAll(".ln[data-k]").forEach((ln) => {
     if (!r.intersectsNode(ln)) return;
+    const dc = inDoc ? cur.doc : (ln.closest(".ta") ? ttDoc(+ln.closest(".ta").dataset.ci) : null); if (!dc) return;
     const full = ln.textContent.length;
     let s = ln.contains(r.startContainer) ? off(ln, r.startContainer, r.startOffset) : 0;
     let e = ln.contains(r.endContainer) ? off(ln, r.endContainer, r.endOffset) : full;
     const txt = ln.textContent;
     while (s < e && /\s/.test(txt[s])) s++;
     while (e > s && /\s/.test(txt[e - 1])) e--;
-    if (e > s) out.push({ key: ln.dataset.k, li: +ln.dataset.i, s, e, t: txt.slice(s, e) });
+    if (e > s) out.push({ key: ln.dataset.k, li: +ln.dataset.i, s, e, t: txt.slice(s, e), dc, ln });
   });
-  return out;
+  return out.length ? out.filter((p) => p.dc === out[0].dc) : out;     // 여러 칸에 걸치면 처음 칸만
 }
 let palTm = null;
 document.addEventListener("selectionchange", () => {
@@ -1972,8 +1995,8 @@ $("#npal").addEventListener("pointerdown", (e) => e.preventDefault());
 $("#npal").addEventListener("mousedown", (e) => e.preventDefault());
 $("#npal").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-c]"); if (!b) return;
-  const d = cur.doc, parts = selParts(); if (!d || !parts.length) return;
-  const c = b.dataset.c;
+  const parts = selParts(); if (!parts.length) return;
+  const d = parts[0].dc, c = b.dataset.c;
   if (c === "m") {                                        // 메모 달기: 드래그한 글(여러 줄이어도 한 묶음)에 메모를 적는다
     const ex = NOTES.find((n) => n.c === "m" && n.law === d.name && n.kind === d.kind && parts.some((p) => n.key === p.key && n.li === p.li && n.s < p.e && n.e > p.s));
     getSelection().removeAllRanges(); $("#npal").classList.remove("on");
@@ -1982,7 +2005,7 @@ $("#npal").addEventListener("click", (e) => {
   if (c === "r") {                                        // 이상한 줄 신고: 드래그한 줄 전체 글을 기록
     let n = 0;
     parts.forEach((p) => {
-      const ln = $("#docBody").querySelector('.ln[data-k="' + CSS.escape(p.key) + '"][data-i="' + p.li + '"]'), a = d.arts[p.key];
+      const ln = p.ln, a = d.arts[p.key];
       const text = ln ? ln.textContent : p.t;
       if (REP.some((r) => r.law === d.name && r.kind === d.kind && r.key === p.key && r.li === p.li)) return;
       REP.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), kind: d.kind, rawmst: d.rawmst, law: d.name, date: d.date || "", key: p.key, li: p.li, lab: a ? (a.label + (a.title ? " " + a.title : "")) : "", text, ts: Date.now() }); n++;
@@ -2007,6 +2030,17 @@ $("#npal").addEventListener("click", (e) => {
   if (tab === "n") paintNotesList();
 });
 function delNote(id) { dropNotes((n) => n.id === id); saveNotes(); applyNotes(); if (tab === "n") paintNotesList(); }
+$("#tt").addEventListener("contextmenu", (e) => {          // 3단 비교 속 표시: 오른쪽 클릭으로 지우기
+  const nt = e.target.closest(".nt"); if (!nt) return;
+  e.preventDefault(); const id = nt.dataset.id;
+  showMenu(e.clientX, e.clientY, [["이 표시 지우기", () => delNote(id)], ["표시 모아보기 열기", () => { setTab("n"); if (!isDT()) show("home"); }]]);
+});
+$("#tt").addEventListener("click", (e) => {
+  if (e.target.closest("a,button") || !getSelection().isCollapsed) return;
+  const nt = e.target.closest(".nt"); if (!nt) return;
+  const n = NOTES.find((x) => x.id === nt.dataset.id); if (!n || n.c !== "m") return;
+  const ta = nt.closest(".ta"), dc = ta ? ttDoc(+ta.dataset.ci) : null; if (dc) openMemo(n.g || n.id, [], dc);
+});
 (function () {
   const b = $("#docBody");
   const menu = (e, nt) => { e.preventDefault(); const id = nt.dataset.id; showMenu(e.clientX, e.clientY, [["이 표시 지우기", () => delNote(id)], ["표시 모아보기 열기", () => { setTab("n"); if (!isDT()) show("home"); }]]); };
@@ -2137,6 +2171,14 @@ async function ttShow(i) {
   const v = $("#tt"); v.innerHTML = h; v.scrollTop = 0;
   bindCites(v);
   v.querySelectorAll(".ttk button").forEach((b) => (b.onclick = () => ttTab(b.dataset.k)));
+  v.querySelectorAll(".ta").forEach((t) => (t.ondblclick = (e) => {   // 조문을 두 번 누르면 그 조문을 본문 탭으로 연다
+    if (e.target.closest("a,button,.nt")) return;
+    const at = t.querySelector(".at"); if (!at) return;
+    try { getSelection().removeAllRanges(); } catch (er) {}
+    $("#npal").classList.remove("on");
+    openByName(at.dataset.n, at.dataset.k);
+  }));
+  applyNotesTT();
   ttTab(TTK);
   $("#tP").onclick = () => ttShow(TTI - 1); $("#ttN").onclick = () => ttShow(TTI + 1);
   $("#tG").onclick = () => { const n = parseInt($("#tJ").value, 10); if (!n) return; const k = TT.rows.findIndex((x) => x.key.split(":")[0] == n); if (k < 0) return toast("그 조문이 없습니다", true); ttShow(k); };
