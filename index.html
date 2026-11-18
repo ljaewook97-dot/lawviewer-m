@@ -169,6 +169,8 @@ a.c:hover{color:var(--link);border-bottom-color:var(--link);background:color-mix
 .card.rc{cursor:pointer;padding:6px 10px;margin-bottom:4px}.card.rc .m{min-width:0;overflow:hidden}.card.rc .nm{display:flex;align-items:center;min-width:0;font-weight:600}.card.rc .h{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.card.rc .tag{margin-right:6px}
 .card.rc .ago{flex:none;font-size:.72em;color:var(--muted)}
 .card.rc:hover{border-color:var(--acc)}
+.ttgo{position:fixed;z-index:60;background:var(--acc);color:#fff;border-radius:14px;padding:3px 11px;font-size:.78em;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap}
+.ttgo:hover{background:var(--acc-d)}
 .tt .jmp{position:absolute;z-index:7;transform:translateX(-50%);display:flex;gap:4px;pointer-events:auto}
 .tt .jmp b{background:var(--acc);color:#fff;border-radius:14px;padding:3px 11px;font-size:.78em;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap}
 .tt .jmp b:hover{background:var(--acc-d)}
@@ -287,7 +289,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   .grp{margin:8px 2px 3px;font-size:.88em}
   #sug div{padding:6px 10px;font-size:.92em}
   #doc,#tt{left:var(--lw);right:var(--rw);top:calc(var(--hh) + var(--th) + var(--bh));padding:2px 16px 0}
-  #bFav,#bTT{display:none!important}
+  #bFav,#bTT,#bSwap{display:none!important}
   #dbar{display:flex;align-items:center;gap:4px;position:fixed;top:calc(var(--hh) + var(--th));left:var(--lw);right:var(--rw);height:var(--bh);z-index:14;padding:0 8px;background:var(--surf);border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap}
   #dbar .tb{height:24px;padding:0 8px;border-radius:5px;background:var(--soft);border:1px solid var(--line);color:var(--sub);font-size:.82em}
   #dbar .tb:hover{background:var(--acc-soft)}
@@ -477,6 +479,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <button class="ib" id="bBack" style="display:none">←</button>
   <div class="t" id="hTitle">법령 뷰어</div><span class="hver" id="hVer"></span><span class="sp"></span>
   <button class="ib" id="bToc" style="display:none">☰</button>
+  <button class="ib" id="bSwap" style="display:none" title="최근 연 법령으로 빠르게 전환">⇄</button>
   <button class="ib" id="bFav" style="display:none">☆</button>
   <button class="ib dtonly" id="bHist" title="이전에 보던 조문으로 (Alt+Shift+←, 앞으로는 Alt+Shift+→)  · 탭 이동은 Alt+←/→ 또는 Alt+휠">◀ 뒤로</button>
   <button class="ib dtonly" id="fMinus" title="글자 작게">A−</button><button class="ib dtonly" id="fPlus" title="글자 크게">A＋</button>
@@ -586,7 +589,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.60";
+const VERSION = "10.61";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -702,6 +705,7 @@ function show(name, title) {
   if (dt && !isHome) paintLTabs();
   $("#bToc").style.display = isDoc ? "" : "none";
   $("#bFav").style.display = isDoc ? "" : "none";
+  $("#bSwap").style.display = (isDoc || isTT) && RECENT.length > 1 ? "" : "none";
   $("#bTT").style.display = isDoc ? "" : "none";
   cur.view = name;
   document.body.classList.toggle("split", !!(dt && SPLIT && (name === "doc" || (name === "home" && cur.doc))));
@@ -1363,7 +1367,7 @@ function saveTabs() {
   if (tabRestoring || !isDT()) return;
   try {
     const sc = (t) => (t.d === cur.doc ? $("#doc").scrollTop : t.scroll || 0);
-    LS.set("lv_tabs", JSON.stringify({ a: ltabs.findIndex((t) => t.d === cur.doc), t: ltabs.map((t) => ({ k: t.d.kind || "law", m: t.d.rawmst || (t.d.kind === "law" || !t.d.kind ? t.d.mst : "") || null, n: t.d.name, d: t.d.date || "", s: Math.round(sc(t)) })) }));
+    LS.set("lv_tabs", JSON.stringify({ tt: TTTABS.map((x) => ({ b: x.base, i: x.i || 0 })), ta: cur.view === "tt" ? TTCUR : -1, a: ltabs.findIndex((t) => t.d === cur.doc), t: ltabs.map((t) => ({ k: t.d.kind || "law", m: t.d.rawmst || (t.d.kind === "law" || !t.d.kind ? t.d.mst : "") || null, n: t.d.name, d: t.d.date || "", s: Math.round(sc(t)) })) }));
   } catch (e) {}
 }
 let saveTm = null;
@@ -1396,12 +1400,20 @@ document.addEventListener("visibilitychange", () => { if (document.hidden) saveT
 async function restoreTabs() {                                   // 시작: 탭은 이름만 먼저 세우고, 보던 탭 하나만 받는다(나머지는 누를 때 받음)
   if (!isDT() || ltabs.length || !OC) { tabRestoring = false; return; }
   let s; try { s = JSON.parse(LS.get("lv_tabs", "") || "null"); } catch (e) { s = null; }
-  if (!s || !s.t || !s.t.length) { tabRestoring = false; return; }
+  const hasT = !!(s && s.t && s.t.length), hasTT = !!(s && s.tt && s.tt.length);
+  if (!hasT && !hasTT) { tabRestoring = false; return; }
   try {
-    s.t.forEach((t) => ltabs.push({ d: { kind: t.k, rawmst: t.m, name: t.n, date: t.d || "", stub: true }, scroll: t.s || 0 }));
-    const i = s.a >= 0 && s.a < ltabs.length ? s.a : 0;
-    paintLTabs();
-    await loadLTab(i, "열어 두었던 탭 여는 중…");
+    if (hasT) {
+      s.t.forEach((t) => ltabs.push({ d: { kind: t.k, rawmst: t.m, name: t.n, date: t.d || "", stub: true }, scroll: t.s || 0 }));
+      const i = s.a >= 0 && s.a < ltabs.length ? s.a : 0;
+      paintLTabs();
+      await loadLTab(i, "열어 두었던 탭 여는 중…");
+    }
+    if (hasTT) {                                                   // 3단 비교 탭: 이름만 세워 두고, 보던 탭이면 지금 받는다
+      s.tt.forEach((t) => TTTABS.push({ base: t.b, tt: null, i: t.i || 0, stub: true }));
+      paintLTabs();
+      if (s.ta >= 0 && s.ta < TTTABS.length) await showTTTab(s.ta);
+    }
   } finally { tabRestoring = false; saveTabs(); }
 }
 async function loadLTab(i, msg) {                                 // 아직 안 받은 탭(이름만 있는 탭)을 받아 그 자리에서 연다
@@ -1532,11 +1544,16 @@ async function csLoad(t) {
   if (!CS.cache[ck]) CS.cache[ck] = callQuiet("open_cite", [OC, t.name, t.n, t.b, t.subs.length ? t.subs : null, t.ctx]);
   try { return await CS.cache[ck]; } catch (e) { delete CS.cache[ck]; return null; }
 }
+function csDocOf(i) {                                             // 인용 칸 카드 하나를 표시·메모용 '법령'으로
+  const it = i === "t" ? CS.top : CS.list[+i]; if (!it || !it.r || !it.r.art) return null;
+  if (!it._dc || it._dc.arts[it.r.art.key] !== it.r.art) { const arts = {}; arts[it.r.art.key] = it.r.art; it._dc = { kind: "law", name: it.r.lawname, rawmst: it.r.mst, date: "", arts }; }
+  return it._dc;
+}
 async function csLoadDeleg(t) {                                   // 위임 표현 -> 위임받은 조문들(최대 3) 의 미리보기 목록
   const ck = "d|" + t.ctx + "|" + t.c.akey + "|" + t.c.to;
   if (!CS.cache[ck]) CS.cache[ck] = (async () => {
     const r = await callQuiet("list_deleg", [OC, t.c.ctx, t.c.akey, t.c.to]);
-    const hs = ((r && r.hits) || []).filter((h) => h.key && h.key.indexOf(":") > 0).slice(0, 3);
+    const hs = ((r && r.hits) || []).filter((h) => h.key && h.key.indexOf(":") > 0);
     const out = [];
     for (const h of hs) { const kk = h.key.split(":"); const x = await callQuiet("open_cite", [OC, h.lawname, +kk[0], +kk[1] || 0, null, h.mst]); if (x && x.art) out.push(x); }
     return out;
@@ -1572,7 +1589,8 @@ function csCard(it, i, pinned) {
   if (r === undefined) return '<div class="csc" data-ci="' + i + '"><div class="csh">' + esc(tl) + ' <span class="muted">불러오는 중…</span></div></div>';
   if (!r || !r.art) return '<div class="csc" data-ci="' + i + '"><div class="csh">' + esc(tl) + ' <span class="muted">— 찾지 못했습니다</span></div></div>';
   const d0 = { kind: "law", name: r.lawname };
-  return '<div class="csc' + (pinned ? " top" : "") + '" data-ci="' + i + '"><div class="csh" data-n="' + esc(r.lawname) + '" data-k="' + r.art.key + '" title="본문 탭으로 열기">' + (pinned ? "📍 누른 인용 · " : "") + (t.via ? '<span class="muted">' + esc(t.via) + "으로 위임 · </span>" : "") + splitBadge(d0) + '<span class="cn">' + esc(r.lawname.replace(/\s*(시행령|시행규칙)$/, "")) + "</span> " + esc(r.art.label + " " + (r.art.title || "")) + " ↗</div>" + artHTML(r.art, r.mst, { idp: "cs" + i + "-", self: r.lawname, hl: r.hl || [] }) + "</div>";
+  const tcol = { "k-adm": "#7B1FA2", "k-ord": "#00838F", "k-rule": "#EF6C00", "k-dec": "#2E7D32", "k-law": "#1565C0" }[tabCls(d0)] || "#1565C0";
+  return '<div class="csc' + (pinned ? " top" : "") + '" style="border-left:5px solid ' + tcol + '" data-ci="' + i + '"><div class="csh" data-n="' + esc(r.lawname) + '" data-k="' + r.art.key + '" title="본문 탭으로 열기">' + (pinned ? "📍 누른 인용 · " : "") + (t.via ? '<span class="muted">' + esc(t.via) + "으로 위임 · </span>" : "") + splitBadge(d0) + '<span class="cn">' + esc(r.lawname.replace(/\s*(시행령|시행규칙)$/, "")) + "</span> " + esc(r.art.label + " " + (r.art.title || "")) + " ↗</div>" + artHTML(r.art, r.mst, { idp: "cs" + i + "-", self: r.lawname, hl: r.hl || [] }) + "</div>";
 }
 const jl = (n, b) => "제" + n + "조" + (b ? "의" + b : "");
 function csPaint() {
@@ -1700,7 +1718,19 @@ function pickSplit(r) {
 }
 function applyNotesSplit() {
   const root = $("#doc2Body"); if (!SPLIT || !root) return;
-  if (SPLIT.mode === "cite") { unwrapNotes(root); return; }
+  if (SPLIT.mode === "cite") {                                         // 인용 칸: 카드마다 그 카드의 법령 표시를 칠한다
+    unwrapNotes(root);
+    root.querySelectorAll(".csc[data-ci]").forEach((card) => {
+      const dc = csDocOf(card.dataset.ci); if (!dc) return;
+      NOTES.filter((n) => n.law === dc.name && n.kind === "law").forEach((n) => {
+        const ln = card.querySelector('.ln[data-k="' + n.key + '"][data-i="' + n.li + '"]'); if (!ln) return;
+        const txt = ln.textContent; let s = n.s, e = n.e;
+        if (txt.slice(s, e) !== n.t) { const p = txt.indexOf(n.t); if (p < 0) return; s = p; e = p + n.t.length; }
+        wrapRange(ln, s, e, n);
+      });
+    });
+    return;
+  }
   const d = SPLIT.d; unwrapNotes(root);
   NOTES.filter((n) => n.law === d.name && n.kind === d.kind).forEach((n) => {
     const ln = root.querySelector('.ln[data-k="' + n.key + '"][data-i="' + n.li + '"]'); if (!ln) return;
@@ -1742,6 +1772,13 @@ function showDoc(d, kind, rawmst, key, fromTab) {
 }
 function paintDocFav() { const on = favIdx(cur.doc.kind, cur.doc.rawmst, "") >= 0; $("#bFav").textContent = on ? "★" : "☆"; $("#dbFav").textContent = on ? "★ 즐겨찾기" : "☆ 즐겨찾기"; }
 $("#bFav").onclick = () => { toggleFav(cur.doc, ""); paintDocFav(); };
+$("#bSwap").onclick = (e) => {                                   // 모바일: 최근 연 법령 사이를 빨리 오가기(탭 바 대신)
+  const r = e.currentTarget.getBoundingClientRect(), now = cur.doc;
+  const list = RECENT.filter((x) => !(now && x.k === now.kind && String(x.m) === String(now.rawmst))).slice(0, 9);
+  if (!list.length) return toast("최근 연 다른 법령이 없습니다");
+  const tag = (x) => (x.k === "adm" ? "행정" : x.k === "ordin" ? "자치" : /시행규칙$/.test(x.n) ? "칙" : /시행령$/.test(x.n) ? "령" : "법");
+  showMenu(r.right - 220, r.bottom + 4, [["최근 연 법령", null, "mh"]].concat(list.map((x) => ["[" + tag(x) + "] " + x.n, () => openDoc(x.k, x.m, x.n, x.d)])));
+};
 function goKey(key) {
   if (String(key).startsWith("ax:")) { const x = document.getElementById("ax-" + key.slice(3)); if (x) $("#doc").scrollTop = x.offsetTop - 8; return; }
   const el = document.getElementById("a-" + key);
@@ -2240,7 +2277,7 @@ function applyNotes() {
 function selParts() {                                    // 지금 드래그한 글을 줄 단위 조각으로(본문, 또는 3단 비교의 한 칸)
   const sel = getSelection(); if (!sel || !sel.rangeCount || sel.isCollapsed) return [];
   const r = sel.getRangeAt(0), body = $("#docBody"), tt = $("#tt");
-  const s2 = $("#doc2Body"), inS2 = SPLIT && SPLIT.mode !== "cite" && s2.contains(r.commonAncestorContainer);
+  const s2 = $("#doc2Body"), inS2 = SPLIT && s2.contains(r.commonAncestorContainer);
   const inDoc = body.contains(r.commonAncestorContainer) && cur.doc, inTT = !inDoc && !inS2 && TT && tt.classList.contains("on") && tt.contains(r.commonAncestorContainer);
   if (!inDoc && !inTT && !inS2) return [];
   const root = inDoc ? body : inS2 ? s2 : tt;
@@ -2248,7 +2285,7 @@ function selParts() {                                    // 지금 드래그한 
   const out = [];
   root.querySelectorAll(".ln[data-k]").forEach((ln) => {
     if (!r.intersectsNode(ln)) return;
-    const dc = inDoc ? cur.doc : inS2 ? SPLIT.d : (ln.closest(".ta") ? ttDoc(+ln.closest(".ta").dataset.ci) : null); if (!dc) return;
+    const dc = inDoc ? cur.doc : inS2 ? (SPLIT.mode === "cite" ? (ln.closest(".csc") ? csDocOf(ln.closest(".csc").dataset.ci) : null) : SPLIT.d) : (ln.closest(".ta") ? ttDoc(+ln.closest(".ta").dataset.ci) : null); if (!dc) return;
     const full = ln.textContent.length;
     let s = ln.contains(r.startContainer) ? off(ln, r.startContainer, r.startOffset) : 0;
     let e = ln.contains(r.endContainer) ? off(ln, r.endContainer, r.endOffset) : full;
@@ -2471,13 +2508,17 @@ $("#bTT").onclick = async () => {
   const r = await call("tt_open", [OC, base, d.name, d.mst, key], "3단 비교를 만드는 중… (법·시행령·시행규칙을 받습니다)");
   TT = { base, ...r };
   const ex = TTTABS.findIndex((x) => x.base === base);          // 같은 법의 3단 탭이 있으면 그 탭을, 없으면 새 3단 탭을
-  if (ex >= 0) { TTTABS[ex].tt = TT; TTCUR = ex; } else { TTTABS.push({ base, tt: TT, i: r.start }); TTCUR = TTTABS.length - 1; }
+  if (ex >= 0) { TTTABS[ex].tt = TT; delete TTTABS[ex].stub; TTCUR = ex; } else { TTTABS.push({ base, tt: TT, i: r.start }); TTCUR = TTTABS.length - 1; }
   if (SUMACT) hideSumTab();
   show("tt", "3단 비교");
   ttShow(r.start);
 };
-function showTTTab(j) {                                          // 위쪽 '3단' 탭을 눌렀을 때
+async function showTTTab(j) {                                    // 위쪽 '3단' 탭을 눌렀을 때
   const x = TTTABS[j]; if (!x) return;
+  if (x.stub) {                                                  // 새로고침 뒤 복원된 탭: 처음 누를 때 받는다
+    const r = await call("tt_open", [OC, x.base, x.base, "", ""], "3단 비교를 불러오는 중… (" + x.base + ")");
+    x.tt = { base: x.base, ...r }; delete x.stub; if (!x.i) x.i = r.start || 0;
+  }
   if (SUMACT) hideSumTab();
   if (cur.doc) { const c = ltabs.find((t) => t.d === cur.doc); if (c && cur.view === "doc") c.scroll = $("#doc").scrollTop; }
   const same = cur.view === "tt" && TTCUR === j;
@@ -2505,7 +2546,7 @@ function ttTab(k) {                                              // 모바일: �
   if (!isDT()) v.scrollTop = 0;
 }
 async function ttShow(i) {
-  i = Math.max(0, Math.min(TT.rows.length - 1, i)); TTI = i; if (TTTABS[TTCUR] && TTTABS[TTCUR].tt === TT) TTTABS[TTCUR].i = i;
+  i = Math.max(0, Math.min(TT.rows.length - 1, i)); TTI = i; if (TTTABS[TTCUR] && TTTABS[TTCUR].tt === TT) { TTTABS[TTCUR].i = i; saveTabs(); }
   const r = await call("tt_row", [TT.base, i], "");
   CITES = CITES.slice(0, 0); TTCOLS = r.cols;
   const row = TT.rows[i];
@@ -2619,10 +2660,26 @@ function ttLinks(v) {
     });
     await Promise.all(jobs); return m;
   })()));
+  let goEl = null, goT = 0;
+  const dropGo = () => { clearTimeout(goT); if (goEl) { goEl.remove(); goEl = null; } };
+  const offerRow = (a) => {                                      // 이 행에 없는 조(같은 법의 다른 조)를 인용하면: 3단에서 그 조 행으로 가는 단추
+    dropGo();
+    const c = CITES[+a.dataset.c]; if (!c || c.kind || !c.n) return;
+    const tcol = TT.names.findIndex((x) => sameLaw(x, c.law || c.self)); if (tcol < 0) return;
+    const k = c.n + ":" + (c.b || 0);
+    const idx = TT.rows.findIndex((r) => (tcol === 0 ? r.key === k : ((tcol === 1 ? r.dec : r.rule) || []).includes(k)));
+    if (idx < 0 || idx === TTI) return;
+    const rc = a.getBoundingClientRect(), b = document.createElement("div"); b.className = "ttgo";
+    b.textContent = "3단에서 " + TT.rows[idx].label + " 행으로 →";
+    b.style.left = Math.max(6, Math.min(innerWidth - 220, rc.left)) + "px"; b.style.top = rc.bottom + 4 + "px";
+    b.onclick = (ev) => { ev.stopPropagation(); dropGo(); ttShow(idx); };
+    b.onmouseenter = () => clearTimeout(goT); b.onmouseleave = () => { goT = setTimeout(dropGo, 600); };
+    document.body.appendChild(b); goEl = b; goT = setTimeout(dropGo, 2600);
+  };
   g.addEventListener("mouseover", async (e) => {
     const a = e.target.closest("a.c");
     if (a) {                                                     // 인용에 올림 -> 가리키는 줄 강조
-      const t = target(a); if (!t) return;
+      const t = target(a); if (!t) { offerRow(a); return; }
       if (!t.c.sub) { clearX(); t.ta.classList.add("wh"); dwell(a, t.ta); return; }   // 조 전체 인용 -> 그 조 전체를 옅게 강조
       const r = await ranges(t);
       if (!r || !r.hl || !r.hl.length || a !== document.querySelector("a.c:hover")) return;

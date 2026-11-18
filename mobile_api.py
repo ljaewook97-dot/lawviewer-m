@@ -398,7 +398,7 @@ def tt_open(oc, base, cur_name, cur_mst, cur_key):
     rows = []
     for r in tt["rows"]:
         a = tt["laws"][0]["arts"][r["key"]]
-        rows.append({"key": r["key"], "label": a["label"], "title": a["title"], "nd": len(r["dec"]), "nr": len(r["rule"])})
+        rows.append({"key": r["key"], "label": a["label"], "title": a["title"], "nd": len(r["dec"]), "nr": len(r["rule"]), "dec": list(r["dec"]), "rule": list(r["rule"])})
     return {"names": tt["names"], "rows": rows, "start": start, "have": [x is not None for x in tt["laws"]]}
 
 
