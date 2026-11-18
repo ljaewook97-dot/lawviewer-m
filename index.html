@@ -150,8 +150,10 @@ a.c:hover{color:var(--link);border-bottom-color:var(--link);background:color-mix
 .tt .col .ch{background:var(--surf)!important;color:var(--text);border-top:3px solid var(--kc);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:7px;padding:6px 10px;font-size:.88em;white-space:nowrap;overflow:hidden}
 .tt .col .ch .kb{flex:none;background:var(--kc);color:#fff;border-radius:4px;padding:0 6px;font-size:.85em;font-weight:700}
 .tt .col .ch .kn{overflow:hidden;text-overflow:ellipsis;font-weight:700}
-.tt .col .at{font-size:.78em;font-weight:600;color:var(--muted);margin-top:10px}
-.tt .col .at:hover{color:var(--acc-d)}
+.tt .col b.al.at{cursor:pointer}
+.tt .col b.al.at:hover{text-decoration:underline;text-underline-offset:3px}
+.tt .col b.al.at::after{content:" ↗";font-weight:400;font-size:.8em;color:var(--muted)}
+.tt .col .ta+.ta{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
 .rch{display:flex;align-items:center;justify-content:space-between;font-size:.78em;font-weight:700;color:var(--muted);margin:4px 2px 4px}
 .rch button{font-size:.95em;color:var(--muted);font-weight:400}.rch button:hover{color:var(--danger)}
 .card.rc{cursor:pointer;padding:6px 10px;margin-bottom:4px}.card.rc .m{min-width:0;overflow:hidden}.card.rc .nm{display:flex;align-items:center;min-width:0;font-weight:600}.card.rc .h{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.card.rc .tag{margin-right:6px}
@@ -337,6 +339,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #ltabs .lt span{overflow:hidden;text-overflow:ellipsis}
   #ltabs .lt i.lk{font-style:normal;flex:none;background:var(--tc);color:#fff;font-size:.82em;font-weight:700;border-radius:4px;padding:0 4px;line-height:1.45}
   #ltabs .lt:hover{background:var(--line)}
+  #ltabs .lt.lz span{opacity:.6}
   #ltabs .lt.k-dec{--tc:#2E7D32}#ltabs .lt.k-rule{--tc:#EF6C00}#ltabs .lt.k-adm{--tc:#7B1FA2}#ltabs .lt.k-ord{--tc:#00838F}
   #ltabs .lt.sm{--tc:var(--acc);background:var(--acc-soft,var(--soft));color:var(--acc-d);font-weight:700}
   #ltabs .lt.on,#ltabs .lt.sm.on{background:var(--surf);color:var(--acc-d);font-weight:700;border-color:var(--tc);border-width:2px 2px 0}
@@ -530,7 +533,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.43";
+const VERSION = "10.44";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1285,27 +1288,27 @@ $("#doc").addEventListener("scroll", () => { if (!stkRaf) stkRaf = requestAnimat
 $("#doc").addEventListener("scroll", () => { clearTimeout(saveTm); saveTm = setTimeout(saveTabs, 600); clearTimeout(posTm); posTm = setTimeout(savePos, 500); });
 addEventListener("pagehide", saveTabs);
 document.addEventListener("visibilitychange", () => { if (document.hidden) saveTabs(); });
-async function restoreTabs() {
+async function restoreTabs() {                                   // 시작: 탭은 이름만 먼저 세우고, 보던 탭 하나만 받는다(나머지는 누를 때 받음)
   if (!isDT() || ltabs.length || !OC) { tabRestoring = false; return; }
   let s; try { s = JSON.parse(LS.get("lv_tabs", "") || "null"); } catch (e) { s = null; }
   if (!s || !s.t || !s.t.length) { tabRestoring = false; return; }
   try {
-    let n = 0; const got = [];
-    for (const t of s.t) {
-      n++;
-      try {
-        const d = await call("open_doc", [OC, t.k, t.m, t.n, t.d || ""], "열어 두었던 탭 복원 중… (" + n + "/" + s.t.length + ")");
-        showDoc(d, t.k, t.m, ""); got.push({ d, s: t.s || 0, k: t.k, m: t.m });
-      } catch (e) {}
-    }
-    if (ltabs.length) {
-      got.forEach((g) => { const e = ltabs.find((x) => x.d === g.d); if (e) e.scroll = g.s; });   // 탭을 여는 동안 덮어쓴 스크롤 위치를 되돌린다
-      const ai = s.a >= 0 && s.t[s.a] ? ltabs.findIndex((x) => String(x.d.rawmst) === String(s.t[s.a].m) && x.d.kind === s.t[s.a].k) : 0;
-      const i = ai >= 0 ? ai : 0;
-      if (ltabs[i].d !== cur.doc) switchLTab(i);
-      const sc = ltabs[i].scroll || 0; setTimeout(() => ($("#doc").scrollTop = sc), 80);
-    }
+    s.t.forEach((t) => ltabs.push({ d: { kind: t.k, rawmst: t.m, name: t.n, date: t.d || "", stub: true }, scroll: t.s || 0 }));
+    const i = s.a >= 0 && s.a < ltabs.length ? s.a : 0;
+    paintLTabs();
+    await loadLTab(i, "열어 두었던 탭 여는 중…");
   } finally { tabRestoring = false; saveTabs(); }
+}
+async function loadLTab(i, msg) {                                 // 아직 안 받은 탭(이름만 있는 탭)을 받아 그 자리에서 연다
+  const t = ltabs[i]; if (!t) return;
+  if (t.d.stub) {
+    const z = t.d;
+    try { const d = await call("open_doc", [OC, z.kind, z.rawmst, z.name, z.date || ""], msg || z.name + " 받는 중…"); t.d = d; }
+    catch (e) { toast((e && e.message) || "탭을 열지 못했습니다", true); return; }
+  }
+  if (cur.doc) { const c = ltabs.find((x) => x.d === cur.doc); if (c) c.scroll = $("#doc").scrollTop; }
+  showDoc(t.d, t.d.kind, t.d.rawmst, "", true);
+  const sc = t.scroll || 0; $("#doc").scrollTop = sc; setTimeout(() => ($("#doc").scrollTop = sc), 80);
 }
 const tabCls = (d) => d.kind === "adm" ? "k-adm" : d.kind === "ordin" ? "k-ord" : /시행규칙$/.test(d.name) ? "k-rule" : /시행령$/.test(d.name) ? "k-dec" : "k-law";
 const tabKL = (d) => ({ "k-adm": "행정", "k-ord": "자치", "k-rule": "칙", "k-dec": "령", "k-law": "법" })[tabCls(d)];
@@ -1313,7 +1316,7 @@ const ltName = (n) => String(n).replace(/\s*시행령$/, "(령)").replace(/\s*�
 function paintLTabs() {
   saveTabs();
   const bar = $("#ltabs");
-  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + ltabs.map((t, i) => '<div class="lt ' + tabCls(t.d) + (t.d === cur.doc && !SUMACT ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><i class="lk">' + tabKL(t.d) + '</i><span>' + esc(String(t.d.name).replace(/\s*(시행령|시행규칙)$/, "")) + '</span><b data-x="' + i + '">✕</b></div>').join("");
+  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + ltabs.map((t, i) => '<div class="lt ' + tabCls(t.d) + (t.d.stub ? " lz" : "") + (t.d === cur.doc && !SUMACT ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><i class="lk">' + tabKL(t.d) + '</i><span>' + esc(String(t.d.name).replace(/\s*(시행령|시행규칙)$/, "")) + '</span><b data-x="' + i + '">✕</b></div>').join("");
   bar.querySelectorAll(".lt").forEach((el) => (el.onclick = (e) => {
     if (el.dataset.s) { if (e.target.dataset.xs !== undefined) return closeSumTab(); return showSumTab(); }
     const i = +el.dataset.i;
@@ -1323,6 +1326,7 @@ function paintLTabs() {
 }
 function switchLTab(i) {
   const t = ltabs[i]; if (!t) return;
+  if (t.d.stub) { if (SUMACT) hideSumTab(); return loadLTab(i); }
   if (SUMACT) { hideSumTab(); if (t.d === cur.doc) { show("doc", cur.doc.name); paintLTabs(); $("#doc").scrollTop = t.scroll || 0; return; } }
   else if (t.d === cur.doc) return;
   if (cur.doc) { const c = ltabs.find((x) => x.d === cur.doc); if (c) c.scroll = $("#doc").scrollTop; }
@@ -2081,7 +2085,7 @@ async function ttShow(i) {
     h += '<div class="col" data-ci="' + ci + '" style="--kc:' + TTCOL[ci] + '"><div class="ch" title="' + esc(c.name) + '"><span class="kb">' + ["법", "령", "칙"][ci] + '</span><span class="kn">' + esc(ci ? String(c.name).replace(/^.*\s(시행령|시행규칙)$/, "$1") : c.name) + "</span></div><div class=\"cb\">";
     if (c.none) h += '<div class="muted" style="padding:8px 0">이 법령을 찾지 못했습니다</div>';
     else if (!c.arts.length) h += '<div class="muted" style="padding:8px 0">— 해당 조문 없음</div>';
-    else c.arts.forEach((a) => { h += '<div class="ta" data-ci="' + ci + '" data-id="' + ci + ":" + a.key + '" data-rel="' + esc((a.rel || []).join(",")) + '"><div class="at" data-n="' + esc(c.name) + '" data-k="' + a.key + '">' + esc(a.label + " " + a.title) + " ↗</div>" + artHTML(a, c.mst, { idp: "t" + ci + "-", self: c.name }) + "</div>"; });
+    else c.arts.forEach((a) => { h += '<div class="ta" data-ci="' + ci + '" data-id="' + ci + ":" + a.key + '" data-rel="' + esc((a.rel || []).join(",")) + '">' + artHTML(a, c.mst, { idp: "t" + ci + "-", self: c.name }).replace('<b class="al">', '<b class="al at" data-n="' + esc(c.name) + '" data-k="' + a.key + '" title="이 조문을 본문 탭으로 열기">') + "</div>"; });
     h += "</div></div>";
   });
   h += "</div>";
