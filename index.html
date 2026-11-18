@@ -544,7 +544,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.48";
+const VERSION = "10.49";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1301,7 +1301,7 @@ function saveTabs() {
   if (tabRestoring || !isDT()) return;
   try {
     const sc = (t) => (t.d === cur.doc ? $("#doc").scrollTop : t.scroll || 0);
-    LS.set("lv_tabs", JSON.stringify({ a: ltabs.findIndex((t) => t.d === cur.doc), t: ltabs.map((t) => ({ k: t.d.kind, m: t.d.rawmst, n: t.d.name, d: t.d.date || "", s: Math.round(sc(t)) })) }));
+    LS.set("lv_tabs", JSON.stringify({ a: ltabs.findIndex((t) => t.d === cur.doc), t: ltabs.map((t) => ({ k: t.d.kind || "law", m: t.d.rawmst || (t.d.kind === "law" || !t.d.kind ? t.d.mst : "") || null, n: t.d.name, d: t.d.date || "", s: Math.round(sc(t)) })) }));
   } catch (e) {}
 }
 let saveTm = null;
@@ -1344,13 +1344,24 @@ async function restoreTabs() {                                   // 시작: 탭�
 }
 async function loadLTab(i, msg) {                                 // 아직 안 받은 탭(이름만 있는 탭)을 받아 그 자리에서 연다
   const t = ltabs[i]; if (!t) return;
+  let kind = t.d.kind, raw = t.d.rawmst;
   if (t.d.stub) {
     const z = t.d;
-    try { const d = await call("open_doc", [OC, z.kind, z.rawmst, z.name, z.date || ""], msg || z.name + " 받는 중…"); t.d = d; }
+    try {
+      let d;
+      if (z.rawmst) d = await call("open_doc", [OC, z.kind, z.rawmst, z.name, z.date || ""], msg || z.name + " 받는 중…");
+      else if (z.kind === "law") { d = await call("open_by_name", [OC, z.name], msg || z.name + " 받는 중…"); raw = d.mst; }      // 번호 없이 저장된 탭(v10.44~v10.48): 이름으로 다시 찾는다
+      else {
+        const r = await call("find_adm", [OC, z.name], msg || z.name + " 찾는 중…"), h = r && r.exact && r.hits[0];
+        if (!h) throw new Error("'" + z.name + "' 을(를) 다시 찾지 못했습니다 — 탭을 닫고 새로 여세요");
+        raw = h.rawmst; d = await call("open_doc", [OC, h.kind || z.kind, h.rawmst, h.lawname, h.date || ""], z.name + " 받는 중…"); kind = h.kind || z.kind;
+      }
+      kind = kind || "law"; t.d = d;
+    }
     catch (e) { toast((e && e.message) || "탭을 열지 못했습니다", true); return; }
   }
   if (cur.doc) { const c = ltabs.find((x) => x.d === cur.doc); if (c) c.scroll = $("#doc").scrollTop; }
-  showDoc(t.d, t.d.kind, t.d.rawmst, "", true);
+  showDoc(t.d, kind, raw, "", true);
   const sc = t.scroll || 0; $("#doc").scrollTop = sc; setTimeout(() => ($("#doc").scrollTop = sc), 80);
 }
 const tabCls = (d) => d.kind === "adm" ? "k-adm" : d.kind === "ordin" ? "k-ord" : /시행규칙$/.test(d.name) ? "k-rule" : /시행령$/.test(d.name) ? "k-dec" : "k-law";
