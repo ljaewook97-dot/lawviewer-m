@@ -544,7 +544,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.49";
+const VERSION = "10.50";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -2175,7 +2175,7 @@ async function ttShow(i) {
     h += '<div class="col" data-ci="' + ci + '" style="--kc:' + TTCOL[ci] + '"><div class="ch" title="' + esc(c.name) + '"><span class="kb">' + ["법", "령", "칙"][ci] + '</span><span class="kn">' + esc(ci ? String(c.name).replace(/^.*\s(시행령|시행규칙)$/, "$1") : c.name) + "</span></div><div class=\"cb\">";
     if (c.none) h += '<div class="muted" style="padding:8px 0">이 법령을 찾지 못했습니다</div>';
     else if (!c.arts.length) h += '<div class="muted" style="padding:8px 0">— 해당 조문 없음</div>';
-    else c.arts.forEach((a) => { h += '<div class="ta" data-ci="' + ci + '" data-id="' + ci + ":" + a.key + '" data-rel="' + esc((a.rel || []).join(",")) + '">' + artHTML(a, c.mst, { idp: "t" + ci + "-", self: c.name }).replace('<b class="al">', '<b class="al at" data-n="' + esc(c.name) + '" data-k="' + a.key + '" title="이 조문을 본문 탭으로 열기">') + "</div>"; });
+    else c.arts.forEach((a) => { h += '<div class="ta" data-ci="' + ci + '" data-id="' + ci + ":" + a.key + '" data-rel="' + esc((a.rel || []).join(",")) + '">' + artHTML(a, c.mst, { idp: "t" + ci + "-", self: c.name }).replace(/<b(?: class="al")?>/, '<b class="al at" data-n="' + esc(c.name) + '" data-k="' + a.key + '" title="이 조문을 본문 탭으로 열기">') + "</div>"; });
     h += "</div></div>";
   });
   h += "</div>";
