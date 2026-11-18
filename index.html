@@ -586,7 +586,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.58";
+const VERSION = "10.59";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1512,7 +1512,13 @@ function csTargets(key) {                                        // 그 조문 �
   const el = document.getElementById("a-" + key); if (!el) return [];
   const m = new Map();
   el.querySelectorAll("a.c").forEach((a) => {
-    const c = CITES[+a.dataset.c]; if (!c || c.kind || !c.n) return;
+    const c = CITES[+a.dataset.c];
+    if (c && c.kind === "d") {                                        // '대통령령으로 정한다' -> 위임받은 시행령 조문
+      const id = "d|" + c.to;
+      if (!m.has(id)) m.set(id, { id, name: c.to, deleg: true, c, subs: [], ctx: c.ctx || cur.doc.mst, as: [] });
+      return;
+    }
+    if (!c || c.kind || !c.n) return;
     const name = c.law || c.self || cur.doc.name;
     if (name === cur.doc.name && c.n + ":" + (c.b || 0) === key) return;          // 자기 자신
     const id = csId(c);
@@ -1526,6 +1532,17 @@ async function csLoad(t) {
   if (!CS.cache[ck]) CS.cache[ck] = callQuiet("open_cite", [OC, t.name, t.n, t.b, t.subs.length ? t.subs : null, t.ctx]);
   try { return await CS.cache[ck]; } catch (e) { delete CS.cache[ck]; return null; }
 }
+async function csLoadDeleg(t) {                                   // 위임 표현 -> 위임받은 조문들(최대 3) 의 미리보기 목록
+  const ck = "d|" + t.ctx + "|" + t.c.akey + "|" + t.c.to;
+  if (!CS.cache[ck]) CS.cache[ck] = (async () => {
+    const r = await callQuiet("list_deleg", [OC, t.c.ctx, t.c.akey, t.c.to]);
+    const hs = ((r && r.hits) || []).filter((h) => h.key && h.key.indexOf(":") > 0).slice(0, 3);
+    const out = [];
+    for (const h of hs) { const kk = h.key.split(":"); const x = await callQuiet("open_cite", [OC, h.lawname, +kk[0], +kk[1] || 0, null, h.mst]); if (x && x.art) out.push(x); }
+    return out;
+  })();
+  try { return await CS.cache[ck]; } catch (e) { delete CS.cache[ck]; return []; }
+}
 async function csBuild(key, force) {
   if (!SPLIT || SPLIT.mode !== "cite" || !cur.doc) return;
   if (!force && key === CS.key) return;
@@ -1533,7 +1550,16 @@ async function csBuild(key, force) {
   if (CS.top && CS.top.src !== key) CS.top = null;               // 누른 인용(📍)은 그 인용을 누른 조문을 보는 동안만
   CS.list = csTargets(key).map((t) => ({ t, r: undefined }));
   csPaint();
-  for (const it of CS.list) { it.r = await csLoad(it.t); if (tok !== CS.tok) return; csPaint(); }
+  for (let i = 0; i < CS.list.length; i++) {
+    const it = CS.list[i];
+    if (it.t.deleg) {
+      const rs = await csLoadDeleg(it.t); if (tok !== CS.tok) return;
+      const add = (rs || []).map((r) => ({ t: { id: "d|" + r.mst + "|" + r.art.key, name: r.lawname, n: r.art.n, b: r.art.b || 0, subs: [], ctx: r.mst, as: [], via: it.t.c.to }, r }));
+      if (add.length) { CS.list.splice(i, 1, ...add); i += add.length - 1; } else it.r = null;
+      csPaint(); continue;
+    }
+    it.r = await csLoad(it.t); if (tok !== CS.tok) return; csPaint();
+  }
 }
 async function csPush(c) {                                       // 왼쪽에서 누른 인용: 오른쪽 맨 위(📍)에
   const t = { id: csId(c), name: c.law || c.self || cur.doc.name, n: c.n, b: c.b || 0, subs: c.sub ? [c.sub] : [], ctx: c.ctx || cur.doc.mst, as: [] };
@@ -1542,10 +1568,11 @@ async function csPush(c) {                                       // 왼쪽에서
 }
 function csCard(it, i, pinned) {
   const r = it.r, t = it.t;
-  if (r === undefined) return '<div class="csc" data-ci="' + i + '"><div class="csh">' + esc(t.name) + " " + esc(jl(t.n, t.b)) + ' <span class="muted">불러오는 중…</span></div></div>';
-  if (!r || !r.art) return '<div class="csc" data-ci="' + i + '"><div class="csh">' + esc(t.name) + " " + esc(jl(t.n, t.b)) + ' <span class="muted">— 찾지 못했습니다</span></div></div>';
+  const tl = t.deleg ? t.name + " 위임 조문" : t.name + " " + jl(t.n, t.b);
+  if (r === undefined) return '<div class="csc" data-ci="' + i + '"><div class="csh">' + esc(tl) + ' <span class="muted">불러오는 중…</span></div></div>';
+  if (!r || !r.art) return '<div class="csc" data-ci="' + i + '"><div class="csh">' + esc(tl) + ' <span class="muted">— 찾지 못했습니다</span></div></div>';
   const d0 = { kind: "law", name: r.lawname };
-  return '<div class="csc' + (pinned ? " top" : "") + '" data-ci="' + i + '"><div class="csh" data-n="' + esc(r.lawname) + '" data-k="' + r.art.key + '" title="본문 탭으로 열기">' + (pinned ? "📍 누른 인용 · " : "") + splitBadge(d0) + '<span class="cn">' + esc(r.lawname.replace(/\s*(시행령|시행규칙)$/, "")) + "</span> " + esc(r.art.label + " " + (r.art.title || "")) + " ↗</div>" + artHTML(r.art, r.mst, { idp: "cs" + i + "-", self: r.lawname, hl: r.hl || [] }) + "</div>";
+  return '<div class="csc' + (pinned ? " top" : "") + '" data-ci="' + i + '"><div class="csh" data-n="' + esc(r.lawname) + '" data-k="' + r.art.key + '" title="본문 탭으로 열기">' + (pinned ? "📍 누른 인용 · " : "") + (t.via ? '<span class="muted">' + esc(t.via) + "으로 위임 · </span>" : "") + splitBadge(d0) + '<span class="cn">' + esc(r.lawname.replace(/\s*(시행령|시행규칙)$/, "")) + "</span> " + esc(r.art.label + " " + (r.art.title || "")) + " ↗</div>" + artHTML(r.art, r.mst, { idp: "cs" + i + "-", self: r.lawname, hl: r.hl || [] }) + "</div>";
 }
 const jl = (n, b) => "제" + n + "조" + (b ? "의" + b : "");
 function csPaint() {
