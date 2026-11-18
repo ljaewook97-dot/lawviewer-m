@@ -586,7 +586,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.55";
+const VERSION = "10.56";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1620,6 +1620,7 @@ async function dropRef(ref, side) {
     if (!dg.on) {
       if (Math.hypot(e.clientX - dg.x, e.clientY - dg.y) < 10) return;
       dg.on = true; document.body.style.userSelect = "none"; try { getSelection().removeAllRanges(); } catch (er) {}
+      document.querySelectorAll(".dragghost").forEach((x) => x.remove());
       const g = document.createElement("div"); g.className = "dragghost"; g.textContent = dg.ref.name; document.body.appendChild(g); dg.g = g;
       const r = dzRects(), z = $("#dz"); z.style.left = r.left + 8 + "px"; z.style.width = r.right - r.left - 16 + "px"; z.style.top = r.top + 8 + "px"; z.style.height = r.bottom - r.top - 16 + "px"; z.classList.add("on");
       dg.r = r;
@@ -1629,15 +1630,18 @@ async function dropRef(ref, side) {
     dg.side = inY && e.clientX >= r.left && e.clientX < r.mid ? "L" : inY && e.clientX >= r.mid && e.clientX <= r.right ? "R" : "";
     $("#dz").querySelectorAll("div").forEach((d) => d.classList.toggle("ov", d.dataset.z === dg.side));
   }, true);
-  const stop = () => { if (dg && dg.g) dg.g.remove(); $("#dz").classList.remove("on"); document.body.style.userSelect = ""; };
+  const stop = (d) => { document.querySelectorAll(".dragghost").forEach((g) => g.remove()); $("#dz").classList.remove("on"); $("#dz").querySelectorAll(".ov").forEach((x) => x.classList.remove("ov")); document.body.style.userSelect = ""; };
+  document.addEventListener("dragstart", (e) => { if (dg) e.preventDefault(); }, true);     // 끄는 동안 브라우저 자체 끌기(글자·링크)가 끼어들지 않게
+  window.addEventListener("blur", () => { dg = null; stop(); });
   document.addEventListener("pointerup", (e) => {
     if (!dg) return;
-    const was = dg; dg = null; stop();
+    const was = dg; dg = null; stop(was);
     if (!was.on) return;
     if (was.el) { was.el.__dragged = Date.now(); }
     if (was.side) dropRef(was.ref, was.side);
   }, true);
   document.addEventListener("pointercancel", () => { dg = null; stop(); }, true);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && dg) { dg = null; stop(); } }, true);
   document.addEventListener("click", (e) => { const el = e.target.closest && e.target.closest(".lt,.card,.hr"); if (el && el.__dragged && Date.now() - el.__dragged < 500) { e.stopPropagation(); e.preventDefault(); } }, true);
 })();
 function closeSplit() { CS.tok++; CS.top = null; SPLIT = null; setTimeout(paintS1h, 0); document.body.classList.remove("split"); $("#doc2Body").innerHTML = ""; $("#dbSplit").classList.remove("on"); }
