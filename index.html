@@ -359,6 +359,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #ltabs .lt i.lk{font-style:normal;flex:none;background:var(--tc);color:#fff;font-size:.82em;font-weight:700;border-radius:4px;padding:0 4px;line-height:1.45}
   #ltabs .lt:hover{background:var(--line)}
   #ltabs .lt.lz span{opacity:.6}
+  #ltabs .lt.k-tt{--tc:var(--acc)}
   #ltabs .lt.k-dec{--tc:#2E7D32}#ltabs .lt.k-rule{--tc:#EF6C00}#ltabs .lt.k-adm{--tc:#7B1FA2}#ltabs .lt.k-ord{--tc:#00838F}
   #ltabs .lt.sm{--tc:var(--acc);background:var(--acc-soft,var(--soft));color:var(--acc-d);font-weight:700}
   #ltabs .lt.on,#ltabs .lt.sm.on{background:var(--surf);color:var(--acc-d);font-weight:700;border-color:var(--tc);border-width:2px 2px 0}
@@ -552,7 +553,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.51";
+const VERSION = "10.52";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -794,15 +795,16 @@ function sumHTML(page) {                                         // 검색 결�
 }
 let wheelTs = 0, wheelMvTs = 0, wheelDir = 0, LTPEND = -1, LTPT = 0;
 function tabStep(dir) {                                          // 본문 탭을 하나 옆으로(검색 요약 탭 포함). 받는 중인 탭이 있으면 그 탭을 기준으로 센다
-  const items = (SUMTAB ? [{ s: 1 }] : []).concat(ltabs.map((t, i) => ({ i })));
+  const items = (SUMTAB ? [{ s: 1 }] : []).concat(ltabs.map((t, i) => ({ i })), TTTABS.map((x, j) => ({ tt: j })));
   if (items.length < 2) return;
   let k;
   if (LTPEND >= 0 && Date.now() - LTPT < 15000 && LTPEND < ltabs.length) k = items.findIndex((x) => x.i === LTPEND);
-  else k = SUMACT ? 0 : items.findIndex((x) => x.i !== undefined && ltabs[x.i].d === cur.doc);
+  else k = SUMACT ? 0 : cur.view === "tt" ? items.findIndex((x) => x.tt === TTCUR) : items.findIndex((x) => x.i !== undefined && ltabs[x.i].d === cur.doc);
   if (k < 0) k = 0;
   k = (k + dir + items.length) % items.length;
   const x = items[k];
   if (x.s) { LTPEND = -1; showSumTab(); }
+  else if (x.tt !== undefined) { LTPEND = -1; showTTTab(x.tt); }
   else { LTPEND = x.i; LTPT = Date.now(); const p = switchLTab(x.i); if (p && p.then) p.then(() => { if (LTPEND === x.i) LTPEND = -1; }); else LTPEND = -1; }
   paintLTabs();
   if (LTPEND >= 0) { const el = $('#ltabs .lt[data-i="' + LTPEND + '"]'); if (el) { $("#ltabs").querySelectorAll(".lt.on").forEach((z) => z.classList.remove("on")); el.classList.add("on"); } }
@@ -829,6 +831,7 @@ document.addEventListener("click", (e) => {                      // 검색 요�
 });
 function showSumTab() {                                          // 본문 창에 '검색 요약' 탭을 보여 준다
   if (!SUMTAB) return;
+  if (cur.view === "tt") { $("#tt").classList.remove("on"); cur.view = "doc"; }
   SUMACT = true; $("#sumBox").innerHTML = SUMTAB.html; $("#sumBox").classList.add("page"); $("#sumBox").classList.remove("off");
   $("#docBody").style.display = "none"; $("#doc").classList.add("on"); $("#dtEmpty").classList.add("off");
   paintLTabs(); $("#doc").scrollTop = SUMTAB.scroll || 0;
@@ -1308,6 +1311,7 @@ async function openByName(name, key) {
   const d = await call("open_by_name", [OC, name], name + " 받는 중…");
   showDoc(d, "law", d.mst, key);
 }
+let TTTABS = [], TTCUR = -1;   // 3단 비교 탭(법마다 하나)
 const ltabs = [];      // 열어 둔 법령 (PC 넓은 화면)
 let tabRestoring = true;          // 시작 직후 복원이 끝날 때까지는 저장하지 않는다(빈 목록으로 덮어쓰기 방지)
 function saveTabs() {
@@ -1383,9 +1387,10 @@ const ltName = (n) => String(n).replace(/\s*시행령$/, "(령)").replace(/\s*�
 function paintLTabs() {
   saveTabs();
   const bar = $("#ltabs");
-  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + ltabs.map((t, i) => '<div class="lt ' + tabCls(t.d) + (t.d.stub ? " lz" : "") + (t.d === cur.doc && !SUMACT ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><i class="lk">' + tabKL(t.d) + '</i><span>' + esc(String(t.d.name).replace(/\s*(시행령|시행규칙)$/, "")) + '</span><b data-x="' + i + '">✕</b></div>').join("");
+  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + ltabs.map((t, i) => '<div class="lt ' + tabCls(t.d) + (t.d.stub ? " lz" : "") + (t.d === cur.doc && !SUMACT && cur.view !== "tt" ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><i class="lk">' + tabKL(t.d) + '</i><span>' + esc(String(t.d.name).replace(/\s*(시행령|시행규칙)$/, "")) + '</span><b data-x="' + i + '">✕</b></div>').join("") + TTTABS.map((x, j) => '<div class="lt k-tt' + (cur.view === "tt" && j === TTCUR ? " on" : "") + '" data-tt="' + j + '" title="3단 비교 — ' + esc(x.base) + '"><i class="lk">3단</i><span>' + esc(x.base) + '</span><b data-xt="' + j + '">✕</b></div>').join("");
   bar.querySelectorAll(".lt").forEach((el) => (el.onclick = (e) => {
     if (el.dataset.s) { if (e.target.dataset.xs !== undefined) return closeSumTab(); return showSumTab(); }
+    if (el.dataset.tt !== undefined) { if (e.target.dataset.xt !== undefined) return closeTTTab(+el.dataset.tt); return showTTTab(+el.dataset.tt); }
     const i = +el.dataset.i;
     if (e.target.dataset.x !== undefined) return closeLTab(i);
     switchLTab(i);
@@ -1395,7 +1400,7 @@ function switchLTab(i) {
   const t = ltabs[i]; if (!t) return;
   if (t.d.stub) { if (SUMACT) hideSumTab(); return loadLTab(i); }
   if (SUMACT) { hideSumTab(); if (t.d === cur.doc) { show("doc", cur.doc.name); paintLTabs(); $("#doc").scrollTop = t.scroll || 0; return; } }
-  else if (t.d === cur.doc) return;
+  else if (t.d === cur.doc) { if (cur.view === "tt") { show("doc", cur.doc.name); paintLTabs(); $("#doc").scrollTop = t.scroll || 0; } return; }
   if (cur.doc) { const c = ltabs.find((x) => x.d === cur.doc); if (c) c.scroll = $("#doc").scrollTop; }
   showDoc(t.d, t.d.kind, t.d.rawmst, "", true);
   $("#doc").scrollTop = t.scroll || 0;
@@ -2167,9 +2172,33 @@ $("#bTT").onclick = async () => {
   const key = curKey();
   closeSheet();
   const r = await call("tt_open", [OC, base, d.name, d.mst, key], "3단 비교를 만드는 중… (법·시행령·시행규칙을 받습니다)");
-  TT = { base, ...r }; show("tt", "3단 비교");
+  TT = { base, ...r };
+  const ex = TTTABS.findIndex((x) => x.base === base);          // 같은 법의 3단 탭이 있으면 그 탭을, 없으면 새 3단 탭을
+  if (ex >= 0) { TTTABS[ex].tt = TT; TTCUR = ex; } else { TTTABS.push({ base, tt: TT, i: r.start }); TTCUR = TTTABS.length - 1; }
+  if (SUMACT) hideSumTab();
+  show("tt", "3단 비교");
   ttShow(r.start);
 };
+function showTTTab(j) {                                          // 위쪽 '3단' 탭을 눌렀을 때
+  const x = TTTABS[j]; if (!x) return;
+  if (SUMACT) hideSumTab();
+  if (cur.doc) { const c = ltabs.find((t) => t.d === cur.doc); if (c && cur.view === "doc") c.scroll = $("#doc").scrollTop; }
+  const same = cur.view === "tt" && TTCUR === j;
+  TTCUR = j; TT = x.tt;
+  show("tt", "3단 비교");
+  if (!same) ttShow(x.i || 0);
+}
+function closeTTTab(j) {
+  const was = cur.view === "tt" && TTCUR === j;
+  TTTABS.splice(j, 1);
+  if (j < TTCUR) TTCUR--;
+  if (was) {
+    if (TTTABS.length) return showTTTab(Math.min(j, TTTABS.length - 1));
+    TT = null; TTCUR = -1;
+    if (cur.doc) { show("doc", cur.doc.name); const c = ltabs.find((t) => t.d === cur.doc); $("#doc").scrollTop = c ? c.scroll || 0 : 0; } else show("home");
+  }
+  paintLTabs();
+}
 let TTK = LS.get("lv_ttk", "0");
 function ttTab(k) {                                              // 모바일: 법·령·칙 중 하나만(또는 모두) 보기
   TTK = String(k); LS.set("lv_ttk", TTK);
@@ -2179,7 +2208,7 @@ function ttTab(k) {                                              // 모바일: �
   if (!isDT()) v.scrollTop = 0;
 }
 async function ttShow(i) {
-  i = Math.max(0, Math.min(TT.rows.length - 1, i)); TTI = i;
+  i = Math.max(0, Math.min(TT.rows.length - 1, i)); TTI = i; if (TTTABS[TTCUR] && TTTABS[TTCUR].tt === TT) TTTABS[TTCUR].i = i;
   const r = await call("tt_row", [TT.base, i], "");
   CITES = CITES.slice(0, 0); TTCOLS = r.cols;
   const row = TT.rows[i];
