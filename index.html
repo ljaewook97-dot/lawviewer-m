@@ -342,6 +342,17 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   .card [data-u],.card [data-d]{display:none}
   body.pv #doc,body.pv #tt{bottom:var(--ph)}
   #doc2{display:none}
+  #s1h{display:none}
+  body.split #s1h{display:flex;position:sticky;top:0;z-index:5;align-items:center;gap:6px;padding:5px 2px;margin:0 -2px 4px;background:color-mix(in srgb,var(--surf) 94%,gray);border-bottom:1px solid var(--line);font-size:.85em;font-weight:700}
+  body.split #s1h .lk{font-style:normal;color:#fff;border-radius:4px;padding:0 5px;font-size:.85em}
+  body.split #s1h .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  body.split #s1h .sd{font-weight:400;color:var(--muted);font-size:.9em}
+  body.split #stk{display:none!important}
+  #dz{display:none;position:fixed;z-index:70;pointer-events:none;gap:8px}
+  #dz.on{display:flex}
+  #dz div{flex:1;display:flex;align-items:center;justify-content:center;border:2px dashed var(--line);border-radius:10px;background:color-mix(in srgb,var(--surf) 70%,transparent);font-weight:800;color:var(--muted);font-size:1.05em}
+  #dz div.ov{border-color:var(--acc);background:color-mix(in srgb,var(--acc-soft) 85%,transparent);color:var(--acc-d)}
+  .dragghost{position:fixed;z-index:71;pointer-events:none;padding:4px 10px;border-radius:6px;background:var(--acc);color:var(--acc-t);font-size:.85em;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis}
   body.split #doc{right:calc(var(--rw) + (100vw - var(--lw) - var(--rw)) / 2)}
   body.split #doc2{display:block;position:fixed;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) / 2);right:var(--rw);overflow-y:auto;padding:0 16px;background:color-mix(in srgb,var(--surf) 94%,gray);border-left:3px solid var(--line);z-index:2}
   body.split.pv #doc2{bottom:var(--ph)}
@@ -490,8 +501,8 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <button class="tb pri" id="dbTT">3단 비교</button><button class="tb pri" id="dbFav">☆ 즐겨찾기</button><span class="dsep"></span><button class="tb" id="dbCopy">조문 복사</button><button class="tb" id="dbCite" title="「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">인용 복사</button><button class="tb" id="dbWeb" title="법제처 화면에서 열기">법제처 열기</button>
   <button class="tb" id="dbSplit" title="오른쪽 칸: 지금 보는 조문이 인용하는 조문을 따라 보여 줍니다(오른쪽 칸 '바꾸기 ▾'에서 다른 법령 나란히 보기도 가능)">⫴ 인용 칸</button><button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
 </div>
-<div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="ctx"></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
-<div class="view" id="doc"><div id="sumBox" class="sumbox"></div><div id="stk" class="stk" style="display:none"></div><div class="body" id="docBody"></div></div>
+<div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="ctx"></div><div id="dz"><div data-z="L">◀ 왼쪽(본문)에 열기</div><div data-z="R">오른쪽에 나란히 ▶</div></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
+<div class="view" id="doc"><div class="s2h" id="s1h"></div><div id="sumBox" class="sumbox"></div><div id="stk" class="stk" style="display:none"></div><div class="body" id="docBody"></div></div>
 <div class="view tt" id="tt"></div>
 <div id="doc2"><div class="s2h" id="s2h"></div><div class="body" id="doc2Body"></div></div>
 
@@ -575,7 +586,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.54";
+const VERSION = "10.55";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -694,6 +705,12 @@ function show(name, title) {
   $("#bTT").style.display = isDoc ? "" : "none";
   cur.view = name;
   document.body.classList.toggle("split", !!(dt && SPLIT && (name === "doc" || (name === "home" && cur.doc))));
+  paintS1h();
+}
+function paintS1h() {                                            // 나란히 볼 때 왼쪽 칸 맨 위: 법·령·칙·행정 배지와 이름
+  const el = $("#s1h"); if (!el) return;
+  if (!SPLIT || !cur.doc) { el.innerHTML = ""; return; }
+  el.innerHTML = splitBadge(cur.doc) + '<span class="nm" title="' + esc(cur.doc.name) + '">' + esc(cur.doc.name) + '</span><span class="sd">왼쪽 · 본문</span>';
 }
 const cur = { view: "home", doc: null };
 let SPLIT = null;                                                // 오른쪽에 나란히 보는 법령 {d, scroll}
@@ -1557,7 +1574,73 @@ $("#docBody").addEventListener("mouseover", (e) => {             // 왼쪽 인�
   clearTimeout(csHT); csHT = setTimeout(() => { if (a.matches(":hover")) { const box = $("#doc2"), r = card.getBoundingClientRect(), br = box.getBoundingClientRect(); if (r.top < br.top + 40 || r.top > br.bottom - 60) box.scrollTo({ top: box.scrollTop + r.top - br.top - 40, behavior: "smooth" }); } }, 600);
 });
 $("#docBody").addEventListener("mouseout", (e) => { if (e.target.closest && e.target.closest("a.c")) { clearTimeout(csHT); $("#doc2Body").querySelectorAll(".csc.on").forEach((x) => x.classList.remove("on")); } });
-function closeSplit() { CS.tok++; CS.top = null; SPLIT = null; document.body.classList.remove("split"); $("#doc2Body").innerHTML = ""; $("#dbSplit").classList.remove("on"); }
+// ---- 끌어다 놓기: 위쪽 탭·왼쪽 목록(검색결과·즐겨찾기·최근)을 본문 위로 끌어 왼쪽(본문) 또는 오른쪽(나란히)에 연다
+function dragRef(el) {
+  let x = el.closest("#ltabs .lt[data-i]"); if (x) { const t = ltabs[+x.dataset.i]; return t ? { tab: +x.dataset.i, name: t.d.name } : null; }
+  x = el.closest("#list .card.rc"); if (x) { const r = RECENT[+x.dataset.r]; return r ? { kind: r.k, rawmst: r.m, name: r.n, date: r.d || "" } : null; }
+  x = el.closest("#list .card[data-ci]"); if (x) { const f = favs[+x.dataset.ci]; return f ? { kind: f.kind, rawmst: f.rawmst, name: f.lawname, date: f.date || "", key: f.key || "" } : null; }
+  x = el.closest("#list .card[data-i], #list .hr[data-i]"); if (x && tab === "r") { const h = hits[+x.dataset.i]; return h ? { kind: h.kind, rawmst: h.rawmst, name: h.lawname, date: h.date || "", key: h.key || "", mst: h.mst } : null; }
+  return null;
+}
+function dzRects() {                                             // 놓을 곳: 나란히 보는 중이면 두 칸 그대로, 아니면 본문 칸을 반으로
+  const d = $("#doc").getBoundingClientRect();
+  if (document.body.classList.contains("split")) { const r = $("#doc2").getBoundingClientRect(); return { top: d.top, bottom: d.bottom, left: d.left, mid: r.left, right: r.right }; }
+  return { top: d.top, bottom: d.bottom, left: d.left, mid: d.left + d.width / 2, right: d.right };
+}
+async function dropRef(ref, side) {
+  if (side === "L") {
+    if (ref.tab !== undefined) return switchLTab(ref.tab);
+    if (ref.key && ref.mst) { const d = await call("open_cached", [ref.mst, ref.key], ref.name + " 여는 중…"); return showDoc(d, d.kind, d.rawmst, ref.key); }
+    return openDoc(ref.kind, ref.rawmst, ref.name, ref.date, ref.key || "");
+  }
+  let i = ref.tab;
+  if (i === undefined) {                                          // 아직 탭이 없는 법령: 받아서 탭으로 넣되 본문은 그대로
+    i = ltabs.findIndex((t) => t.d.kind === ref.kind && String(t.d.rawmst) === String(ref.rawmst));
+    if (i < 0) {
+      if (needOC()) return;
+      try {
+        const d = await call("open_doc", [OC, ref.kind, ref.rawmst, ref.name, ref.date || ""], ref.name + " 받는 중…");
+        d.kind = ref.kind; d.rawmst = ref.rawmst; ltabs.push({ d, scroll: 0 }); i = ltabs.length - 1; paintLTabs();
+      } catch (e) { return toast((e && e.message) || "열지 못했습니다", true); }
+    }
+  }
+  if (!cur.doc) return switchLTab(i);
+  await openSplit(i);
+  if (ref.key && SPLIT && SPLIT.d && SPLIT.d.arts[ref.key]) setTimeout(() => { const el = document.getElementById("s2-" + ref.key); if (el) $("#doc2").scrollTop = el.offsetTop - 40; }, 60);
+}
+(function () {
+  let dg = null;
+  document.addEventListener("pointerdown", (e) => {
+    if (!isDT() || e.button !== 0 || e.target.closest("button,b[data-x],b[data-xt],b[data-xs],input,select,.fgh")) return;
+    const ref = dragRef(e.target); if (!ref) return;
+    dg = { ref, x: e.clientX, y: e.clientY, on: false, el: e.target.closest(".lt,.card,.hr") };
+  }, true);
+  document.addEventListener("pointermove", (e) => {
+    if (!dg) return;
+    if (!dg.on) {
+      if (Math.hypot(e.clientX - dg.x, e.clientY - dg.y) < 10) return;
+      dg.on = true; document.body.style.userSelect = "none"; try { getSelection().removeAllRanges(); } catch (er) {}
+      const g = document.createElement("div"); g.className = "dragghost"; g.textContent = dg.ref.name; document.body.appendChild(g); dg.g = g;
+      const r = dzRects(), z = $("#dz"); z.style.left = r.left + 8 + "px"; z.style.width = r.right - r.left - 16 + "px"; z.style.top = r.top + 8 + "px"; z.style.height = r.bottom - r.top - 16 + "px"; z.classList.add("on");
+      dg.r = r;
+    }
+    dg.g.style.left = e.clientX + 12 + "px"; dg.g.style.top = e.clientY + 10 + "px";
+    const r = dg.r, inY = e.clientY >= r.top && e.clientY <= r.bottom;
+    dg.side = inY && e.clientX >= r.left && e.clientX < r.mid ? "L" : inY && e.clientX >= r.mid && e.clientX <= r.right ? "R" : "";
+    $("#dz").querySelectorAll("div").forEach((d) => d.classList.toggle("ov", d.dataset.z === dg.side));
+  }, true);
+  const stop = () => { if (dg && dg.g) dg.g.remove(); $("#dz").classList.remove("on"); document.body.style.userSelect = ""; };
+  document.addEventListener("pointerup", (e) => {
+    if (!dg) return;
+    const was = dg; dg = null; stop();
+    if (!was.on) return;
+    if (was.el) { was.el.__dragged = Date.now(); }
+    if (was.side) dropRef(was.ref, was.side);
+  }, true);
+  document.addEventListener("pointercancel", () => { dg = null; stop(); }, true);
+  document.addEventListener("click", (e) => { const el = e.target.closest && e.target.closest(".lt,.card,.hr"); if (el && el.__dragged && Date.now() - el.__dragged < 500) { e.stopPropagation(); e.preventDefault(); } }, true);
+})();
+function closeSplit() { CS.tok++; CS.top = null; SPLIT = null; setTimeout(paintS1h, 0); document.body.classList.remove("split"); $("#doc2Body").innerHTML = ""; $("#dbSplit").classList.remove("on"); }
 function paintSplit() {                                          // 오른쪽 칸을 그린다(본문을 다시 그릴 때마다 함께 — 인용 번호가 본문과 이어지게)
   if (!SPLIT) return;
   if (SPLIT.mode === "cite") { CS.key = ""; setTimeout(() => { if (SPLIT && SPLIT.mode === "cite") { if (CS.pin) csPaint(); else csBuild(csReadKey(), true); } }, 80); return; }
@@ -1565,7 +1648,7 @@ function paintSplit() {                                          // 오른쪽 �
   let h = "";
   d.items.forEach((it) => { h += it.k === "h" ? '<div class="head ' + headCls(it.t) + '">' + esc(it.t) + "</div>" : artHTML(d.arts[it.key], d.mst, { idp: "s2-", self }); });
   if ((d.annex || []).length) { h += '<div class="head">별표·서식 (' + d.annex.length + ")</div>"; d.annex.forEach((x, i) => { h += annexHTML(x, i, "s2ax-", d.mst, self); }); }
-  $("#s2h").innerHTML = splitBadge(d) + '<span class="nm" title="' + esc(d.name) + '">' + esc(d.name) + '</span><button id="s2Pick" title="오른쪽에 다른 법령 고르기">바꾸기 ▾</button><button id="s2Swap" title="왼쪽과 오른쪽 바꾸기">⇄</button><button id="s2Main" title="이 법령을 왼쪽(본문)으로">◀ 본문으로</button><button id="s2X" title="나란히 보기 닫기">✕</button>';
+  $("#s2h").innerHTML = splitBadge(d) + '<span class="nm" title="' + esc(d.name) + '">' + esc(d.name) + '</span><span class="sd" style="font-weight:400;color:var(--muted);font-size:.9em">오른쪽</span><button id="s2Pick" title="오른쪽에 다른 법령 고르기">바꾸기 ▾</button><button id="s2Swap" title="왼쪽과 오른쪽 바꾸기">⇄</button><button id="s2Main" title="이 법령을 왼쪽(본문)으로">◀ 본문으로</button><button id="s2X" title="나란히 보기 닫기">✕</button>';
   const b = $("#doc2Body"); b.innerHTML = h; bindCites(b); applyNotesSplit();
   $("#doc2").scrollTop = SPLIT.scroll || keep || 0; SPLIT.scroll = 0;
   $("#s2X").onclick = closeSplit;
@@ -1607,7 +1690,7 @@ function showDoc(d, kind, rawmst, key, fromTab) {
   }
   const b = $("#docBody"); b.innerHTML = h;
   b.onclick = (e) => { if (!isDT() || e.target.closest("a,button")) return; const art = e.target.closest(".art"); if (art && art.id.startsWith("a-")) setCurArt(art.id.slice(2)); };
-  bindCites(b); applyNotes(); paintSplit();
+  bindCites(b); applyNotes(); paintSplit(); paintS1h();
   b.querySelectorAll(".fv").forEach((f) => (f.onclick = () => { toggleFav(d, f.dataset.fk); const on = favIdx(kind, rawmst, f.dataset.fk) >= 0; f.textContent = on ? "★" : "☆"; f.classList.toggle("on", on); }));
   show("doc", d.name);
   paintDocFav();
