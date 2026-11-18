@@ -437,7 +437,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <div class="t" id="hTitle">법령 뷰어</div><span class="hver" id="hVer"></span><span class="sp"></span>
   <button class="ib" id="bToc" style="display:none">☰</button>
   <button class="ib" id="bFav" style="display:none">☆</button>
-  <button class="ib dtonly" id="bHist" title="이전에 보던 조문으로 (Alt+←)">◀ 뒤로</button>
+  <button class="ib dtonly" id="bHist" title="이전에 보던 조문으로 (Alt+Shift+←, 앞으로는 Alt+Shift+→)  · 탭 이동은 Alt+←/→ 또는 Alt+휠">◀ 뒤로</button>
   <button class="ib dtonly" id="fMinus" title="글자 작게">A−</button><button class="ib dtonly" id="fPlus" title="글자 크게">A＋</button>
   <button class="ib dtonly" id="bTheme" title="색상 테마">◐ 테마</button>
   <button class="ib" id="bTT" style="display:none" title="3단 비교">3단</button>
@@ -544,7 +544,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.46";
+const VERSION = "10.47";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -779,21 +779,34 @@ function sumHTML(page) {                                         // 검색 결�
   });
   return h + "</div>";
 }
-let wheelTs = 0, wheelMvTs = 0, wheelDir = 0;
-window.addEventListener("wheel", (e) => {                         // Alt + 마우스 휠: 본문 탭 이동(검색 요약 탭 포함). Alt를 누른 채 휠을 한 칸 굴릴 때마다 한 탭씩
-  if (!e.altKey || !isDT() || !e.deltaY) return;
+let wheelTs = 0, wheelMvTs = 0, wheelDir = 0, LTPEND = -1, LTPT = 0;
+function tabStep(dir) {                                          // 본문 탭을 하나 옆으로(검색 요약 탭 포함). 받는 중인 탭이 있으면 그 탭을 기준으로 센다
   const items = (SUMTAB ? [{ s: 1 }] : []).concat(ltabs.map((t, i) => ({ i })));
   if (items.length < 2) return;
-  e.preventDefault(); e.stopPropagation();
-  const ts = e.timeStamp, dir = e.deltaY > 0 ? 1 : -1, gap = ts - wheelTs; wheelTs = ts;   // 이벤트가 만들어진 시각으로 판단(화면을 다시 그리느라 늦게 처리돼도 휠 꼬리와 새 휠을 구별)
-  if (dir === wheelDir && (gap < 90 || ts - wheelMvTs < 140)) return;
-  wheelDir = dir; wheelMvTs = ts;
-  let k = SUMACT ? 0 : items.findIndex((x) => x.i !== undefined && ltabs[x.i].d === cur.doc);
+  let k;
+  if (LTPEND >= 0 && Date.now() - LTPT < 15000 && LTPEND < ltabs.length) k = items.findIndex((x) => x.i === LTPEND);
+  else k = SUMACT ? 0 : items.findIndex((x) => x.i !== undefined && ltabs[x.i].d === cur.doc);
   if (k < 0) k = 0;
   k = (k + dir + items.length) % items.length;
-  const x = items[k]; if (x.s) showSumTab(); else switchLTab(x.i);
+  const x = items[k];
+  if (x.s) { LTPEND = -1; showSumTab(); }
+  else { LTPEND = x.i; LTPT = Date.now(); const p = switchLTab(x.i); if (p && p.then) p.then(() => { if (LTPEND === x.i) LTPEND = -1; }); else LTPEND = -1; }
+  paintLTabs();
+  if (LTPEND >= 0) { const el = $('#ltabs .lt[data-i="' + LTPEND + '"]'); if (el) { $("#ltabs").querySelectorAll(".lt.on").forEach((z) => z.classList.remove("on")); el.classList.add("on"); } }
   const on = $("#ltabs .lt.on"); if (on) on.scrollIntoView({ block: "nearest", inline: "nearest" });
+}
+window.addEventListener("wheel", (e) => {                         // Alt + 마우스 휠: 본문 탭 이동. 휠 한 칸에 한 탭
+  if (!e.altKey || !isDT()) return;
+  const dy = e.deltaY || e.deltaX; if (!dy) return;
+  e.preventDefault(); e.stopPropagation(); altUsed = true;
+  const ts = e.timeStamp, dir = dy > 0 ? 1 : -1, gap = ts - wheelTs; wheelTs = ts;
+  if (dir === wheelDir && (gap < 60 || ts - wheelMvTs < 110)) return;     // 한 칸에 여러 번 오는 이벤트(터치패드·고해상도 휠) 묶기
+  wheelDir = dir; wheelMvTs = ts;
+  tabStep(dir);
 }, { passive: false, capture: true });
+let altUsed = false;                                              // Alt를 조합키로 썼으면, 뗄 때 브라우저 메뉴로 초점이 가지 않게 막는다
+addEventListener("keydown", (e) => { if (e.key === "Alt" && isDT()) { altUsed = false; } else if (e.altKey && isDT()) altUsed = true; }, true);
+addEventListener("keyup", (e) => { if (e.key === "Alt" && isDT() && altUsed) { e.preventDefault(); altUsed = false; } }, true);
 document.addEventListener("click", (e) => {                      // 검색 요약(본문 탭·폰 목록 안 모두)
   const c = e.target.closest && e.target.closest("[data-hi]");
   if (c) { e.stopPropagation(); return void openHitArt(hits[+c.dataset.hi]); }
@@ -1844,8 +1857,9 @@ document.addEventListener("keydown", (e) => {
   else if (e.ctrlKey && (k === "g" || k === "G") && isDT()) { e.preventDefault(); $("#gk").focus(); $("#gk").select(); }
   else if (e.ctrlKey && (k === "l" || k === "L")) { e.preventDefault(); if (document.body.classList.contains("hl")) setPane("l", false); $("#q").focus(); $("#q").select(); }
   else if (k === "Escape" && document.activeElement !== $("#q") && document.activeElement !== $("#fq")) { findClr(); closeSheet(); $("#ctx").classList.remove("on"); }
-  else if (e.altKey && k === "ArrowLeft") { e.preventDefault(); navBack(); }
-  else if (e.altKey && k === "ArrowRight") { e.preventDefault(); navFwd(); }
+  else if (e.altKey && e.shiftKey && k === "ArrowLeft") { e.preventDefault(); navBack(); }
+  else if (e.altKey && e.shiftKey && k === "ArrowRight") { e.preventDefault(); navFwd(); }
+  else if (e.altKey && (k === "ArrowLeft" || k === "ArrowRight")) { e.preventDefault(); e.stopPropagation(); tabStep(k === "ArrowRight" ? 1 : -1); }
   else if (TT && $("#tt").classList.contains("on") && !e.ctrlKey && !e.altKey && !e.metaKey && (k === "ArrowLeft" || k === "ArrowRight") && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || "")) { e.preventDefault(); ttShow(TTI + (k === "ArrowRight" ? 1 : -1)); }
 });
 function fitHdr() { try { const a = $("#bHist").getBoundingClientRect(), b = $("#bSet").getBoundingClientRect(); if (a.width) document.documentElement.style.setProperty("--hb", Math.ceil(innerWidth - a.left + 8) + "px"); } catch (e) {} }
