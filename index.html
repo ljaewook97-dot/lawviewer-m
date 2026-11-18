@@ -27,11 +27,11 @@
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;font-size:var(--fs);overscroll-behavior:none;word-break:keep-all;overflow-wrap:anywhere}
 input,button,select,textarea{word-break:keep-all}
 button{font:inherit;color:inherit;border:0;background:none;padding:0}
-.hdr{position:fixed;top:0;left:0;right:0;z-index:20;background:var(--acc);color:var(--acc-t);display:flex;align-items:center;gap:4px;padding:calc(env(safe-area-inset-top) + 6px) 8px 6px;min-height:52px}
-.hver{font-size:.7em;opacity:.9;padding:2px 7px;border-radius:9px;background:rgba(255,255,255,.2);white-space:nowrap;margin-right:4px}
-.hdr .t{flex:1;font-weight:700;font-size:1.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
-.ib{min-width:40px;height:40px;border-radius:10px;font-size:1.1em;font-weight:700;color:var(--acc-t)}
-.ib:active{background:rgba(255,255,255,.2)}
+.hdr{position:fixed;top:0;left:0;right:0;z-index:20;background:var(--surf);color:var(--text);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:4px;padding:calc(env(safe-area-inset-top) + 6px) 8px 6px;min-height:52px}
+.hver{font-size:.7em;color:var(--muted);padding:2px 7px;border-radius:9px;background:var(--soft);white-space:nowrap;margin-right:4px}
+.hdr .t{flex:1;font-weight:800;color:var(--acc-d);font-size:1.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+.ib{min-width:40px;height:40px;border-radius:10px;font-size:1.1em;font-weight:700;color:var(--sub)}
+.ib:active,.ib:hover{background:var(--soft)}
 .view{display:none;position:fixed;inset:0;padding-top:calc(env(safe-area-inset-top) + 52px);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .view.on{display:block}
 .pad{padding:12px}
@@ -75,7 +75,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .axt th{background:color-mix(in srgb,var(--text) 6%,transparent);font-weight:700}
 #doc .body{padding:4px 14px 120px}
 .head{margin:26px 0 10px;text-align:left;font-weight:700;color:var(--acc-d);font-size:1.08em;border-left:3px solid var(--acc);padding:1px 0 1px 8px}
-.art{padding:14px 0 12px;border-bottom:1px solid var(--line)}b.al,.ln.l0>b:first-child{font-weight:800;color:var(--acc-d);font-size:1.04em}
+.art{padding:14px 0 12px;border-bottom:1px solid var(--line)}b.al,.ln.l0>b:first-child{font-weight:800;color:var(--acc-d);font-size:1.06em}
 .art.cur{background:color-mix(in srgb,var(--text) 4%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--acc) 28%,var(--line));border-radius:6px;border-bottom-color:transparent}
 .ln{line-height:var(--lh,1.75);margin:0;padding-top:1px;padding-bottom:1px;word-break:keep-all;overflow-wrap:anywhere;--gd:color-mix(in srgb,var(--muted) 38%,transparent);background-repeat:no-repeat;background-size:1px 100%}
 .ln.l1{padding-left:1.1em}.ln.l2{padding-left:2.2em}.ln.l3{padding-left:3.3em}.ln.l4{padding-left:4.4em}
@@ -86,9 +86,11 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .ln.hl{background-color:color-mix(in srgb,var(--text) 7%,transparent);border-radius:4px;box-shadow:inset 3px 0 0 color-mix(in srgb,var(--acc) 40%,var(--line))}
 .ln:has(>.mk){display:flex;align-items:flex-start}.ln>.mk{flex:none;white-space:pre}.ln>.mt{flex:1;min-width:0}.ln.l0>.mk{font-weight:800;color:var(--acc-d)}
 .ln b{font-weight:700}
-.am{color:var(--muted);font-size:.8em}
+.am{color:var(--muted);font-size:.74em;opacity:.75;letter-spacing:-.01em}
+.am:hover{opacity:1}
 a.c.dg{border-bottom-style:dotted;color:var(--acc-d)}
-a.c{color:color-mix(in srgb,var(--link) 75%,var(--text));font-weight:600;text-decoration:none;border-bottom:1.5px solid currentColor;cursor:pointer}
+a.c{color:color-mix(in srgb,var(--link) 72%,var(--text));font-weight:inherit;text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--link) 28%,transparent);cursor:pointer;transition:color .1s,border-color .1s,background .1s}
+a.c:hover{color:var(--link);border-bottom-color:var(--link);background:color-mix(in srgb,var(--link) 8%,transparent);border-radius:2px}
 .ah{display:flex;gap:6px;align-items:flex-start}
 .ah .ln{flex:1}
 .fv{min-width:34px;height:34px;color:var(--muted);font-size:1.2em}
@@ -145,6 +147,16 @@ a.c{color:color-mix(in srgb,var(--link) 75%,var(--text));font-weight:600;text-de
 .ttk button small{font-weight:400;opacity:.8}
 @media(max-width:999px){.tt .col.off{display:none}.tt .col .ch{position:static}}
 .tt .ta.wh .ln{background:color-mix(in srgb,var(--acc) 12%,transparent)}
+.tt .col .ch{background:var(--surf)!important;color:var(--text);border-top:3px solid var(--kc);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:7px;padding:6px 10px;font-size:.88em;white-space:nowrap;overflow:hidden}
+.tt .col .ch .kb{flex:none;background:var(--kc);color:#fff;border-radius:4px;padding:0 6px;font-size:.85em;font-weight:700}
+.tt .col .ch .kn{overflow:hidden;text-overflow:ellipsis;font-weight:700}
+.tt .col .at{font-size:.78em;font-weight:600;color:var(--muted);margin-top:10px}
+.tt .col .at:hover{color:var(--acc-d)}
+.rch{display:flex;align-items:center;justify-content:space-between;font-size:.78em;font-weight:700;color:var(--muted);margin:4px 2px 4px}
+.rch button{font-size:.95em;color:var(--muted);font-weight:400}.rch button:hover{color:var(--danger)}
+.card.rc{cursor:pointer;padding:6px 10px;margin-bottom:4px}.card.rc .nm{display:flex;align-items:center;min-width:0}.card.rc .h{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card.rc .ago{flex:none;font-size:.72em;color:var(--muted)}
+.card.rc:hover{border-color:var(--acc)}
 .tt .jmp{position:absolute;z-index:7;transform:translateX(-50%);display:flex;gap:4px;pointer-events:auto}
 .tt .jmp b{background:var(--acc);color:#fff;border-radius:14px;padding:3px 11px;font-size:.78em;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap}
 .tt .jmp b:hover{background:var(--acc-d)}
@@ -237,12 +249,14 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .sd-b .sl{color:var(--muted);font-size:.78em;margin-top:1px}
 .axl{display:block;margin:4px 0;color:var(--link)}
 @media (min-width:1000px){
-  :root{--lw:250px;--rw:230px;--hh:34px;--th:26px;--bh:32px;--ph:36vh}
+  :root{--lw:250px;--rw:230px;--hh:36px;--th:0px;--bh:32px;--ph:36vh;--hb:260px}
   body.hl{--lw:0px}
   body.hr{--rw:0px}
   .dtonly{display:inline-block}
   .hdr{min-height:var(--hh);padding:0 8px;gap:2px}
-  .hdr .t{font-size:.9em}
+  .hdr .t{font-size:.9em;flex:0 0 auto;max-width:calc(var(--lw) - 70px)}
+  .hdr .sp{flex:1}
+  body.hl .hdr .t,body.hl .hdr .hver{display:none}
   .hdr .ib{font-size:.85em;min-width:26px;height:26px;padding:0 7px}
   #bBack,#bToc{display:none!important}
   #home{display:block!important;right:auto;width:var(--lw);top:var(--hh);padding-top:4px;border-right:1px solid var(--line)}
@@ -311,12 +325,12 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   .card [data-u],.card [data-d]{display:none}
   body.pv #doc,body.pv #tt{bottom:var(--ph)}
   #doc .body{padding:0 2px 50px}
-  .art{padding:7px 0 5px}
-  .ln{line-height:var(--lh,1.5);padding-top:.5px;padding-bottom:.5px}
+  .art{padding:12px 0 10px}
+  .ln{line-height:var(--lh,1.62);padding-top:.5px;padding-bottom:.5px}
   #doc .body{max-width:var(--bw,none)}
   .fv{min-width:22px;height:22px;font-size:1em}
   .head{margin:12px 0 4px;font-size:1em}
-  #ltabs{display:flex;position:fixed;top:var(--hh);left:var(--lw);right:var(--rw);height:var(--th);z-index:15;background:var(--soft);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap;align-items:flex-end;scrollbar-width:none}
+  #ltabs{display:flex;position:fixed;top:0;left:var(--lw);right:var(--hb);height:var(--hh);z-index:21;background:transparent;overflow-x:auto;overflow-y:hidden;white-space:nowrap;align-items:flex-end;scrollbar-width:none}
   #ltabs::-webkit-scrollbar{display:none}
   #ltabs .lt{--tc:#1565C0;display:flex;align-items:center;gap:4px;padding:0 4px 0 11px;margin:6px 2px 0;height:calc(100% - 6px);box-sizing:border-box;flex:none;border:1.5px solid color-mix(in srgb,var(--tc) 55%,transparent);border-bottom:0;border-radius:5px 5px 0 0;background:var(--soft);color:var(--sub);cursor:pointer;max-width:200px;font-size:.8em}
   #ltabs .lt:first-child{margin-left:6px}
@@ -341,6 +355,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #list .card[data-ci] .nm .tag.fb.ry{background:#2E7D32}
   #list .card[data-ci] .nm .tag.fb.rc{background:#EF6C00}
   #list .card[data-ci] .in:empty{display:none}
+  #list .card.rc{padding:3px 7px;margin-bottom:2px}
   #list .card[data-ci] .in{white-space:nowrap;flex:0 0 auto;margin:0;font-size:.74em}
   #list .card[data-ci] .sm{min-width:18px;height:18px;font-size:.72em;border:0;background:none;color:var(--muted);padding:0}
   #list .card[data-ci] .sm:hover{color:var(--danger)}
@@ -362,7 +377,11 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   .sheet .sa{padding:3px 5px}
   .sheet .sa button{padding:2px;font-size:.78em}
   .modal{left:50%!important;right:auto!important;width:min(700px,calc(100vw - 80px))!important;transform:translateX(-50%);max-height:calc(100% - 110px)!important}
-  .nav{padding:4px 6px}
+  .nav{padding:2px 4px;gap:4px}
+  .tt .nav .sm{min-width:28px;height:26px}
+  .tt .nav .mid{font-size:.88em;display:flex;gap:10px;justify-content:center;align-items:baseline}
+  .tt .nav .mid .muted{font-size:.85em!important}
+  .tt .nav #tJ{height:26px;width:60px}
   .tt .col{margin:6px 8px}
 }
 .modal .sg{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.modal .sg:first-of-type{margin-top:0;padding-top:0;border-top:0}
@@ -401,7 +420,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <body>
 <div class="hdr">
   <button class="ib" id="bBack" style="display:none">←</button>
-  <div class="t" id="hTitle">법령 뷰어</div><span class="hver" id="hVer"></span>
+  <div class="t" id="hTitle">법령 뷰어</div><span class="hver" id="hVer"></span><span class="sp"></span>
   <button class="ib" id="bToc" style="display:none">☰</button>
   <button class="ib" id="bFav" style="display:none">☆</button>
   <button class="ib dtonly" id="bHist" title="이전에 보던 조문으로 (Alt+←)">◀ 뒤로</button>
@@ -511,7 +530,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.41";
+const VERSION = "10.42";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -774,9 +793,23 @@ function paintSum(html) {                                        // PC 넓은 �
   SUMTAB = { html, q: hitToks.join(" "), scroll: 0 }; SUMON = true;
   showSumTab();
 }
+let RECENT = LS.get("lv_recent", []);
+function noteRecent(d, kind, rawmst) {
+  if (!d || !d.name) return;
+  RECENT = RECENT.filter((x) => !(x.k === kind && String(x.m) === String(rawmst)));
+  RECENT.unshift({ k: kind, m: rawmst, n: d.name, d: d.date || "", t: Date.now() });
+  RECENT = RECENT.slice(0, 15); LS.set("lv_recent", RECENT);
+}
+function paintRecent(L) {
+  if (!RECENT.length) { L.innerHTML = '<div class="empty">법령·행정규칙·자치법규 이름을 치면<br>목록이 나옵니다.</div>'; return; }
+  const ago = (t) => { const m = Math.round((Date.now() - t) / 60000); return m < 60 ? (m < 1 ? "방금" : m + "분 전") : m < 1440 ? Math.round(m / 60) + "시간 전" : Math.round(m / 1440) + "일 전"; };
+  L.innerHTML = '<div class="rch"><span>최근 연 법령</span><button id="rcClr">지우기</button></div>' + RECENT.map((x, i) => '<div class="card rc" data-r="' + i + '" title="' + esc(x.n) + '"><div class="m"><div class="nm">' + (x.k === "law" ? favBadge(x.n, "law") : '<span class="tag ' + x.k + '">' + KIND[x.k][0] + "</span>") + '<span class="h">' + esc(x.k === "law" ? String(x.n).replace(/\s*(시행령|시행규칙)$/, "") : x.n) + '</span></div></div><span class="ago">' + ago(x.t) + "</span></div>").join("");
+  L.querySelectorAll(".rc").forEach((c) => (c.onclick = () => { const x = RECENT[+c.dataset.r]; openDoc(x.k, x.m, x.n, x.d); }));
+  $("#rcClr").onclick = () => { RECENT = []; LS.set("lv_recent", RECENT); paintRecent(L); };
+}
 function paintHits() {
   const L = $("#list");
-  if (!hits.length) { L.innerHTML = '<div class="empty">이름을 치고 검색을 누르세요.</div>'; return; }
+  if (!hits.length) { paintRecent(L); return; }
   let h = hitNote ? '<div class="muted" style="font-size:.8em;margin:0 2px 6px;line-height:1.4">' + esc(hitNote) + "</div>" : "", last = "";
   const art = hits.some((x) => x.key);
   const noteLen = h.length;
@@ -1184,7 +1217,7 @@ function artHTML(a, ctx, opt) {
     if (fold && i === FOLD) h += '<div class="more">';
     const hl = opt.hl && opt.hl.some((r) => i >= r[0] && i < r[1]);
     let lh = lineHTML(l[1], l[2], l[0], ctx, opt.self, a.key);
-    if (i === 0) lh = lh.replace(/^(제\d+(?:조|장|절|편)(?:의\d+)?|\d+(?:-\d+)+\.?|\d+\.)(?=\s|\(|<|$)/, '<b class="al">$1</b>');
+    if (i === 0) lh = lh.replace(/^(제\d+조(?:의\d+)?\([^)<]*\))/, '<b class="al">$1</b>').replace(/^(제\d+(?:조|장|절|편)(?:의\d+)?|\d+(?:-\d+)+\.?|\d+\.)(?=\s|\(|<|$)/, '<b class="al">$1</b>');
     const body = '<div class="ln l' + Math.min(l[0], 4) + (hl ? " hl" : "") + '" data-k="' + a.key + '" data-i="' + i + '">' + lh + "</div>";
     h += i === 0 && opt.fav ? '<div class="ah">' + body + '<button class="fv' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? " on" : "") + '" data-fk="' + a.key + '">' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? "★" : "☆") + "</button>" + (cur.doc.kind === "law" ? '<button class="chb" data-ck="' + a.key + '" title="위임 사슬: 이 조문이 시행령·시행규칙·지침 어디서 구체화되는지">⛓</button>' : "") + "</div>" : body;
   });
@@ -1306,7 +1339,7 @@ function closeLTab(i) {
   if (tab === "t") paintToc();
 }
 function showDoc(d, kind, rawmst, key, fromTab) {
-  d.kind = kind; d.rawmst = rawmst;
+  d.kind = kind; d.rawmst = rawmst; noteRecent(d, kind, rawmst); if (tab === "r" && !hits.length) paintHits();
   if (isDT() && !fromTab) {
     const old = ltabs.findIndex((x) => x.d.kind === kind && String(x.d.rawmst) === String(rawmst));
     if (cur.doc) { const c = ltabs.find((x) => x.d === cur.doc); if (c) c.scroll = $("#doc").scrollTop; }
@@ -1780,7 +1813,9 @@ document.addEventListener("keydown", (e) => {
   else if (e.altKey && k === "ArrowRight") { e.preventDefault(); navFwd(); }
   else if (TT && $("#tt").classList.contains("on") && !e.ctrlKey && !e.altKey && !e.metaKey && (k === "ArrowLeft" || k === "ArrowRight") && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || "")) { e.preventDefault(); ttShow(TTI + (k === "ArrowRight" ? 1 : -1)); }
 });
-addEventListener("resize", () => { applyPrefs(); layoutPanes(); });
+function fitHdr() { try { const a = $("#bHist").getBoundingClientRect(), b = $("#bSet").getBoundingClientRect(); if (a.width) document.documentElement.style.setProperty("--hb", Math.ceil(innerWidth - a.left + 8) + "px"); } catch (e) {} }
+addEventListener("resize", () => { applyPrefs(); layoutPanes(); fitHdr(); });
+setTimeout(fitHdr, 50); setTimeout(fitHdr, 800);
 
 // ---------------------------------------------------------------- 내 표시(글자색·형광펜) + 모아보기
 let NOTES = LS.get("lv_notes", []);
@@ -2043,7 +2078,7 @@ async function ttShow(i) {
   h += '<div class="ttk">' + r.cols.map((c, ci) => '<button data-k="' + ci + '" style="--kc:' + TTCOL[ci] + '">' + ["법", "령", "칙"][ci] + ' <small>' + (c.none ? "없음" : c.arts.length + "개") + "</small></button>").join("") + '<button data-k="a" style="--kc:var(--sub)">모두</button></div></div>';
   h += '<div class="ttg"><svg class="ttl"></svg>';
   r.cols.forEach((c, ci) => {
-    h += '<div class="col" data-ci="' + ci + '"><div class="ch" style="background:' + TTCOL[ci] + '">' + esc(c.name) + "</div><div class=\"cb\">";
+    h += '<div class="col" data-ci="' + ci + '" style="--kc:' + TTCOL[ci] + '"><div class="ch" title="' + esc(c.name) + '"><span class="kb">' + ["법", "령", "칙"][ci] + '</span><span class="kn">' + esc(ci ? String(c.name).replace(/^.*\s(시행령|시행규칙)$/, "$1") : c.name) + "</span></div><div class=\"cb\">";
     if (c.none) h += '<div class="muted" style="padding:8px 0">이 법령을 찾지 못했습니다</div>';
     else if (!c.arts.length) h += '<div class="muted" style="padding:8px 0">— 해당 조문 없음</div>';
     else c.arts.forEach((a) => { h += '<div class="ta" data-ci="' + ci + '" data-id="' + ci + ":" + a.key + '" data-rel="' + esc((a.rel || []).join(",")) + '"><div class="at" data-n="' + esc(c.name) + '" data-k="' + a.key + '">' + esc(a.label + " " + a.title) + " ↗</div>" + artHTML(a, c.mst, { idp: "t" + ci + "-", self: c.name }) + "</div>"; });
