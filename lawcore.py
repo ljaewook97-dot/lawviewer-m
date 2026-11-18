@@ -398,6 +398,50 @@ def _ref_label(r):
     return s
 
 
+_IMG_TAG = re.compile(r"<img\b[^>]*>|</img>", re.I)
+_BOX_START = re.compile(r"^\s*[┌│├└┏┃┣┗┠┡┢┝┞┟╔║╠╚|]")
+
+
+def _art_tables(lines):
+    """조문 본문에 섞여 온 그림 태그(<img …>, </img>)를 걷어 내고, 상자 글자로 그린 표는 별표처럼 표 행 (9, JSON) 으로 바꾼다"""
+    import json
+    if not any("<img" in t.lower() or "</img>" in t.lower() or _BOX_START.match(t) for _lv, t in lines):
+        return lines
+    clean = []
+    for lv, t in lines:
+        t2 = _IMG_TAG.sub("", t)
+        if t2.strip() or not t.strip():
+            clean.append((lv, t2.rstrip() if t2 != t else t2))
+    out, i = [], 0
+    while i < len(clean):
+        lv, t = clean[i]
+        if not _BOX_START.match(t):
+            out.append((lv, t))
+            i += 1
+            continue
+        j = i
+        while j < len(clean) and _BOX_START.match(clean[j][1]):
+            j += 1
+        chunk = [x[1] for x in clean[i:j]]
+        rows = None
+        try:
+            rows = _grid_best(chunk)
+        except Exception:  # noqa: BLE001
+            rows = None
+        if not rows:
+            try:
+                rows = _format_table(chunk)
+            except Exception:  # noqa: BLE001
+                rows = None
+        if rows:
+            out.extend((9, json.dumps(r, ensure_ascii=False)) for r in rows)
+        else:
+            out.extend(clean[i:j])
+        i = j
+    return out
+
+
+
 def analyze_units(units, selfname=""):
     """조문단위 목록 -> {'arts': {키: 조문}, 'order': [키…]}  (조문마다 out_int·out_ext·in_keys·deleg 를 채운다)"""
     arts, order, items = {}, [], []
@@ -415,7 +459,7 @@ def analyze_units(units, selfname=""):
         key = "%d:%d" % (n, b)
         if key in arts:
             continue
-        lines = unit_lines(u)
+        lines = _art_tables(unit_lines(u))
         scan = "\n".join(HEADER_RE.sub("", t, count=1) if lv == 0 else t for lv, t in lines)
         arts[key] = {"key": key, "n": n, "b": b, "label": jo_label(n, b), "title": str(u.get("조문제목") or "").strip(),
                      "lines": lines, "scan": scan, "in_keys": []}

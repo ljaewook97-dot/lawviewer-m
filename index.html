@@ -71,7 +71,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .muted{color:var(--muted)}
 .grp{margin:14px 2px 6px;font-weight:700;color:var(--acc-d)}
 #doc{background:color-mix(in srgb,var(--surf) 94%,gray)}
-.axw{overflow-x:auto;margin:6px 0 10px}.axt{border-collapse:collapse;font-size:.92em;line-height:1.55;min-width:60%}
+.axw{overflow-x:auto;margin:6px 0 10px}.axw.ati{margin-top:4px;margin-bottom:6px}.axt tr.ln{background-image:none;padding:0;line-height:1.5}.axt tr.ln.hlx>*{background:color-mix(in srgb,var(--acc) 22%,transparent)}.axt{border-collapse:collapse;font-size:.92em;line-height:1.55;min-width:60%}
 .axt th,.axt td{border:1px solid var(--line);padding:5px 8px;vertical-align:top;text-align:left;word-break:keep-all;overflow-wrap:anywhere}
 .axt th{background:color-mix(in srgb,var(--text) 6%,transparent);font-weight:700}
 #doc .body{padding:4px 14px 120px}
@@ -544,7 +544,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.45";
+const VERSION = "10.46";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1230,11 +1230,22 @@ function annexHTML(x, i, idp, ctx, self) {
   if (x.url) h += '<a class="axl" href="' + esc(x.url) + '" target="_blank" rel="noopener">원본 파일 열기 ▸</a>';
   return h + "</div>";
 }
+function lnTxt9(t) { try { return "      " + JSON.parse(t).map((c) => String(c[1]).replace(/\n/g, " ")).join(" | "); } catch (e) { return t; } }
 function artHTML(a, ctx, opt) {
   opt = opt || {};
   const FOLD = 6, fold = false;   // 본문은 항상 펼쳐 보여 준다(긴 조문 접기는 쓰지 않음)   // 긴 조문은 앞 6줄만 보이고 나머지는 접는다
   let h = '<div class="art' + (fold ? " fold" : "") + '" id="' + (opt.idp || "a-") + a.key + '">';
+  let tb = false, plv = 0;
   a.lines.forEach((l, i) => {
+    if (l[0] === 9) {                                            // 조문 속 표(상자 글자로 그린 표를 읽어 낸 것) 한 행
+      let row = []; try { row = JSON.parse(l[1]); } catch (e) { row = [[1, l[1]]]; }
+      if (!tb) { h += '<div class="axw ati" style="margin-left:' + (Math.min(plv, 4) + 1) * 1.1 + 'em"><table class="axt">'; tb = true; }
+      const hd = h.endsWith('<table class="axt">'), tg = hd ? "th" : "td";
+      h += '<tr class="ln" data-k="' + a.key + '" data-i="' + i + '">' + row.map((c) => "<" + tg + (c[0] > 1 ? ' colspan="' + c[0] + '"' : "") + (c[2] > 1 ? ' rowspan="' + c[2] + '"' : "") + ">" + (c[3] && c[3].length ? lineHTML(c[1], c[3], 4, ctx, opt.self, a.key) : esc(c[1])).replace(/\n/g, "<br>") + "</" + tg + ">").join("") + "</tr>";
+      return;
+    }
+    if (tb) { h += "</table></div>"; tb = false; }
+    plv = l[0];
     if (fold && i === FOLD) h += '<div class="more">';
     const hl = opt.hl && opt.hl.some((r) => i >= r[0] && i < r[1]);
     let lh = lineHTML(l[1], l[2], l[0], ctx, opt.self, a.key);
@@ -1242,6 +1253,7 @@ function artHTML(a, ctx, opt) {
     const body = '<div class="ln l' + Math.min(l[0], 4) + (hl ? " hl" : "") + '" data-k="' + a.key + '" data-i="' + i + '">' + lh + "</div>";
     h += i === 0 && opt.fav ? '<div class="ah">' + body + '<button class="fv' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? " on" : "") + '" data-fk="' + a.key + '">' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? "★" : "☆") + "</button>" + (cur.doc.kind === "law" ? '<button class="chb" data-ck="' + a.key + '" title="위임 사슬: 이 조문이 시행령·시행규칙·지침 어디서 구체화되는지">⛓</button>' : "") + "</div>" : body;
   });
+  if (tb) h += "</table></div>";
   if (fold) h += '</div><button class="mrb" data-n="' + (a.lines.length - FOLD) + '">▼ 나머지 ' + (a.lines.length - FOLD) + '줄 펼치기</button>';
   return h + "</div>";
 }
@@ -1524,7 +1536,7 @@ function setSheetH(p) {
     if (cur.doc && r.mst === cur.doc.mst) { closePane(n); return goKey(r.art.key); }
     await openByName(r.lawname, r.art.key);
   };
-  pn.el.querySelector(".cp").onclick = () => { const r = pn.now; if (!r || !r.art) return; copyText(r.lawname + " " + r.art.label + "\n" + r.art.lines.map(([lv, t]) => "   ".repeat(Math.max(lv - 1, 0)) + t).join("\n"), r.art.label + " 본문을 복사했습니다"); };
+  pn.el.querySelector(".cp").onclick = () => { const r = pn.now; if (!r || !r.art) return; copyText(r.lawname + " " + r.art.label + "\n" + r.art.lines.map(([lv, t]) => lv === 9 ? lnTxt9(t) : "   ".repeat(Math.max(lv - 1, 0)) + t).join("\n"), r.art.label + " 본문을 복사했습니다"); };
   pn.el.querySelector(".fv2").onclick = async () => {
     const r = pn.now;
     if (!r || !r.art) return;
@@ -1721,7 +1733,7 @@ async function copyText(t, msg) {
 $("#dbCopy").onclick = () => {
   const d = cur.doc, a = d && d.arts[sideKey];
   if (!a) return toast("복사할 조문을 먼저 고르세요", true);
-  copyText(d.name + " " + a.label + "\n" + a.lines.map(([lv, t]) => "   ".repeat(Math.max(lv - 1, 0)) + t).join("\n"), d.name + " " + a.label + " 본문을 복사했습니다");
+  copyText(d.name + " " + a.label + "\n" + a.lines.map(([lv, t]) => lv === 9 ? lnTxt9(t) : "   ".repeat(Math.max(lv - 1, 0)) + t).join("\n"), d.name + " " + a.label + " 본문을 복사했습니다");
 };
 $("#dbCite").onclick = () => {
   const d = cur.doc; if (!d) return toast("먼저 법령을 여세요", true);

@@ -207,6 +207,14 @@ def _named_before_code(text, pos, selfname):
 def _art_json(a, selfname, spans=True, law=None):
     lines = []
     for lv, t in a["lines"]:
+        if lv == 9:                                                  # 조문 속 표 한 행: 칸마다 인용 위치를 붙인다
+            import json
+            try:
+                row = json.loads(t)
+                lines.append([9, json.dumps([[c[0], c[1], (c[2] if len(c) > 2 else 1), _ax_spans(c[1], selfname, law) if spans else []] for c in row], ensure_ascii=False), []])
+            except Exception:  # noqa: BLE001
+                lines.append([9, t, []])
+            continue
         lines.append([lv, t, _spans(t, selfname, law, lv) if spans else []])
     return {"key": a["key"], "n": a["n"], "b": a["b"], "label": a["label"], "title": a["title"], "lines": lines,
             "inn": list(a.get("in_keys") or [])}
