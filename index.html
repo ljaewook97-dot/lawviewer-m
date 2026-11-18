@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0E7C6B">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -23,6 +23,14 @@
 :root[data-theme=forest]{--bg:#101a14;--surf:#16241b;--soft:#1d2f23;--line:#2f4a39;--text:#e6f2e9;--sub:#bcd3c2;--muted:#86a38f;--acc:#5fd08a;--acc-d:#8be6aa;--acc-soft:#25402f;--acc-t:#06210f;--hl:#6b5f24;--subhl:#4a4524;--link:#8be6aa;--danger:#ff7b7b}
 :root[data-theme=midnight]{--bg:#000;--surf:#0b0b0d;--soft:#151518;--line:#2a2a30;--text:#e9e9ee;--sub:#c4c4cc;--muted:#8e8e9a;--acc:#ffb454;--acc-d:#ffcb85;--acc-soft:#3a2d18;--acc-t:#1c1200;--hl:#6b5624;--subhl:#463a22;--link:#ffcb85;--danger:#ff7b7b}
 :root[data-theme=solar]{--bg:#002b36;--surf:#073642;--soft:#0d4352;--line:#1f5a6a;--text:#eee8d5;--sub:#cfc9b5;--muted:#93a1a1;--acc:#d9a520;--acc-d:#f0c14a;--acc-soft:#1f4f5a;--acc-t:#002b36;--hl:#6b5f24;--subhl:#4a4524;--link:#6cc3d5;--danger:#ff7b7b}
+:root[data-theme=mono]{--bg:#f2f2f2;--surf:#fff;--soft:#f6f6f6;--line:#d6d6d6;--text:#151515;--sub:#3a3a3a;--muted:#6b6b6b;--acc:#2b2b2b;--acc-d:#111;--acc-soft:#e6e6e6;--acc-t:#fff;--link:#1f4e8c}
+:root[data-theme=sky]{--bg:#eef6fb;--surf:#fff;--soft:#f3f9fd;--line:#cfe2ee;--text:#14293a;--sub:#36506a;--muted:#5e7a92;--acc:#1673ad;--acc-d:#11679c;--acc-soft:#dbeefa;--acc-t:#fff;--link:#1272b5}
+:root[data-theme=sand]{--bg:#f3eee6;--surf:#fffcf7;--soft:#f6f0e6;--line:#ddd2c0;--text:#2e2618;--sub:#54483a;--muted:#7a6d5c;--acc:#8a6a2f;--acc-d:#6b501f;--acc-soft:#efe4cf;--acc-t:#fff;--link:#7a5a1e}
+:root[data-theme=hc]{--bg:#fff;--surf:#fff;--soft:#f4f4f4;--line:#8a8a8a;--text:#000;--sub:#111;--muted:#3d3d3d;--acc:#0040c0;--acc-d:#002c86;--acc-soft:#dde6ff;--acc-t:#fff;--link:#0038b0;--hl:#FFE000}
+:root[data-theme=ocean]{--bg:#06121f;--surf:#0b1c2e;--soft:#11263b;--line:#1f3a55;--text:#e2eef8;--sub:#bcd0e2;--muted:#7f9bb5;--acc:#3fa9f5;--acc-d:#7cc4ff;--acc-soft:#16324d;--acc-t:#04121f;--hl:#6b5a24;--subhl:#4a4224;--link:#7cc4ff;--danger:#ff7b7b}
+:root[data-theme=plum]{--bg:#17111f;--surf:#20182b;--soft:#2a2038;--line:#3d3050;--text:#efe7f7;--sub:#d0c3e0;--muted:#a092b5;--acc:#c08cf0;--acc-d:#d8b4ff;--acc-soft:#36284a;--acc-t:#1b0f28;--hl:#6b5624;--subhl:#463a22;--link:#d8b4ff;--danger:#ff7b8f}
+:root[data-theme=dim]{--bg:#2b2d31;--surf:#323439;--soft:#393b41;--line:#4a4d54;--text:#dcdde0;--sub:#c0c2c7;--muted:#9a9ca3;--acc:#8ab4f8;--acc-d:#aecbfa;--acc-soft:#3c4655;--acc-t:#14202f;--hl:#6b5a24;--subhl:#4a4224;--link:#aecbfa;--danger:#f28b82}
+:root[data-theme=ember]{--bg:#1a1410;--surf:#231b15;--soft:#2c221a;--line:#46362a;--text:#f3e9df;--sub:#d8c8b8;--muted:#a8927e;--acc:#f0954a;--acc-d:#ffb57a;--acc-soft:#3e2c1e;--acc-t:#1d0f04;--hl:#6b5224;--subhl:#463722;--link:#ffb57a;--danger:#ff7b7b}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;font-size:var(--fs);overscroll-behavior:none;word-break:keep-all;overflow-wrap:anywhere}
 input,button,select,textarea{word-break:keep-all}
@@ -196,16 +204,16 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .nmm{margin:3px 0 0;padding:4px 8px;border-left:3px solid #5C6BC0;background:var(--soft);border-radius:4px;font-size:.88em;white-space:pre-wrap;color:var(--sub)}
 #memoTa{width:100%;min-height:110px;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surf);color:var(--text);resize:vertical}
 .nt.f1{color:#D32F2F}.nt.f2{color:#1565C0}.nt.f3{color:#2E7D32}.nt.f4{color:#7B1FA2}
-:root[data-theme=dark] .nt.f1,:root[data-theme=graphite] .nt.f1,:root[data-theme=nord] .nt.f1,:root[data-theme=forest] .nt.f1,:root[data-theme=midnight] .nt.f1,:root[data-theme=solar] .nt.f1{color:#FF8A80}
-:root[data-theme=dark] .nt.f2,:root[data-theme=graphite] .nt.f2,:root[data-theme=nord] .nt.f2,:root[data-theme=forest] .nt.f2,:root[data-theme=midnight] .nt.f2,:root[data-theme=solar] .nt.f2{color:#82B1FF}
-:root[data-theme=dark] .nt.f3,:root[data-theme=graphite] .nt.f3,:root[data-theme=nord] .nt.f3,:root[data-theme=forest] .nt.f3,:root[data-theme=midnight] .nt.f3,:root[data-theme=solar] .nt.f3{color:#8BE59B}
-:root[data-theme=dark] .nt.f4,:root[data-theme=graphite] .nt.f4,:root[data-theme=nord] .nt.f4,:root[data-theme=forest] .nt.f4,:root[data-theme=midnight] .nt.f4,:root[data-theme=solar] .nt.f4{color:#D6A5FF}
+:root[data-theme=dark] .nt.f1,:root[data-theme=graphite] .nt.f1,:root[data-theme=nord] .nt.f1,:root[data-theme=forest] .nt.f1,:root[data-theme=midnight] .nt.f1,:root[data-theme=solar] .nt.f1,:root[data-dark] .nt.f1{color:#FF8A80}
+:root[data-theme=dark] .nt.f2,:root[data-theme=graphite] .nt.f2,:root[data-theme=nord] .nt.f2,:root[data-theme=forest] .nt.f2,:root[data-theme=midnight] .nt.f2,:root[data-theme=solar] .nt.f2,:root[data-dark] .nt.f2{color:#82B1FF}
+:root[data-theme=dark] .nt.f3,:root[data-theme=graphite] .nt.f3,:root[data-theme=nord] .nt.f3,:root[data-theme=forest] .nt.f3,:root[data-theme=midnight] .nt.f3,:root[data-theme=solar] .nt.f3,:root[data-dark] .nt.f3{color:#8BE59B}
+:root[data-theme=dark] .nt.f4,:root[data-theme=graphite] .nt.f4,:root[data-theme=nord] .nt.f4,:root[data-theme=forest] .nt.f4,:root[data-theme=midnight] .nt.f4,:root[data-theme=solar] .nt.f4,:root[data-dark] .nt.f4{color:#D6A5FF}
 .nt{border-radius:2px;cursor:pointer}
-:root[data-theme=dark] .nt.h1,:root[data-theme=graphite] .nt.h1,:root[data-theme=nord] .nt.h1,:root[data-theme=forest] .nt.h1,:root[data-theme=midnight] .nt.h1,:root[data-theme=solar] .nt.h1{background:rgba(255,214,0,.34)}
-:root[data-theme=dark] .nt.h2,:root[data-theme=graphite] .nt.h2,:root[data-theme=nord] .nt.h2,:root[data-theme=forest] .nt.h2,:root[data-theme=midnight] .nt.h2,:root[data-theme=solar] .nt.h2{background:rgba(76,200,110,.36)}
-:root[data-theme=dark] .nt.h3,:root[data-theme=graphite] .nt.h3,:root[data-theme=nord] .nt.h3,:root[data-theme=forest] .nt.h3,:root[data-theme=midnight] .nt.h3,:root[data-theme=solar] .nt.h3{background:rgba(255,105,140,.4)}
-:root[data-theme=dark] .nt.h4,:root[data-theme=graphite] .nt.h4,:root[data-theme=nord] .nt.h4,:root[data-theme=forest] .nt.h4,:root[data-theme=midnight] .nt.h4,:root[data-theme=solar] .nt.h4{background:rgba(70,160,255,.42)}
-:root[data-theme=dark] .nt.h5,:root[data-theme=graphite] .nt.h5,:root[data-theme=nord] .nt.h5,:root[data-theme=forest] .nt.h5,:root[data-theme=midnight] .nt.h5,:root[data-theme=solar] .nt.h5{background:rgba(255,150,40,.38)}
+:root[data-theme=dark] .nt.h1,:root[data-theme=graphite] .nt.h1,:root[data-theme=nord] .nt.h1,:root[data-theme=forest] .nt.h1,:root[data-theme=midnight] .nt.h1,:root[data-theme=solar] .nt.h1,:root[data-dark] .nt.h1{background:rgba(255,214,0,.34)}
+:root[data-theme=dark] .nt.h2,:root[data-theme=graphite] .nt.h2,:root[data-theme=nord] .nt.h2,:root[data-theme=forest] .nt.h2,:root[data-theme=midnight] .nt.h2,:root[data-theme=solar] .nt.h2,:root[data-dark] .nt.h2{background:rgba(76,200,110,.36)}
+:root[data-theme=dark] .nt.h3,:root[data-theme=graphite] .nt.h3,:root[data-theme=nord] .nt.h3,:root[data-theme=forest] .nt.h3,:root[data-theme=midnight] .nt.h3,:root[data-theme=solar] .nt.h3,:root[data-dark] .nt.h3{background:rgba(255,105,140,.4)}
+:root[data-theme=dark] .nt.h4,:root[data-theme=graphite] .nt.h4,:root[data-theme=nord] .nt.h4,:root[data-theme=forest] .nt.h4,:root[data-theme=midnight] .nt.h4,:root[data-theme=solar] .nt.h4,:root[data-dark] .nt.h4{background:rgba(70,160,255,.42)}
+:root[data-theme=dark] .nt.h5,:root[data-theme=graphite] .nt.h5,:root[data-theme=nord] .nt.h5,:root[data-theme=forest] .nt.h5,:root[data-theme=midnight] .nt.h5,:root[data-theme=solar] .nt.h5,:root[data-dark] .nt.h5{background:rgba(255,150,40,.38)}
 .ln.flash{background-color:color-mix(in srgb,var(--text) 10%,transparent);box-shadow:inset 3px 0 0 var(--acc);transition:background-color .3s,box-shadow .3s}
 .nt.flash{outline:2px solid var(--acc);outline-offset:1px}
 #npal{position:fixed;z-index:75;display:none;align-items:center;gap:3px;padding:4px 6px;background:var(--surf);border:1px solid var(--line);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.28);user-select:none;-webkit-user-select:none}
@@ -482,7 +490,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
     <label>읽기 모드 (한 번에 바꾸기)</label>
     <div id="presets" style="display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px"><button class="sm" data-p="paper">종이</button><button class="sm" data-p="dark">어둡게</button><button class="sm" data-p="big">큰 글씨</button><button class="sm" data-p="reset">기본</button></div>
     <label>색상 테마</label>
-    <select id="theme"><option value="">기본 (청록)</option><option value="light">밝은 파랑</option><option value="paper">종이</option><option value="dark">남색 (어두움)</option><option value="graphite">차콜 (어두움)</option><option value="nord">노드 (어두움)</option><option value="sage">세이지 (연한 녹색)</option><option value="lavender">라벤더 (연보라)</option><option value="rose">로즈 (연분홍)</option><option value="forest">숲 (어두운 녹색)</option><option value="midnight">미드나이트 (검정)</option><option value="solar">솔라 (어두운 청록)</option></select>
+    <select id="theme"><optgroup label="밝은 테마"><option value="">기본 (청록)</option><option value="light">밝은 파랑</option><option value="sky">하늘</option><option value="mono">모노 (흑백)</option><option value="hc">고대비</option><option value="paper">종이</option><option value="sand">모래</option><option value="sage">세이지</option><option value="lavender">라벤더</option><option value="rose">로즈</option></optgroup><optgroup label="어두운 테마"><option value="dim">어스름 (부드러운 어두움)</option><option value="graphite">차콜</option><option value="dark">남색</option><option value="ocean">심해</option><option value="nord">노드</option><option value="solar">솔라</option><option value="forest">숲</option><option value="plum">자두</option><option value="ember">잿불</option><option value="midnight">미드나이트 (검정)</option></optgroup></select>
     <div class="g2">
       <div><label>글자 크기</label><select id="fsz"><option value="12">아주 작게</option><option value="13">조밀</option><option value="14">작게 (PC 기본)</option><option value="16">보통</option><option value="18">크게</option><option value="20">아주 크게</option></select></div>
       <div><label>줄 간격</label><select id="lhs"><option value="">기본</option><option value="1.3">좁게</option><option value="1.7">넓게</option><option value="2">아주 넓게</option></select></div>
@@ -544,7 +552,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.50";
+const VERSION = "10.51";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -612,15 +620,20 @@ try {                                                            // v10.45: PC �
     localStorage.setItem("lv_d45", "1");
   }
 } catch (e) {}
+const THEMES = { light: [["", "기본 (청록)"], ["light", "밝은 파랑"], ["sky", "하늘"], ["mono", "모노 (흑백)"], ["hc", "고대비"], ["paper", "종이"], ["sand", "모래"], ["sage", "세이지"], ["lavender", "라벤더"], ["rose", "로즈"]],
+  dark: [["dim", "어스름"], ["graphite", "차콜"], ["dark", "남색"], ["ocean", "심해"], ["nord", "노드"], ["solar", "솔라"], ["forest", "숲"], ["plum", "자두"], ["ember", "잿불"], ["midnight", "미드나이트"]] };
+const DARK = new Set(THEMES.dark.map((x) => x[0]));
 function applyPrefs() {
   const th = LS.get("lv_theme", "");
   if (th) document.documentElement.dataset.theme = th; else delete document.documentElement.dataset.theme;
+  if (DARK.has(th)) document.documentElement.dataset.dark = "1"; else delete document.documentElement.dataset.dark;
   document.documentElement.style.setProperty("--fs", LS.get(FSK(), FSD()) + "px");
   const lh = LS.get("lv_lh", ""), bw = LS.get("lv_bw", "");
   if (lh) document.documentElement.style.setProperty("--lh", lh); else document.documentElement.style.removeProperty("--lh");
   if (bw) document.documentElement.style.setProperty("--bw", bw + "px"); else document.documentElement.style.removeProperty("--bw");
   const mc = document.querySelector('meta[name=theme-color]');
-  if (mc) mc.content = getComputedStyle(document.documentElement).getPropertyValue("--acc").trim() || "#0E7C6B";
+  if (mc) mc.content = getComputedStyle(document.documentElement).getPropertyValue("--surf").trim() || "#ffffff";     // 설치한 앱 창 제목줄도 머리줄과 같은 색
+  try { document.documentElement.style.colorScheme = document.documentElement.dataset.dark ? "dark" : "light"; } catch (e) {}
 }
 applyPrefs();
 const PRESETS = { paper: ["paper", 14, "1.7", "900"], dark: ["graphite", 14, "1.7", "900"], big: ["", 18, "1.7", "720"], reset: ["", null, "", ""] };
@@ -1815,9 +1828,11 @@ $("#bHist").onclick = navBack;
 // ---- 글자 크기·테마 빠른 버튼
 function fsStep(d) { const k = "lv_fsd"; LS.set(k, Math.max(10, Math.min(20, LS.get(k, 12) + d))); applyPrefs(); }
 $("#fMinus").onclick = () => fsStep(-1); $("#fPlus").onclick = () => fsStep(1);
+
 $("#bTheme").onclick = (e) => {
-  const r = e.currentTarget.getBoundingClientRect();
-  showMenu(r.left, r.bottom + 2, [["", "기본 (청록)"], ["light", "밝은 파랑"], ["paper", "종이"], ["dark", "남색"], ["graphite", "차콜"], ["nord", "노드"], ["sage", "세이지"], ["lavender", "라벤더"], ["rose", "로즈"], ["forest", "숲"], ["midnight", "미드나이트"], ["solar", "솔라"]].map(([v, t]) => [(LS.get("lv_theme", "") === v ? "✓ " : "   ") + t, () => { LS.set("lv_theme", v); applyPrefs(); }]));
+  const r = e.currentTarget.getBoundingClientRect(), now = LS.get("lv_theme", "");
+  const it = (x) => [(x[0] === now ? "✓ " : "   ") + x[1], () => { LS.set("lv_theme", x[0]); applyPrefs(); if ($("#theme")) $("#theme").value = x[0]; }];
+  showMenu(r.left - 60, r.bottom + 2, [["밝은 테마", null, "mh"]].concat(THEMES.light.map(it), [["어두운 테마", null, "mh"]], THEMES.dark.map(it)));
 };
 // ---- 왼쪽·오른쪽 칸 폭 끌어 조절(더블클릭=처음 폭)
 (function () {
