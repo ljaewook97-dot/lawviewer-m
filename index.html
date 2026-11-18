@@ -586,7 +586,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.59";
+const VERSION = "10.60";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1554,7 +1554,7 @@ async function csBuild(key, force) {
     const it = CS.list[i];
     if (it.t.deleg) {
       const rs = await csLoadDeleg(it.t); if (tok !== CS.tok) return;
-      const add = (rs || []).map((r) => ({ t: { id: "d|" + r.mst + "|" + r.art.key, name: r.lawname, n: r.art.n, b: r.art.b || 0, subs: [], ctx: r.mst, as: [], via: it.t.c.to }, r }));
+      const add = (rs || []).map((r) => ({ t: { id: "d|" + r.mst + "|" + r.art.key, name: r.lawname, n: r.art.n, b: r.art.b || 0, subs: [], ctx: r.mst, as: [], via: it.t.c.to, dsrc: it.t.id }, r }));
       if (add.length) { CS.list.splice(i, 1, ...add); i += add.length - 1; } else it.r = null;
       csPaint(); continue;
     }
@@ -1598,10 +1598,12 @@ let csHT = 0;
 $("#docBody").addEventListener("mouseover", (e) => {             // 왼쪽 인용에 마우스 -> 오른쪽의 그 조문 강조(0.6초 머물면 그 자리로)
   if (!SPLIT || SPLIT.mode !== "cite") return;
   const a = e.target.closest && e.target.closest("a.c"); if (!a) return;
-  const c = CITES[+a.dataset.c]; if (!c || c.kind || !c.n) return;
-  const id = csId(c), i = CS.list.findIndex((x) => x.t.id === id); if (i < 0) return;
-  const card = $("#doc2Body").querySelector('.csc[data-ci="' + i + '"]'); if (!card) return;
-  $("#doc2Body").querySelectorAll(".csc.on").forEach((x) => x.classList.remove("on")); card.classList.add("on");
+  const c = CITES[+a.dataset.c]; if (!c || !(c.kind === "d" || (!c.kind && c.n))) return;
+  const id = c.kind === "d" ? "d|" + c.to : csId(c);                // 대통령령으로 -> 위임받은 카드들 모두
+  const idx = []; CS.list.forEach((x, i) => { if (x.t.id === id || x.t.dsrc === id) idx.push(i); }); if (!idx.length) return;
+  const cards = idx.map((i) => $("#doc2Body").querySelector('.csc[data-ci="' + i + '"]')).filter(Boolean); if (!cards.length) return;
+  const card = cards[0];
+  $("#doc2Body").querySelectorAll(".csc.on").forEach((x) => x.classList.remove("on")); cards.forEach((x) => x.classList.add("on"));
   clearTimeout(csHT); csHT = setTimeout(() => { if (a.matches(":hover")) { const box = $("#doc2"), r = card.getBoundingClientRect(), br = box.getBoundingClientRect(); if (r.top < br.top + 40 || r.top > br.bottom - 60) box.scrollTo({ top: box.scrollTop + r.top - br.top - 40, behavior: "smooth" }); } }, 600);
 });
 $("#docBody").addEventListener("mouseout", (e) => { if (e.target.closest && e.target.closest("a.c")) { clearTimeout(csHT); $("#doc2Body").querySelectorAll(".csc.on").forEach((x) => x.classList.remove("on")); } });
