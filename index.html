@@ -46,9 +46,10 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .sbox input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;background:var(--surf);color:var(--text)}
 .btn{background:var(--acc);color:var(--acc-t);border-radius:10px;padding:0 16px;font-weight:700;min-height:44px}
 .btn.g{background:var(--soft);color:var(--sub);border:1px solid var(--line)}
-.tabs{display:flex;gap:6px;margin:4px 0 10px}
-.tabs button{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:10px 4px;border-radius:10px;background:var(--soft);color:var(--sub);font-weight:700;border:1px solid var(--line)}
-.tabs button.on{background:var(--acc);color:var(--acc-t);border-color:var(--acc)}
+.tabs{display:flex;gap:0;margin:4px 0 10px;border-bottom:1px solid var(--line)}
+.tabs button{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:10px 4px;border-radius:0;background:none;color:var(--muted);font-weight:700;border:0;border-bottom:2.5px solid transparent;margin-bottom:-1px}
+.tabs button:hover{color:var(--text)}
+.tabs button.on{background:none;color:var(--acc-d);border-bottom-color:var(--acc)}
 .card{background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:8px;align-items:center}
 .card .m{flex:1;min-width:0}
 .card .nm{font-weight:700;line-height:1.35}
@@ -74,6 +75,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .axt th,.axt td{border:1px solid var(--line);padding:5px 8px;vertical-align:top;text-align:left;word-break:keep-all;overflow-wrap:anywhere}
 .axt th{background:color-mix(in srgb,var(--text) 6%,transparent);font-weight:700}
 #doc .body{padding:4px 14px 120px}
+.head.hj{font-size:1.14em}.head.hp{font-size:1.25em}.head.hs{font-size:1em;color:var(--sub)}
 .head{margin:26px 0 10px;text-align:left;font-weight:700;color:var(--acc-d);font-size:1.08em;border-left:3px solid var(--acc);padding:1px 0 1px 8px}
 .art{padding:14px 0 12px;border-bottom:1px solid var(--line)}b.al,.ln.l0>b:first-child{font-weight:800;color:var(--acc-d);font-size:1.06em}
 .art.cur{background:color-mix(in srgb,var(--text) 4%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--acc) 28%,var(--line));border-radius:6px;border-bottom-color:transparent}
@@ -214,8 +216,8 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .nc .in{font-size:.9em;color:var(--text);white-space:normal;margin-top:3px;line-height:1.4}
 .nc .nm{font-size:.82em;color:var(--sub)}
 .nfil{display:flex;gap:4px;margin:0 0 6px;flex-wrap:wrap}
-.lg{margin-top:8px}.lgh{display:flex;align-items:center;gap:6px;width:100%;text-align:left;padding:8px 10px;background:var(--soft);border:1px solid var(--line);border-radius:8px;font-weight:700;color:var(--acc-d);line-height:1.3}
-.lgh .car{flex:none;width:.9em;font-size:.8em;transition:transform .12s}.lgh .lgn{flex:1;min-width:0}.lgh .cnt{flex:none;font-weight:600;color:var(--muted);font-size:.82em}
+.lg{margin-top:8px}.lgh{display:flex;align-items:center;gap:6px;width:100%;text-align:left;padding:6px 9px;font-size:.92em;background:var(--soft);border:1px solid var(--line);border-radius:8px;font-weight:700;color:var(--acc-d);line-height:1.3}
+.lgh .car{flex:none;width:.9em;font-size:.8em;transition:transform .12s}.lgh .lgn{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.lgh .cnt{flex:none;font-weight:600;color:var(--muted);font-size:.82em}
 .lg.c .car{transform:rotate(-90deg)}.lg.c .lgb{display:none}.lgb{margin:2px 0 0 8px;padding-left:6px;border-left:2px solid var(--line)}
 .hr{padding:7px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}.hr:hover{background:var(--acc-soft)}
 .hr .h1{font-weight:700;line-height:1.3;font-size:.92em}.hr .h1 span{font-weight:600;color:var(--sub)}
@@ -269,7 +271,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   .sbox select{padding:0 2px}
   .btn{min-height:26px;padding:0 10px;border-radius:5px;font-size:.9em}
   .tabs{margin:2px 0 6px;gap:3px}
-  .tabs button{padding:3px 0;font-size:.78em;border-radius:5px}
+  .tabs button{padding:5px 0 4px;font-size:.8em}
   #tT{display:block}
   .card{padding:4px 7px;border-radius:5px;margin-bottom:3px}
   .card .nm{font-size:.9em;line-height:1.25}
@@ -281,6 +283,11 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #dbar{display:flex;align-items:center;gap:4px;position:fixed;top:calc(var(--hh) + var(--th));left:var(--lw);right:var(--rw);height:var(--bh);z-index:14;padding:0 8px;background:var(--surf);border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap}
   #dbar .tb{height:24px;padding:0 8px;border-radius:5px;background:var(--soft);border:1px solid var(--line);color:var(--sub);font-size:.82em}
   #dbar .tb:hover{background:var(--acc-soft)}
+  #dbar .tb:not(.pri){background:none;border-color:transparent;color:var(--muted)}
+  #dbar .tb:not(.pri):hover{background:var(--soft);color:var(--text)}
+  #dbar .tb.pri{background:var(--acc-soft);border-color:color-mix(in srgb,var(--acc) 35%,transparent);color:var(--acc-d);font-weight:700}
+  #dbar .tb.pri:hover{background:color-mix(in srgb,var(--acc) 22%,var(--surf))}
+  #dbar .dsep{width:1px;height:16px;background:var(--line);margin:0 4px;flex:none}
   #dbar .sp{flex:1}
   #dbar .fbox{display:flex;align-items:center;gap:3px;border:1px solid var(--line);border-radius:5px;padding:0 6px;height:24px;color:var(--muted);font-size:.82em}
   #dbar .fbox input{border:0;outline:0;background:transparent;color:var(--text);font:inherit;width:140px}
@@ -329,9 +336,13 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #doc .body{padding:0 2px 50px}
   .art{padding:12px 0 10px}
   .ln{line-height:var(--lh,1.62);padding-top:.5px;padding-bottom:.5px}
-  #doc .body{max-width:var(--bw,none)}
+  #doc .body{max-width:var(--bw,none);margin-left:auto;margin-right:auto}
+  #stk{max-width:var(--bw,none);margin-left:auto;margin-right:auto}
   .fv{min-width:22px;height:22px;font-size:1em}
   .head{margin:12px 0 4px;font-size:1em}
+  .head.hp{margin:34px 0 8px;font-size:1.3em;padding:6px 0 6px 12px;border-left-width:5px}
+  .head.hj{margin:28px 0 6px;font-size:1.16em;padding:4px 0 4px 10px;border-left-width:4px;background:linear-gradient(90deg,var(--acc-soft),transparent 70%)}
+  .head.hs{margin:18px 0 4px;font-size:1.02em;color:var(--sub);border-left-width:2px}
   #ltabs{display:flex;position:fixed;top:0;left:var(--lw);right:var(--hb);height:var(--hh);z-index:21;background:transparent;overflow-x:auto;overflow-y:hidden;white-space:nowrap;align-items:flex-end;scrollbar-width:none}
   #ltabs::-webkit-scrollbar{display:none}
   #ltabs .lt{--tc:#1565C0;display:flex;align-items:center;gap:4px;padding:0 4px 0 11px;margin:6px 2px 0;height:calc(100% - 6px);box-sizing:border-box;flex:none;border:1.5px solid color-mix(in srgb,var(--tc) 55%,transparent);border-bottom:0;border-radius:5px 5px 0 0;background:var(--soft);color:var(--sub);cursor:pointer;max-width:200px;font-size:.8em}
@@ -446,7 +457,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <button class="tb" id="fPrev" title="이전 (Shift+Enter)">▲</button><button class="tb" id="fNext" title="다음 (Enter)">▼</button>
   <button class="tb" id="fClr">✕ 지우기</button><span id="fCnt" class="muted"></span><input id="gk" class="fq2" placeholder="조문 번호 (예: 52의2)" autocomplete="off" title="Ctrl+G · 조문 번호를 치고 Enter">
   <span class="sp"></span>
-  <button class="tb" id="dbTT">3단 비교</button><button class="tb" id="dbFav">☆ 즐겨찾기</button><button class="tb" id="dbCopy">조문 복사</button><button class="tb" id="dbCite" title="「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">인용 복사</button><button class="tb" id="dbWeb" title="법제처 화면에서 열기">법제처 열기</button>
+  <button class="tb pri" id="dbTT">3단 비교</button><button class="tb pri" id="dbFav">☆ 즐겨찾기</button><span class="dsep"></span><button class="tb" id="dbCopy">조문 복사</button><button class="tb" id="dbCite" title="「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">인용 복사</button><button class="tb" id="dbWeb" title="법제처 화면에서 열기">법제처 열기</button>
   <button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
 </div>
 <div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="ctx"></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
@@ -473,11 +484,11 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
     <label>색상 테마</label>
     <select id="theme"><option value="">기본 (청록)</option><option value="light">밝은 파랑</option><option value="paper">종이</option><option value="dark">남색 (어두움)</option><option value="graphite">차콜 (어두움)</option><option value="nord">노드 (어두움)</option><option value="sage">세이지 (연한 녹색)</option><option value="lavender">라벤더 (연보라)</option><option value="rose">로즈 (연분홍)</option><option value="forest">숲 (어두운 녹색)</option><option value="midnight">미드나이트 (검정)</option><option value="solar">솔라 (어두운 청록)</option></select>
     <div class="g2">
-      <div><label>글자 크기</label><select id="fsz"><option value="12">아주 작게 (PC 기본)</option><option value="13">조밀</option><option value="14">작게</option><option value="16">보통</option><option value="18">크게</option><option value="20">아주 크게</option></select></div>
+      <div><label>글자 크기</label><select id="fsz"><option value="12">아주 작게</option><option value="13">조밀</option><option value="14">작게 (PC 기본)</option><option value="16">보통</option><option value="18">크게</option><option value="20">아주 크게</option></select></div>
       <div><label>줄 간격</label><select id="lhs"><option value="">기본</option><option value="1.3">좁게</option><option value="1.7">넓게</option><option value="2">아주 넓게</option></select></div>
     </div>
     <label>본문 폭 (PC 넓은 화면)</label>
-    <select id="bws"><option value="">꽉 채움</option><option value="1100">넓게</option><option value="900">보통</option><option value="720">좁게</option></select>
+    <select id="bws"><option value="">꽉 채움</option><option value="1100">넓게</option><option value="900">보통 (기본)</option><option value="720">좁게</option></select>
   </section>
   <details class="sg"><summary><h4>동기화 (즐겨찾기·표시)</h4></summary>
     <div class="hint" style="margin-top:0">PC와 폰에서 같은 인증키끼리 즐겨찾기와 표시를 맞춥니다. 비우면 끕니다.</div>
@@ -533,7 +544,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.44";
+const VERSION = "10.45";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -541,7 +552,7 @@ const LS = {
 };
 const P = new URL(location.href).searchParams;
 const isDT = () => matchMedia("(min-width:1000px)").matches;
-const FSK = () => (isDT() ? "lv_fsd" : "lv_fs"), FSD = () => (isDT() ? 12 : 16);
+const FSK = () => (isDT() ? "lv_fsd" : "lv_fs"), FSD = () => (isDT() ? 14 : 16);
 const KIND = { law: ["법령", "law"], adm: ["행정규칙", "adm"], ordin: ["자치법규", "ordin"] };
 
 // ---------------------------------------------------------------- 엔진(워커)
@@ -594,6 +605,13 @@ function toast(t, err) {
 
 // ---------------------------------------------------------------- 설정
 let OC = LS.get("lv_oc", "");
+try {                                                            // v10.45: PC 기본 글자 14px·본문 폭 900px로(예전 기본값을 쓰던 사람만 한 번 옮김)
+  if (!localStorage.getItem("lv_d45")) {
+    if (+LS.get("lv_fsd", 12) === 12) LS.set("lv_fsd", 14);
+    if (!LS.get("lv_bw", "")) LS.set("lv_bw", "900");
+    localStorage.setItem("lv_d45", "1");
+  }
+} catch (e) {}
 function applyPrefs() {
   const th = LS.get("lv_theme", "");
   if (th) document.documentElement.dataset.theme = th; else delete document.documentElement.dataset.theme;
@@ -832,7 +850,7 @@ function paintHits() {
     if (order.length > 1) h += '<div class="lgt"><button data-all="c">모두 접기</button><button data-all="o">모두 펴기</button></div>';
     order.forEach((k) => {
       const g = by[k];
-      h += '<div class="lg' + (HOPEN.has(k) ? "" : " c") + '" data-g="' + esc(k) + '"><button class="lgh"><span class="car">▾</span><span class="tag ' + g.x.kind + '">' + KIND[g.x.kind][0] + '</span><span class="lgn">' + esc(g.x.lawname) + '</span><span class="cnt">' + g.rows.length + '건</span></button><div class="lgb">';
+      h += '<div class="lg' + (HOPEN.has(k) ? "" : " c") + '" data-g="' + esc(k) + '"><button class="lgh" title="' + esc(g.x.lawname) + '"><span class="car">▾</span><span class="tag ' + g.x.kind + '">' + KIND[g.x.kind][0] + '</span><span class="lgn">' + esc(g.x.lawname) + '</span><span class="cnt">' + g.rows.length + '건</span></button><div class="lgb">';
       g.rows.forEach(([x, i]) => { h += '<div class="hr" data-i="' + i + '"><div class="h1">' + esc(x.label || "") + " <span>" + esc(x.title || "") + "</span></div>" + (x.snippet ? '<div class="hs">' + hlTok(x.snippet, hitToks) + "</div>" : "") + "</div>"; });
       h += "</div></div>";
     });
@@ -1342,6 +1360,7 @@ function closeLTab(i) {
   cur.doc = null; CITES = []; $("#docBody").innerHTML = ""; closeSheet(); show("home"); paintLTabs(); sideKey = ""; paintSide();
   if (tab === "t") paintToc();
 }
+const headCls = (t) => /^제\s*\d+\s*편/.test(t) ? "hp" : /^제\s*\d+\s*장/.test(t) ? "hj" : "hs";
 function showDoc(d, kind, rawmst, key, fromTab) {
   d.kind = kind; d.rawmst = rawmst; noteRecent(d, kind, rawmst); if (tab === "r" && !hits.length) paintHits();
   if (isDT() && !fromTab) {
@@ -1353,7 +1372,7 @@ function showDoc(d, kind, rawmst, key, fromTab) {
   navPush(); cur.doc = d; CITES = [];
   closeSheet();
   let h = "";
-  d.items.forEach((it) => { h += it.k === "h" ? '<div class="head">' + esc(it.t) + "</div>" : artHTML(d.arts[it.key], d.mst, { fav: true, self: d.kind === "adm" && d.adm_base ? d.adm_base : d.name }); });
+  d.items.forEach((it) => { h += it.k === "h" ? '<div class="head ' + headCls(it.t) + '">' + esc(it.t) + "</div>" : artHTML(d.arts[it.key], d.mst, { fav: true, self: d.kind === "adm" && d.adm_base ? d.adm_base : d.name }); });
   if ((d.annex || []).length) {
     h += '<div class="head">별표·서식 (' + d.annex.length + ")</div>";
     d.annex.forEach((x, i) => { h += annexHTML(x, i, "ax-", d.mst, d.kind === "adm" && d.adm_base ? d.adm_base : d.name); });
@@ -2000,7 +2019,7 @@ function paintNotesList() {
     if (order.length > 1) h += '<div class="lgt"><button data-all="c">모두 접기</button><button data-all="o">모두 펴기</button></div>';
     order.forEach((k) => {
       const g = by[k];
-      h += '<div class="lg' + (COLL.has(k) ? " c" : "") + '" data-g="' + esc(k) + '"><button class="lgh"><span class="car">▾</span><span class="lgn">' + esc(g.law) + '</span><span class="cnt">' + g.cnt + '건</span></button><div class="lgb">';
+      h += '<div class="lg' + (COLL.has(k) ? " c" : "") + '" data-g="' + esc(k) + '"><button class="lgh" title="' + esc(g.law) + '"><span class="car">▾</span><span class="lgn">' + esc(g.law) + '</span><span class="cnt">' + g.cnt + '건</span></button><div class="lgb">';
       g.ord.forEach((ak) => {
         const a2 = g.arts[ak]; h += '<div class="nsub">' + esc(a2.lab) + "</div>";
         a2.items.forEach((n) => { h += '<div class="nr nc" data-id="' + n.id + '"><div class="nrt"><span class="nt ' + n.c + '">' + esc(n.t) + "</span>" + (n.lost ? ' <span class="muted">· (본문이 바뀌어 위치를 못 찾음)</span>' : "") + (n.m ? '<div class="nmm">📝 ' + esc(n.m) + "</div>" : "") + '</div><button class="sm" data-x="' + n.id + '" title="지우기">✕</button></div>'; });
