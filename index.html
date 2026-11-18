@@ -351,6 +351,16 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #doc2 .s2h .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #doc2 .s2h button{border:1px solid var(--line);border-radius:5px;padding:1px 8px;font-size:.92em;font-weight:400;color:var(--sub);background:var(--surf)}
   #doc2 .s2h button:hover{background:var(--acc-soft)}
+  #doc2 .csc{background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:6px 12px 8px;margin:8px 0;transition:box-shadow .15s,border-color .15s}
+  #doc2 .csc.on{border-color:var(--acc);box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 35%,transparent)}
+  #doc2 .csc.top{border-color:color-mix(in srgb,var(--acc) 50%,var(--line));background:color-mix(in srgb,var(--acc-soft) 45%,var(--surf))}
+  #doc2 .csh{font-size:.84em;font-weight:700;color:var(--acc-d);cursor:pointer;display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding:2px 0 4px;border-bottom:1px dashed var(--line);margin-bottom:4px}
+  #doc2 .csh:hover{text-decoration:underline}
+  #doc2 .csh .cn{color:var(--sub)}
+  #doc2 .csh .lk{font-style:normal;color:#fff;border-radius:4px;padding:0 5px;font-size:.85em}
+  #doc2 .csc .art{padding:2px 0;border:0}
+  #doc2 .csx{margin-left:auto;border:0!important;background:none!important;color:var(--muted);font-weight:400}
+  #doc2 .s2h button.on{background:var(--acc-soft);color:var(--acc-d);border-color:var(--acc)}
   #dbSplit.on{background:var(--acc-soft);color:var(--acc-d);border-color:color-mix(in srgb,var(--acc) 35%,transparent)}
   #doc .body{padding:0 2px 50px}
   .art{padding:12px 0 10px}
@@ -478,7 +488,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <button class="tb" id="fClr">✕ 지우기</button><span id="fCnt" class="muted"></span><input id="gk" class="fq2" placeholder="조문 번호 (예: 52의2)" autocomplete="off" title="Ctrl+G · 조문 번호를 치고 Enter">
   <span class="sp"></span>
   <button class="tb pri" id="dbTT">3단 비교</button><button class="tb pri" id="dbFav">☆ 즐겨찾기</button><span class="dsep"></span><button class="tb" id="dbCopy">조문 복사</button><button class="tb" id="dbCite" title="「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">인용 복사</button><button class="tb" id="dbWeb" title="법제처 화면에서 열기">법제처 열기</button>
-  <button class="tb" id="dbSplit" title="열어 둔 다른 법령을 오른쪽에 나란히 보기 (탭을 오른쪽 클릭해도 됩니다)">⫴ 나란히</button><button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
+  <button class="tb" id="dbSplit" title="오른쪽 칸: 지금 보는 조문이 인용하는 조문을 따라 보여 줍니다(오른쪽 칸 '바꾸기 ▾'에서 다른 법령 나란히 보기도 가능)">⫴ 인용 칸</button><button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
 </div>
 <div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="ctx"></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
 <div class="view" id="doc"><div id="sumBox" class="sumbox"></div><div id="stk" class="stk" style="display:none"></div><div class="body" id="docBody"></div></div>
@@ -565,7 +575,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.53";
+const VERSION = "10.54";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1311,7 +1321,11 @@ document.addEventListener("click", (e) => {
   if (!open) { const r = a.getBoundingClientRect(); if (r.top < 0) { const d = $("#doc"); d.scrollTop += r.top - 8; } }
 });
 function bindCites(root) {
-  root.querySelectorAll("a.c").forEach((a) => (a.onclick = (e) => { e.preventDefault(); openCite(CITES[+a.dataset.c], a.closest("#sheet,#sheet2") ? 2 : 1); }));
+  root.querySelectorAll("a.c").forEach((a) => (a.onclick = (e) => {
+    e.preventDefault(); const c = CITES[+a.dataset.c];
+    if (SPLIT && SPLIT.mode === "cite" && isDT() && a.closest("#docBody") && c && !c.kind && c.n) return csPush(c);   // 인용 칸: 누른 인용을 오른쪽 맨 위로
+    openCite(c, a.closest("#sheet,#sheet2") ? 2 : 1);
+  }));
 }
 
 // ---------------------------------------------------------------- 문서 열기
@@ -1452,9 +1466,101 @@ async function openSplit(i) {                                    // 열어 둔 �
   paintSplit(); show(cur.view === "tt" ? "doc" : cur.view === "home" && !cur.doc ? "home" : "doc", cur.doc ? cur.doc.name : "");
   $("#dbSplit").classList.add("on");
 }
-function closeSplit() { SPLIT = null; document.body.classList.remove("split"); $("#doc2Body").innerHTML = ""; $("#dbSplit").classList.remove("on"); }
+// ---- 따라오는 인용 칸: 오른쪽이 왼쪽에서 보고 있는 조문을 따라가며 그 조문이 인용하는 조문을 쌓아 보여 준다(3단 비교처럼)
+const CS = { key: "", list: [], tok: 0, pin: false, cache: {}, top: null };
+const csId = (c) => (c.law || c.self || (cur.doc && cur.doc.name) || "") + "|" + c.n + ":" + (c.b || 0);
+function openCiteCol() {
+  SPLIT = { mode: "cite" }; CS.key = ""; CS.pin = false; CS.top = null;
+  $("#dbSplit").classList.add("on");
+  show(cur.view === "tt" ? "doc" : cur.view === "home" && !cur.doc ? "home" : "doc", cur.doc ? cur.doc.name : "");
+  paintSplit();
+}
+function csReadKey() {                                           // 지금 읽고 있는 조문: 본문 칸 위에서 1/4 지점에 걸친 조문
+  if (!cur.doc) return "";
+  const box = $("#doc").getBoundingClientRect(), y = box.top + Math.min(160, box.height * 0.25);
+  let last = "";
+  for (const it of cur.doc.items) {
+    if (it.k !== "a") continue;
+    const el = document.getElementById("a-" + it.key); if (!el) continue;
+    const r = el.getBoundingClientRect();
+    if (r.top <= y) last = it.key;
+    if (r.bottom > y) return r.top <= y ? it.key : last || it.key;
+  }
+  return last;
+}
+function csTargets(key) {                                        // 그 조문 안의 인용 -> 가리키는 조문 목록(같은 조문은 하나로, 항·호는 모아서)
+  const el = document.getElementById("a-" + key); if (!el) return [];
+  const m = new Map();
+  el.querySelectorAll("a.c").forEach((a) => {
+    const c = CITES[+a.dataset.c]; if (!c || c.kind || !c.n) return;
+    const name = c.law || c.self || cur.doc.name;
+    if (name === cur.doc.name && c.n + ":" + (c.b || 0) === key) return;          // 자기 자신
+    const id = csId(c);
+    if (!m.has(id)) m.set(id, { id, name, n: c.n, b: c.b || 0, subs: [], ctx: c.ctx || cur.doc.mst, as: [] });
+    const t = m.get(id); if (c.sub) t.subs.push(c.sub); t.as.push(+a.dataset.c);
+  });
+  return [...m.values()].slice(0, 14);
+}
+async function csLoad(t) {
+  const ck = t.id + "|" + JSON.stringify(t.subs);
+  if (!CS.cache[ck]) CS.cache[ck] = callQuiet("open_cite", [OC, t.name, t.n, t.b, t.subs.length ? t.subs : null, t.ctx]);
+  try { return await CS.cache[ck]; } catch (e) { delete CS.cache[ck]; return null; }
+}
+async function csBuild(key, force) {
+  if (!SPLIT || SPLIT.mode !== "cite" || !cur.doc) return;
+  if (!force && key === CS.key) return;
+  CS.key = key; const tok = ++CS.tok;
+  CS.list = csTargets(key).map((t) => ({ t, r: undefined }));
+  csPaint();
+  for (const it of CS.list) { it.r = await csLoad(it.t); if (tok !== CS.tok) return; csPaint(); }
+}
+async function csPush(c) {                                       // 왼쪽에서 누른 인용: 오른쪽 맨 위(📍)에
+  const t = { id: csId(c), name: c.law || c.self || cur.doc.name, n: c.n, b: c.b || 0, subs: c.sub ? [c.sub] : [], ctx: c.ctx || cur.doc.mst, as: [] };
+  CS.top = { t, r: undefined }; csPaint(); $("#doc2").scrollTop = 0;
+  const r = await csLoad(t); if (CS.top && CS.top.t === t) { CS.top.r = r; csPaint(); $("#doc2").scrollTop = 0; }
+}
+function csCard(it, i, pinned) {
+  const r = it.r, t = it.t;
+  if (r === undefined) return '<div class="csc" data-ci="' + i + '"><div class="csh">' + esc(t.name) + " " + esc(jl(t.n, t.b)) + ' <span class="muted">불러오는 중…</span></div></div>';
+  if (!r || !r.art) return '<div class="csc" data-ci="' + i + '"><div class="csh">' + esc(t.name) + " " + esc(jl(t.n, t.b)) + ' <span class="muted">— 찾지 못했습니다</span></div></div>';
+  const d0 = { kind: "law", name: r.lawname };
+  return '<div class="csc' + (pinned ? " top" : "") + '" data-ci="' + i + '"><div class="csh" data-n="' + esc(r.lawname) + '" data-k="' + r.art.key + '" title="본문 탭으로 열기">' + (pinned ? "📍 " : "") + splitBadge(d0) + '<span class="cn">' + esc(r.lawname.replace(/\s*(시행령|시행규칙)$/, "")) + "</span> " + esc(r.art.label + " " + (r.art.title || "")) + " ↗</div>" + artHTML(r.art, r.mst, { idp: "cs" + i + "-", self: r.lawname, hl: r.hl || [] }) + "</div>";
+}
+const jl = (n, b) => "제" + n + "조" + (b ? "의" + b : "");
+function csPaint() {
+  if (!SPLIT || SPLIT.mode !== "cite") return;
+  const a = cur.doc && cur.doc.arts[CS.key];
+  $("#s2h").innerHTML = '<span class="nm">🔗 인용 따라보기 · ' + (a ? esc(a.label) : "—") + (CS.list.length ? ' <span class="muted" style="font-weight:400">(' + CS.list.length + "곳)</span>" : "") + '</span><button id="s2Pin" class="' + (CS.pin ? "on" : "") + '" title="지금 내용으로 고정(스크롤해도 바뀌지 않음)">' + (CS.pin ? "📌 고정됨" : "📌 고정") + '</button><button id="s2Pick" title="다른 법령을 나란히 보기">바꾸기 ▾</button><button id="s2X" title="닫기">✕</button>';
+  let h = CS.top ? csCard(CS.top, "t", true) : "";
+  if (!CS.list.length) h += '<div class="empty" style="padding:30px 10px">' + (a ? esc(a.label) + " 에는 다른 조문 인용이 없습니다." : "왼쪽에서 조문을 보면 그 조문이 인용하는 조문이 여기에 나옵니다.") + "</div>";
+  CS.list.forEach((it, i) => (h += csCard(it, i, false)));
+  const b = $("#doc2Body"), keep = $("#doc2").scrollTop; b.innerHTML = h; bindCites(b); applyNotesSplit(); $("#doc2").scrollTop = keep;
+  b.querySelectorAll(".csh[data-k]").forEach((x) => (x.onclick = () => openByName(x.dataset.n, x.dataset.k)));
+  b.querySelectorAll(".csc.top").forEach((x) => { const z = document.createElement("button"); z.className = "csx"; z.textContent = "✕"; z.title = "누른 인용 닫기"; z.onclick = (e) => { e.stopPropagation(); CS.top = null; csPaint(); }; x.querySelector(".csh").appendChild(z); });
+  $("#s2X").onclick = closeSplit;
+  $("#s2Pick").onclick = (e) => pickSplit(e.currentTarget.getBoundingClientRect());
+  $("#s2Pin").onclick = () => { CS.pin = !CS.pin; if (!CS.pin) csBuild(csReadKey()); else csPaint(); };
+}
+let csTm = 0;
+$("#doc").addEventListener("scroll", () => {                     // 스크롤을 멈추고 0.4초 머문 조문 기준으로만 바꾼다
+  if (!SPLIT || SPLIT.mode !== "cite" || CS.pin) return;
+  clearTimeout(csTm); csTm = setTimeout(() => csBuild(csReadKey()), 400);
+}, { passive: true });
+let csHT = 0;
+$("#docBody").addEventListener("mouseover", (e) => {             // 왼쪽 인용에 마우스 -> 오른쪽의 그 조문 강조(0.6초 머물면 그 자리로)
+  if (!SPLIT || SPLIT.mode !== "cite") return;
+  const a = e.target.closest && e.target.closest("a.c"); if (!a) return;
+  const c = CITES[+a.dataset.c]; if (!c || c.kind || !c.n) return;
+  const id = csId(c), i = CS.list.findIndex((x) => x.t.id === id); if (i < 0) return;
+  const card = $("#doc2Body").querySelector('.csc[data-ci="' + i + '"]'); if (!card) return;
+  $("#doc2Body").querySelectorAll(".csc.on").forEach((x) => x.classList.remove("on")); card.classList.add("on");
+  clearTimeout(csHT); csHT = setTimeout(() => { if (a.matches(":hover")) { const box = $("#doc2"), r = card.getBoundingClientRect(), br = box.getBoundingClientRect(); if (r.top < br.top + 40 || r.top > br.bottom - 60) box.scrollTo({ top: box.scrollTop + r.top - br.top - 40, behavior: "smooth" }); } }, 600);
+});
+$("#docBody").addEventListener("mouseout", (e) => { if (e.target.closest && e.target.closest("a.c")) { clearTimeout(csHT); $("#doc2Body").querySelectorAll(".csc.on").forEach((x) => x.classList.remove("on")); } });
+function closeSplit() { CS.tok++; CS.top = null; SPLIT = null; document.body.classList.remove("split"); $("#doc2Body").innerHTML = ""; $("#dbSplit").classList.remove("on"); }
 function paintSplit() {                                          // 오른쪽 칸을 그린다(본문을 다시 그릴 때마다 함께 — 인용 번호가 본문과 이어지게)
   if (!SPLIT) return;
+  if (SPLIT.mode === "cite") { CS.key = ""; setTimeout(() => { if (SPLIT && SPLIT.mode === "cite") { if (CS.pin) csPaint(); else csBuild(csReadKey(), true); } }, 80); return; }
   const d = SPLIT.d, self = d.kind === "adm" && d.adm_base ? d.adm_base : d.name, keep = $("#doc2").scrollTop;
   let h = "";
   d.items.forEach((it) => { h += it.k === "h" ? '<div class="head ' + headCls(it.t) + '">' + esc(it.t) + "</div>" : artHTML(d.arts[it.key], d.mst, { idp: "s2-", self }); });
@@ -1468,12 +1574,13 @@ function paintSplit() {                                          // 오른쪽 �
   $("#s2Swap").onclick = () => { const i = ltabs.findIndex((t) => t.d === d), j = ltabs.findIndex((t) => t.d === cur.doc); if (i < 0 || j < 0) return; const sc = $("#doc2").scrollTop, mc = $("#doc").scrollTop; SPLIT = { d: cur.doc, scroll: mc }; ltabs[i].scroll = sc; switchLTab(i); };
 }
 function pickSplit(r) {
-  const items = ltabs.map((t, i) => [(SPLIT && SPLIT.d === t.d ? "✓ " : "   ") + (t.d === cur.doc ? "(지금 본문) " : "") + t.d.name, () => openSplit(i)]);
+  const items = ltabs.map((t, i) => [(SPLIT && SPLIT.mode !== "cite" && SPLIT.d === t.d ? "✓ " : "   ") + (t.d === cur.doc ? "(지금 본문) " : "") + t.d.name, () => openSplit(i)]);
   if (!items.length) return toast("먼저 법령을 둘 이상 여세요", true);
-  showMenu(r.left, r.bottom + 2, [["오른쪽에 나란히 볼 법령", null, "mh"]].concat(items, SPLIT ? [["나란히 보기 닫기", closeSplit, "dz"]] : []));
+  showMenu(r.left, r.bottom + 2, [["오른쪽 칸", null, "mh"], [(SPLIT && SPLIT.mode === "cite" ? "✓ " : "   ") + "🔗 인용 따라보기 (지금 조문이 인용하는 조문)", openCiteCol], ["다른 법령 나란히 보기", null, "mh"]].concat(items, SPLIT ? [["오른쪽 칸 닫기", closeSplit, "dz"]] : []));
 }
 function applyNotesSplit() {
   const root = $("#doc2Body"); if (!SPLIT || !root) return;
+  if (SPLIT.mode === "cite") { unwrapNotes(root); return; }
   const d = SPLIT.d; unwrapNotes(root);
   NOTES.filter((n) => n.law === d.name && n.kind === d.kind).forEach((n) => {
     const ln = root.querySelector('.ln[data-k="' + n.key + '"][data-i="' + n.li + '"]'); if (!ln) return;
@@ -1864,7 +1971,7 @@ $("#dbWeb").onclick = async () => {
   const d = cur.doc; if (!d) return toast("먼저 법령을 여세요", true);
   try { const u = await call("web_url", [d.kind, d.name, d.arts[sideKey] ? sideKey : ""], ""); window.open(u, "_blank", "noopener"); } catch (e) { toast("법제처 주소를 만들지 못했습니다", true); }
 };
-$("#dbSplit").onclick = (e) => { if (SPLIT) return closeSplit(); pickSplit(e.currentTarget.getBoundingClientRect()); };
+$("#dbSplit").onclick = (e) => { if (SPLIT) return closeSplit(); if (!cur.doc) return toast("먼저 법령을 여세요", true); openCiteCol(); };
 $("#dbTT").onclick = () => { if (!cur.doc) return toast("먼저 법령을 여세요", true); $("#bTT").click(); };
 $("#dbFav").onclick = () => { if (!cur.doc) return toast("먼저 법령을 여세요", true); toggleFav(cur.doc, ""); paintDocFav(); };
 // ---- 이전에 보던 조문으로(◀ 뒤로, Alt+←)
@@ -2012,7 +2119,7 @@ function applyNotes() {
 function selParts() {                                    // 지금 드래그한 글을 줄 단위 조각으로(본문, 또는 3단 비교의 한 칸)
   const sel = getSelection(); if (!sel || !sel.rangeCount || sel.isCollapsed) return [];
   const r = sel.getRangeAt(0), body = $("#docBody"), tt = $("#tt");
-  const s2 = $("#doc2Body"), inS2 = SPLIT && s2.contains(r.commonAncestorContainer);
+  const s2 = $("#doc2Body"), inS2 = SPLIT && SPLIT.mode !== "cite" && s2.contains(r.commonAncestorContainer);
   const inDoc = body.contains(r.commonAncestorContainer) && cur.doc, inTT = !inDoc && !inS2 && TT && tt.classList.contains("on") && tt.contains(r.commonAncestorContainer);
   if (!inDoc && !inTT && !inS2) return [];
   const root = inDoc ? body : inS2 ? s2 : tt;
