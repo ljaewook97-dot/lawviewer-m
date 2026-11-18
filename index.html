@@ -586,7 +586,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.56";
+const VERSION = "10.57";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1492,18 +1492,21 @@ function openCiteCol() {
   show(cur.view === "tt" ? "doc" : cur.view === "home" && !cur.doc ? "home" : "doc", cur.doc ? cur.doc.name : "");
   paintSplit();
 }
-function csReadKey() {                                           // 지금 읽고 있는 조문: 본문 칸 위에서 1/4 지점에 걸친 조문
+function csReadKey() {                                           // 지금 읽고 있는 조문: ① 눌러서 고른 조문(테두리)이 화면에 보이면 그것 ② 아니면 화면 위쪽 절반에서 가장 많이 보이는 조문
   if (!cur.doc) return "";
-  const box = $("#doc").getBoundingClientRect(), y = box.top + Math.min(160, box.height * 0.25);
-  let last = "";
+  const box = $("#doc").getBoundingClientRect(), top = box.top + 40, bot = box.top + box.height * 0.6;
+  const sel = $("#docBody .art.cur");
+  if (sel && sel.id.startsWith("a-")) { const r = sel.getBoundingClientRect(); if (r.bottom > top + 30 && r.top < box.bottom - 30) return sel.id.slice(2); }
+  let best = "", bv = 0;
   for (const it of cur.doc.items) {
     if (it.k !== "a") continue;
     const el = document.getElementById("a-" + it.key); if (!el) continue;
     const r = el.getBoundingClientRect();
-    if (r.top <= y) last = it.key;
-    if (r.bottom > y) return r.top <= y ? it.key : last || it.key;
+    if (r.top > bot) break;
+    const v = Math.min(r.bottom, bot) - Math.max(r.top, top);
+    if (v > bv) { bv = v; best = it.key; }
   }
-  return last;
+  return best;
 }
 function csTargets(key) {                                        // 그 조문 안의 인용 -> 가리키는 조문 목록(같은 조문은 하나로, 항·호는 모아서)
   const el = document.getElementById("a-" + key); if (!el) return [];
@@ -1929,6 +1932,7 @@ function setCurArt(key) {
   const el = document.getElementById("a-" + key);
   if (el) el.classList.add("cur");
   sideKey = key; paintSide();
+  if (SPLIT && SPLIT.mode === "cite" && !CS.pin) { clearTimeout(csTm); csBuild(key); }     // 조문을 누르면 인용 칸도 바로 그 조문으로
 }
 const sameLaw = (a, b) => String(a || "").replace(/\s/g, "") === String(b || "").replace(/\s/g, "");
 async function fillCiteTitles(S, d, key) {            // 인용 조문 옆에 조문 제목을 붙인다(같은 법은 바로, 다른 법은 이미 받아 둔 것만)
