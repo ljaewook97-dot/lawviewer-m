@@ -47,6 +47,7 @@ class _SyncPool:
 _cf.ThreadPoolExecutor = _SyncPool
 
 _NET = {}
+_NETS = {}          # 기기에 저장해 둔 응답(글 그대로) — 쓸 때 한 번만 해석
 
 
 def getter(url, params, timeout=25, tries=2):
@@ -58,6 +59,12 @@ def getter(url, params, timeout=25, tries=2):
     ck = full.replace(params.get("OC", ""), "")
     if ck in _NET:
         return _NET[ck]
+    if ck in _NETS:
+        try:
+            _NET[ck] = json.loads(_NETS.pop(ck))
+            return _NET[ck]
+        except ValueError:
+            _NETS.pop(ck, None)
     last = None
     for _ in range(tries):
         try:
@@ -635,7 +642,21 @@ def web_url(kind, name, key=""):
     return L.web_url(L.parse_query(q))
 
 
-FUNCS = {"cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "compare_ver": compare_ver, "chain": chain, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
+def net_export(known):
+    """이번 접속에서 새로 받은 법령 본문 응답(일련번호마다 내용이 정해져 있음) -> {키: JSON 글}. 기기에 저장하는 용도"""
+    ks = set(known or [])
+    return {k: json.dumps(v, ensure_ascii=False) for k, v in list(_NET.items()) if "lawService.do" in k and k not in ks}
+
+
+def net_preload(items):
+    """기기에 저장해 둔 응답을 미리 올려 둔다(해석은 쓸 때)"""
+    for k, v in (items or {}).items():
+        if k not in _NET:
+            _NETS[k] = v
+    return len(items or {})
+
+
+FUNCS = {"net_export": net_export, "net_preload": net_preload, "cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "compare_ver": compare_ver, "chain": chain, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
          "tt_open": tt_open, "fav_rel": fav_rel, "tt_row": tt_row, "set_api_base": set_api_base}
 
 

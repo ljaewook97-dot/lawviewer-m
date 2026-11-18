@@ -32,7 +32,7 @@
 :root[data-theme=dim]{--bg:#2b2d31;--surf:#323439;--soft:#393b41;--line:#4a4d54;--text:#dcdde0;--sub:#c0c2c7;--muted:#9a9ca3;--acc:#8ab4f8;--acc-d:#aecbfa;--acc-soft:#3c4655;--acc-t:#14202f;--hl:#6b5a24;--subhl:#4a4224;--link:#aecbfa;--danger:#f28b82}
 :root[data-theme=ember]{--bg:#1a1410;--surf:#231b15;--soft:#2c221a;--line:#46362a;--text:#f3e9df;--sub:#d8c8b8;--muted:#a8927e;--acc:#f0954a;--acc-d:#ffb57a;--acc-soft:#3e2c1e;--acc-t:#1d0f04;--hl:#6b5224;--subhl:#463722;--link:#ffb57a;--danger:#ff7b7b}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;font-size:var(--fs);overscroll-behavior:none;word-break:keep-all;overflow-wrap:anywhere}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--ff,"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif);font-size:var(--fs);overscroll-behavior:none;word-break:keep-all;overflow-wrap:anywhere}
 input,button,select,textarea{word-break:keep-all}
 button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .hdr{position:fixed;top:0;left:0;right:0;z-index:20;background:var(--surf);color:var(--text);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:4px;padding:calc(env(safe-area-inset-top) + 6px) 8px 6px;min-height:52px}
@@ -85,7 +85,11 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 #doc .body{padding:4px 14px 120px}
 .head.hj{font-size:1.14em}.head.hp{font-size:1.25em}.head.hs{font-size:1em;color:var(--sub)}
 .head{margin:26px 0 10px;text-align:left;font-weight:700;color:var(--acc-d);font-size:1.08em;border-left:3px solid var(--acc);padding:1px 0 1px 8px}
-.art{padding:14px 0 12px;border-bottom:1px solid var(--line)}b.al,.ln.l0>b:first-child{font-weight:800;color:var(--acc-d);font-size:1.06em}
+.art{padding:14px 0 12px;border-bottom:1px solid var(--line)}
+@keyframes fin{from{opacity:0}to{opacity:1}}
+#docBody.fin,#tt.fin{animation:fin .16s ease-out}#ctx.on,.ttgo{animation:fin .12s ease-out}
+@media (prefers-reduced-motion:reduce){#docBody.fin,#tt.fin,#ctx.on,.ttgo{animation:none}}
+#docBody .art{content-visibility:auto;contain-intrinsic-size:auto 460px}   /* 화면 밖 조문은 계산을 건너뛴다(긴 법령이 빨리 열림). 높이는 아래 cvSize 가 미리 어림해 둔다 */b.al,.ln.l0>b:first-child{font-weight:800;color:var(--acc-d);font-size:1.06em}
 .art.cur{background:color-mix(in srgb,var(--text) 4%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--acc) 28%,var(--line));border-radius:6px;border-bottom-color:transparent}
 .ln{line-height:var(--lh,1.75);margin:0;padding-top:1px;padding-bottom:1px;word-break:keep-all;overflow-wrap:anywhere;--gd:color-mix(in srgb,var(--muted) 38%,transparent);background-repeat:no-repeat;background-size:1px 100%}
 .ln.l1{padding-left:1.1em}.ln.l2{padding-left:2.2em}.ln.l3{padding-left:3.3em}.ln.l4{padding-left:4.4em}
@@ -163,7 +167,7 @@ a.c:hover{color:var(--link);border-bottom-color:var(--link);background:color-mix
 .tt .col b.al.at{cursor:pointer}
 .tt .col b.al.at:hover{text-decoration:underline;text-underline-offset:3px}
 .tt .col b.al.at::after{content:" ↗";font-weight:400;font-size:.8em;color:var(--muted)}
-.tt .col .ta+.ta{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.tt .col .ta+.ta{margin-top:16px;padding-top:16px;border-top:1px dashed var(--line)}
 .rch{display:flex;align-items:center;justify-content:space-between;font-size:.78em;font-weight:700;color:var(--muted);margin:4px 2px 4px}
 .rch button{font-size:.95em;color:var(--muted);font-weight:400}.rch button:hover{color:var(--danger)}
 .card.rc{cursor:pointer;padding:6px 10px;margin-bottom:4px}.card.rc .m{min-width:0;overflow:hidden}.card.rc .nm{display:flex;align-items:center;min-width:0;font-weight:600}.card.rc .h{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.card.rc .tag{margin-right:6px}
@@ -332,7 +336,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #busy .spin{display:none}
   #busyT{font-weight:700;color:var(--acc-d);font-size:.84em;line-height:1.35;padding-top:2px}
   .card .sm{min-width:24px;height:24px}
-  .ttg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch;flex:1;min-height:0;padding-bottom:8px}
+  .ttg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch;flex:1;min-height:0;padding-bottom:10px}
   .tt .col{margin:0;overflow-y:auto;overflow-x:hidden;min-height:0;overscroll-behavior:contain;scrollbar-width:thin}
   .tt .col .ch{top:0}
   #tt.on{display:flex;flex-direction:column;overflow:hidden}
@@ -364,10 +368,10 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #doc2 .s2h .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #doc2 .s2h button{border:1px solid var(--line);border-radius:5px;padding:1px 8px;font-size:.92em;font-weight:400;color:var(--sub);background:var(--surf)}
   #doc2 .s2h button:hover{background:var(--acc-soft)}
-  #doc2 .csc{background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:6px 12px 8px;margin:8px 0;transition:box-shadow .15s,border-color .15s}
+  #doc2 .csc{background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:9px 14px 12px;margin:13px 0;transition:box-shadow .15s,border-color .15s}
   #doc2 .csc.on{border-color:var(--acc);box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 35%,transparent)}
   #doc2 .csc.top{border-color:color-mix(in srgb,var(--acc) 50%,var(--line));background:color-mix(in srgb,var(--acc-soft) 45%,var(--surf))}
-  #doc2 .csh{font-size:.84em;font-weight:700;color:var(--acc-d);cursor:pointer;display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding:2px 0 4px;border-bottom:1px dashed var(--line);margin-bottom:4px}
+  #doc2 .csh{font-size:.84em;font-weight:700;color:var(--acc-d);cursor:pointer;display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding:3px 0 7px;border-bottom:1px dashed var(--line);margin-bottom:7px}
   #doc2 .csh:hover{text-decoration:underline}
   #doc2 .csh .cn{color:var(--sub)}
   #doc2 .csh .lk{font-style:normal;color:#fff;border-radius:4px;padding:0 5px;font-size:.85em}
@@ -532,6 +536,8 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
       <div><label>글자 크기</label><select id="fsz"><option value="12">아주 작게</option><option value="13">조밀</option><option value="14">작게 (PC 기본)</option><option value="16">보통</option><option value="18">크게</option><option value="20">아주 크게</option></select></div>
       <div><label>줄 간격</label><select id="lhs"><option value="">기본</option><option value="1.3">좁게</option><option value="1.7">넓게</option><option value="2">아주 넓게</option></select></div>
     </div>
+    <label>글꼴</label>
+    <select id="ffs"><option value="">고딕 (기본)</option><option value="m">명조·바탕 (서류 느낌)</option><option value="s">기기 기본 글꼴</option></select>
     <label>본문 폭 (PC 넓은 화면)</label>
     <select id="bws"><option value="">꽉 채움</option><option value="1100">넓게</option><option value="900">보통 (기본)</option><option value="720">좁게</option></select>
   </section>
@@ -589,7 +595,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.61";
+const VERSION = "10.62";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -602,12 +608,37 @@ const KIND = { law: ["법령", "law"], adm: ["행정규칙", "adm"], ordin: ["�
 
 // ---------------------------------------------------------------- 엔진(워커)
 let worker = null, nid = 1, pend = {}, ready = false, bootWait = [];
+// ---- 받은 법령 본문을 이 기기에 저장해 두고 다음 접속에 다시 쓴다(법제처 일련번호마다 내용이 정해져 있어 바뀌지 않음)
+const NETK = new Set(), NET_MAX = 40;                          // 이미 저장했거나 올려 둔 응답 키 / 최대 보관 개수
+let NETP = null, netTm = 0;
+const idbOpen = () => new Promise((res, rej) => { try { const r = indexedDB.open("lv_net", 1); r.onupgradeneeded = () => r.result.createObjectStore("net", { keyPath: "k" }); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); } catch (e) { rej(e); } });
+const idbAll = (db) => new Promise((res) => { try { const q = db.transaction("net").objectStore("net").getAll(); q.onsuccess = () => res(q.result || []); q.onerror = () => res([]); } catch (e) { res([]); } });
+function netBoot() {                                            // 엔진 시작과 함께: 저장해 둔 응답을 읽어 엔진에 미리 올린다(다른 호출보다 먼저)
+  return Promise.race([(async () => {
+    const db = await idbOpen(), all = await idbAll(db); if (!all.length) return;
+    const o = {}; all.forEach((x) => { o[x.k] = x.s; NETK.add(x.k); });
+    await new Promise((res) => { const id = nid++; pend[id] = () => res(); worker.postMessage({ id, fn: "net_preload", args: [o] }); });
+  })().catch(() => {}), new Promise((r) => setTimeout(r, 4000))]);
+}
+function netSoon() { clearTimeout(netTm); netTm = setTimeout(netSave, 2500); }
+async function netSave() {                                      // 새로 받은 본문 응답을 기기에 저장(오래된 것부터 정리)
+  try {
+    if (!worker || !ready) return;
+    const add = await callQuiet("net_export", [[...NETK]]); if (!add) return;
+    const ks = Object.keys(add); if (!ks.length) return;
+    const db = await idbOpen(), now = Date.now();
+    await new Promise((res) => { const tx = db.transaction("net", "readwrite"), st = tx.objectStore("net"); ks.forEach((k) => { st.put({ k, s: add[k], t: now }); NETK.add(k); }); tx.oncomplete = res; tx.onerror = res; tx.onabort = res; });
+    const all = (await idbAll(db)).sort((a, b) => b.t - a.t);
+    if (all.length > NET_MAX) await new Promise((res) => { const tx = db.transaction("net", "readwrite"), st = tx.objectStore("net"); all.slice(NET_MAX).forEach((x) => { st.delete(x.k); NETK.delete(x.k); }); tx.oncomplete = res; tx.onerror = res; tx.onabort = res; });
+  } catch (e) {}
+}
 function startWorker() {
   const qs = new URLSearchParams();
   if (P.get("pyo")) qs.set("pyo", P.get("pyo"));
   if (P.get("api")) qs.set("api", P.get("api"));
   qs.set("v", VERSION);
   worker = new Worker("worker.js?" + qs.toString());
+  NETP = netBoot();
   worker.onmessage = (e) => {
     const m = e.data;
     if (m.id === 0) {
@@ -627,9 +658,9 @@ function call(fn, args, label) {
     const id = nid++;
     pend[id] = (res) => {
       busy(false);
-      if (res.err) { toast(res.err, true); reject(new Error(res.err)); } else resolve(res.ok);
+      if (res.err) { toast(res.err, true); reject(new Error(res.err)); } else { resolve(res.ok); netSoon(); }
     };
-    worker.postMessage({ id, fn, args });
+    (NETP || Promise.resolve()).then(() => worker.postMessage({ id, fn, args }));
   });
 }
 let busyBase = "", busyT0 = 0, busyTm = null;
@@ -665,6 +696,8 @@ function applyPrefs() {
   if (th) document.documentElement.dataset.theme = th; else delete document.documentElement.dataset.theme;
   if (DARK.has(th)) document.documentElement.dataset.dark = "1"; else delete document.documentElement.dataset.dark;
   document.documentElement.style.setProperty("--fs", LS.get(FSK(), FSD()) + "px");
+  const FF = { m: '"Batang","BatangChe","Nanum Myeongjo","Noto Serif KR","AppleMyungjo",serif', s: "system-ui,sans-serif" }[LS.get("lv_ff", "")];
+  if (FF) document.documentElement.style.setProperty("--ff", FF); else document.documentElement.style.removeProperty("--ff");
   const lh = LS.get("lv_lh", ""), bw = LS.get("lv_bw", "");
   if (lh) document.documentElement.style.setProperty("--lh", lh); else document.documentElement.style.removeProperty("--lh");
   if (bw) document.documentElement.style.setProperty("--bw", bw + "px"); else document.documentElement.style.removeProperty("--bw");
@@ -675,11 +708,11 @@ function applyPrefs() {
 applyPrefs();
 const PRESETS = { paper: ["paper", 14, "1.7", "900"], dark: ["graphite", 14, "1.7", "900"], big: ["", 18, "1.7", "720"], reset: ["", null, "", ""] };
 document.querySelectorAll("#presets button").forEach((b) => (b.onclick = () => {
-  const p = PRESETS[b.dataset.p]; LS.set("lv_theme", p[0]); LS.set(FSK(), p[1] || FSD()); LS.set("lv_lh", p[2]); LS.set("lv_bw", p[3]);
+  const p = PRESETS[b.dataset.p]; LS.set("lv_theme", p[0]); LS.set(FSK(), p[1] || FSD()); LS.set("lv_lh", p[2]); LS.set("lv_bw", p[3]); if (b.dataset.p === "reset") { LS.set("lv_ff", ""); $("#ffs").value = ""; }
   $("#theme").value = p[0]; $("#fsz").value = p[1] || FSD(); $("#lhs").value = p[2]; $("#bws").value = p[3];
   applyPrefs(); toast(b.textContent + " 모드로 바꿨습니다");
 }));
-$("#bSet").onclick = () => { $("#oc").value = OC; $("#syRepo").value = LS.get("lv_syrepo", ""); $("#syTok").value = LS.get("lv_sytok", ""); $("#theme").value = LS.get("lv_theme", ""); $("#fsz").value = LS.get(FSK(), FSD()); $("#lhs").value = LS.get("lv_lh", ""); $("#bws").value = LS.get("lv_bw", ""); $("#city").value = LS.get("lv_city", "고양시"); $("#ver").textContent = "법령 뷰어 모바일 v" + VERSION + " · 법제처 국가법령정보센터 Open API"; $("#ovSet").classList.add("on"); };
+$("#bSet").onclick = () => { $("#oc").value = OC; $("#syRepo").value = LS.get("lv_syrepo", ""); $("#syTok").value = LS.get("lv_sytok", ""); $("#theme").value = LS.get("lv_theme", ""); $("#fsz").value = LS.get(FSK(), FSD()); $("#lhs").value = LS.get("lv_lh", ""); $("#bws").value = LS.get("lv_bw", ""); $("#ffs").value = LS.get("lv_ff", ""); $("#city").value = LS.get("lv_city", "고양시"); $("#ver").textContent = "법령 뷰어 모바일 v" + VERSION + " · 법제처 국가법령정보센터 Open API"; $("#ovSet").classList.add("on"); };
 $("#syNow").onclick = () => { LS.set("lv_syrepo", $("#syRepo").value.trim()); LS.set("lv_sytok", $("#syTok").value.trim()); OC = $("#oc").value.trim() || OC; syncNow(true).then(() => syncNotes(true)); };
 $("#setNo").onclick = () => $("#ovSet").classList.remove("on");
 $("#setOk").onclick = () => {
@@ -687,7 +720,7 @@ $("#setOk").onclick = () => {
   const sr = $("#syRepo").value.trim(), st = $("#syTok").value.trim(), had = LS.get("lv_syrepo", "") + LS.get("lv_sytok", "");
   LS.set("lv_syrepo", sr); LS.set("lv_sytok", st);
   if (sr && (st || isScript(sr)) && sr + st !== had) setTimeout(() => syncNow(true).then(() => syncNotes(true)), 300);
-  LS.set("lv_theme", $("#theme").value); LS.set(FSK(), parseInt($("#fsz").value, 10)); LS.set("lv_lh", $("#lhs").value); LS.set("lv_bw", $("#bws").value); LS.set("lv_city", $("#city").value.trim() || "고양시");
+  LS.set("lv_theme", $("#theme").value); LS.set(FSK(), parseInt($("#fsz").value, 10)); LS.set("lv_lh", $("#lhs").value); LS.set("lv_bw", $("#bws").value); LS.set("lv_ff", $("#ffs").value); LS.set("lv_city", $("#city").value.trim() || "고양시");
   applyPrefs(); $("#ovSet").classList.remove("on"); toast("저장했습니다");
 };
 function needOC() { if (!OC) { toast("먼저 ⚙ 설정에서 인증키(OC)를 넣어 주세요", true); return true; } return false; }
@@ -739,7 +772,7 @@ function callQuiet(fn, args) {                                  // 화면을 막
     if (!worker) { startWorker(); }
     const id = nid++;
     pend[id] = (res) => resolve(res.err ? null : res.ok);
-    worker.postMessage({ id, fn, args });
+    (NETP || Promise.resolve()).then(() => worker.postMessage({ id, fn, args }));
   });
 }
 $("#q").addEventListener("input", () => {
@@ -1367,7 +1400,8 @@ function saveTabs() {
   if (tabRestoring || !isDT()) return;
   try {
     const sc = (t) => (t.d === cur.doc ? $("#doc").scrollTop : t.scroll || 0);
-    LS.set("lv_tabs", JSON.stringify({ tt: TTTABS.map((x) => ({ b: x.base, i: x.i || 0 })), ta: cur.view === "tt" ? TTCUR : -1, a: ltabs.findIndex((t) => t.d === cur.doc), t: ltabs.map((t) => ({ k: t.d.kind || "law", m: t.d.rawmst || (t.d.kind === "law" || !t.d.kind ? t.d.mst : "") || null, n: t.d.name, d: t.d.date || "", s: Math.round(sc(t)) })) }));
+    const sa = (t) => (t.d === cur.doc ? scrollAnchor() || t.sa : t.sa) || null;
+    LS.set("lv_tabs", JSON.stringify({ tt: TTTABS.map((x) => ({ b: x.base, i: x.i || 0 })), ta: cur.view === "tt" ? TTCUR : -1, a: ltabs.findIndex((t) => t.d === cur.doc), t: ltabs.map((t) => ({ k: t.d.kind || "law", m: t.d.rawmst || (t.d.kind === "law" || !t.d.kind ? t.d.mst : "") || null, n: t.d.name, d: t.d.date || "", s: Math.round(sc(t)), sa: sa(t) })) }));
   } catch (e) {}
 }
 let saveTm = null;
@@ -1404,7 +1438,7 @@ async function restoreTabs() {                                   // 시작: 탭�
   if (!hasT && !hasTT) { tabRestoring = false; return; }
   try {
     if (hasT) {
-      s.t.forEach((t) => ltabs.push({ d: { kind: t.k, rawmst: t.m, name: t.n, date: t.d || "", stub: true }, scroll: t.s || 0 }));
+      s.t.forEach((t) => ltabs.push({ d: { kind: t.k, rawmst: t.m, name: t.n, date: t.d || "", stub: true }, scroll: t.s || 0, sa: t.sa || null }));
       const i = s.a >= 0 && s.a < ltabs.length ? s.a : 0;
       paintLTabs();
       await loadLTab(i, "열어 두었던 탭 여는 중…");
@@ -1434,9 +1468,9 @@ async function loadLTab(i, msg) {                                 // 아직 안 
     }
     catch (e) { toast((e && e.message) || "탭을 열지 못했습니다", true); return; }
   }
-  if (cur.doc) { const c = ltabs.find((x) => x.d === cur.doc); if (c) c.scroll = $("#doc").scrollTop; }
+  if (cur.doc) { const c = ltabs.find((x) => x.d === cur.doc); if (c) (c.scroll = $("#doc").scrollTop, c.sa = scrollAnchor()); }
   showDoc(t.d, kind, raw, "", true);
-  const sc = t.scroll || 0; $("#doc").scrollTop = sc; setTimeout(() => ($("#doc").scrollTop = sc), 80);
+  restoreScroll(t);
 }
 const tabCls = (d) => d.kind === "adm" ? "k-adm" : d.kind === "ordin" ? "k-ord" : /시행규칙$/.test(d.name) ? "k-rule" : /시행령$/.test(d.name) ? "k-dec" : "k-law";
 const tabKL = (d) => ({ "k-adm": "행정", "k-ord": "자치", "k-rule": "칙", "k-dec": "령", "k-law": "법" })[tabCls(d)];
@@ -1460,11 +1494,11 @@ function paintLTabs() {
 function switchLTab(i) {
   const t = ltabs[i]; if (!t) return;
   if (t.d.stub) { if (SUMACT) hideSumTab(); return loadLTab(i); }
-  if (SUMACT) { hideSumTab(); if (t.d === cur.doc) { show("doc", cur.doc.name); paintLTabs(); $("#doc").scrollTop = t.scroll || 0; return; } }
-  else if (t.d === cur.doc) { if (cur.view === "tt") { const sc = t.scroll || 0; showDoc(t.d, t.d.kind, t.d.rawmst, "", true); $("#doc").scrollTop = sc; setTimeout(() => ($("#doc").scrollTop = sc), 60); } return; }
-  if (cur.doc) { const c = ltabs.find((x) => x.d === cur.doc); if (c) c.scroll = $("#doc").scrollTop; }
+  if (SUMACT) { hideSumTab(); if (t.d === cur.doc) { show("doc", cur.doc.name); paintLTabs(); restoreScroll(t); return; } }
+  else if (t.d === cur.doc) { if (cur.view === "tt") { showDoc(t.d, t.d.kind, t.d.rawmst, "", true); restoreScroll(t); } return; }
+  if (cur.doc) { const c = ltabs.find((x) => x.d === cur.doc); if (c) (c.scroll = $("#doc").scrollTop, c.sa = scrollAnchor()); }
   showDoc(t.d, t.d.kind, t.d.rawmst, "", true);
-  $("#doc").scrollTop = t.scroll || 0;
+  restoreScroll(t);
 }
 function closeLTab(i) {
   const t = ltabs[i]; if (!t) return;
@@ -1739,14 +1773,33 @@ function applyNotesSplit() {
     wrapRange(ln, s, e, n);
   });
 }
+function cvKey() { return (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--fs")) || 16) + "|" + ($("#doc").clientWidth || 0); }
+function cvSize(b, d) {                                          // 화면 밖 조문의 어림 높이: 전에 본 적 있으면 그 높이, 없으면 글자 수·줄 수로 어림(스크롤바·복원 위치가 크게 어긋나지 않게)
+  const ck = cvKey(); if (d._hk !== ck || !d._h) { d._h = {}; d._hk = ck; }
+  const fs = parseFloat(ck) || 16, k = fs / 16, wf = 890 / Math.max(300, $("#doc").clientWidth - 32), H = d._h;
+  b.querySelectorAll(".art[id^='a-']").forEach((a) => { const key = a.id.slice(2); const h = H[key] || Math.round(30 * k + 0.425 * a.textContent.length * k * k * wf + 19.4 * k * a.querySelectorAll(".ln").length); a.style.containIntrinsicSize = "auto " + h + "px"; });
+}
+function recordH(d) {                                            // 지금 화면에서 잰 조문 높이를 적어 둔다(다음에 이 법령을 그릴 때 어림값 대신 사용)
+  if (!d || !d._h || d._hk !== cvKey() || !$("#docBody").children.length) return;
+  $("#docBody").querySelectorAll(".art[id^='a-']").forEach((a) => { const h = a.offsetHeight; if (h) d._h[a.id.slice(2)] = h; });
+}
+function scrollAnchor() {                                         // 지금 맨 위에 보이는 조문과 그 안의 위치(화면 밖 조문 높이가 어림값이어도 같은 자리로 돌아오게)
+  const box = $("#doc"); if (!cur.doc || !box.offsetHeight) return null;
+  const k = curKey(), el = k && document.getElementById("a-" + k); return el ? { k, o: box.scrollTop - el.offsetTop } : null;
+}
+function restoreScroll(t) {
+  const set = () => { const a = t.sa, el = a && cur.doc && document.getElementById("a-" + a.k); $("#doc").scrollTop = el ? Math.max(0, el.offsetTop + (a.o || 0)) : (t.scroll || 0); };
+  set(); requestAnimationFrame(set); setTimeout(set, 80);
+}
 function showDoc(d, kind, rawmst, key, fromTab) {
   d.kind = kind; d.rawmst = rawmst; noteRecent(d, kind, rawmst); if (tab === "r" && !hits.length) paintHits();
   if (isDT() && !fromTab) {
     const old = ltabs.findIndex((x) => x.d.kind === kind && String(x.d.rawmst) === String(rawmst));
-    if (cur.doc) { const c = ltabs.find((x) => x.d === cur.doc); if (c) c.scroll = $("#doc").scrollTop; }
+    if (cur.doc) { const c = ltabs.find((x) => x.d === cur.doc); if (c) (c.scroll = $("#doc").scrollTop, c.sa = scrollAnchor()); }
     if (old >= 0) ltabs[old].d = d; else ltabs.push({ d, scroll: 0 });
   }
   hideSumTab();
+  if (cur.doc && cur.view === "doc") recordH(cur.doc);
   navPush(); cur.doc = d; CITES = [];
   closeSheet();
   let h = "";
@@ -1759,7 +1812,8 @@ function showDoc(d, kind, rawmst, key, fromTab) {
   b.onclick = (e) => { if (!isDT() || e.target.closest("a,button")) return; const art = e.target.closest(".art"); if (art && art.id.startsWith("a-")) setCurArt(art.id.slice(2)); };
   bindCites(b); applyNotes(); paintSplit(); paintS1h();
   b.querySelectorAll(".fv").forEach((f) => (f.onclick = () => { toggleFav(d, f.dataset.fk); const on = favIdx(kind, rawmst, f.dataset.fk) >= 0; f.textContent = on ? "★" : "☆"; f.classList.toggle("on", on); }));
-  show("doc", d.name);
+  show("doc", d.name); cvSize(b, d);
+  b.classList.remove("fin"); requestAnimationFrame(() => b.classList.add("fin")); b.onanimationend = () => b.classList.remove("fin");
   paintDocFav();
   $("#doc").scrollTop = 0;
   if (key && d.arts[key]) setTimeout(() => goKey(key), 30);
@@ -1787,6 +1841,7 @@ function goKey(key) {
   el.classList.add("cur");
   if (isDT()) { if (key !== sideKey) navPush(); sideKey = key; paintSide(); }
   $("#doc").scrollTop = el.offsetTop - 8;
+  requestAnimationFrame(() => { if (document.getElementById("a-" + key) === el) $("#doc").scrollTop = el.offsetTop - 8; });   // 위쪽 조문이 실제 높이로 그려진 뒤 한 번 더 맞춘다
 }
 function curKey() {   // 화면 맨 위에 있는 조문
   const top = $("#doc").getBoundingClientRect().top + 60;
@@ -2266,6 +2321,7 @@ function applyNotesTT() {                                 // 3단 비교 칸에�
 function applyNotes() {
   applyNotesTT(); applyNotesSplit();
   const d = cur.doc, root = $("#docBody"); if (!d) return;
+  if (!root.querySelector("span.nt") && !NOTES.some((n) => n.law === d.name && n.kind === d.kind)) return;   // 칠할 것도 지울 것도 없으면 건너뜀
   unwrapNotes(root);
   NOTES.filter((n) => n.law === d.name && n.kind === d.kind).forEach((n) => {
     const ln = root.querySelector('.ln[data-k="' + n.key + '"][data-i="' + n.li + '"]'); if (!ln) { n.lost = 1; return; }
@@ -2520,7 +2576,7 @@ async function showTTTab(j) {                                    // 위쪽 '3단
     x.tt = { base: x.base, ...r }; delete x.stub; if (!x.i) x.i = r.start || 0;
   }
   if (SUMACT) hideSumTab();
-  if (cur.doc) { const c = ltabs.find((t) => t.d === cur.doc); if (c && cur.view === "doc") c.scroll = $("#doc").scrollTop; }
+  if (cur.doc) { const c = ltabs.find((t) => t.d === cur.doc); if (c && cur.view === "doc") (c.scroll = $("#doc").scrollTop, c.sa = scrollAnchor()); }
   const same = cur.view === "tt" && TTCUR === j;
   TTCUR = j; TT = x.tt;
   show("tt", "3단 비교");
@@ -2533,7 +2589,7 @@ function closeTTTab(j) {
   if (was) {
     if (TTTABS.length) return showTTTab(Math.min(j, TTTABS.length - 1));
     TT = null; TTCUR = -1;
-    if (cur.doc) { const c = ltabs.find((t) => t.d === cur.doc), sc = c ? c.scroll || 0 : 0; showDoc(cur.doc, cur.doc.kind, cur.doc.rawmst, "", true); $("#doc").scrollTop = sc; } else show("home");
+    if (cur.doc) { const c = ltabs.find((t) => t.d === cur.doc); showDoc(cur.doc, cur.doc.kind, cur.doc.rawmst, "", true); if (c) restoreScroll(c); } else show("home");
   }
   paintLTabs();
 }
