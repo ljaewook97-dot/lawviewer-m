@@ -572,26 +572,78 @@ def _versions(oc, name, nw="", pages=6):
     return out
 
 
-def art_hist(oc, kind, name, key, rev_date):
-    """본문의 '<개정 2021.1.5>' 를 누르면: 그 개정 때 이 조문이 어떻게 바뀌었는지(개정 직전 시행본 ↔ 그 개정을 담은 시행본)"""
-    if kind != "law":
-        return {"err": "개정 비교는 법령(법·시행령·시행규칙)만 됩니다"}
+_VCACHE = {}
+
+
+def _adm_versions(oc, name):
+    """행정규칙의 연혁 목록(현행 + 연혁) -> [{mst, date(시행일), pub(발령일), kind}] 날짜 순. 현행은 기본 목록, 옛 것은 nw=2."""
+    nm = lambda x: re.sub(r"[\sㆍ·]", "", x or "")
+    out, seen = [], set()
+    for nw in ("", "2"):
+        for pg in range(1, 4):
+            prm = {"OC": oc, "target": "admrul", "type": "JSON", "query": name, "display": 100, "page": pg}
+            if nw:
+                prm["nw"] = nw
+            try:
+                d = L._get("lawSearch.do", prm, getter)
+            except Exception:  # noqa: BLE001
+                break
+            rows = []
+            L._dicts_with(d, "행정규칙명", rows)
+            for r in rows:
+                mst = str(r.get("행정규칙일련번호") or "")
+                if not mst or mst in seen or nm(r.get("행정규칙명")) != nm(name):
+                    continue
+                seen.add(mst)
+                pub = _digits(r.get("발령일자"))
+                out.append({"mst": mst, "date": _digits(r.get("시행일자")) or pub, "pub": pub, "kind": str(r.get("제개정구분명") or "")})
+            if len(rows) < 100:
+                break
+    out.sort(key=lambda v: (v["date"] or v["pub"], v["mst"]))
+    return out
+
+
+def _vers_cached(oc, kind, name):
+    import time
+    k = (kind, name)
+    c = _VCACHE.get(k)
+    if c and time.time() - c[0] < 600:
+        return c[1]
+    v = _adm_versions(oc, name) if kind == "adm" else _versions(oc, name)
+    if v:
+        _VCACHE[k] = (time.time(), v)
+    return v
+
+
+def art_hist(oc, kind, name, key, rev_date, mst="", dummy=""):
+    """본문의 '<개정 2021.1.5>' 를 누르면: 그 개정 때 이 조문이 어떻게 바뀌었는지(개정 직전 시행본 ↔ 그 개정을 담은 시행본).
+    mst 를 주면 그 시행본을 '개정 후' 로 삼는다(이전·다음 개정 단추). 법령·행정규칙 모두."""
+    if kind not in ("law", "adm"):
+        return {"err": "개정 비교는 법령(법·시행령·시행규칙)과 행정규칙만 됩니다"}
     rd = _ymd(rev_date)
-    vers = _versions(oc, name)
+    vers = _vers_cached(oc, kind, name)
     if len(vers) < 2:
-        return {"err": "이 법령의 이전 시행본 목록을 가져오지 못했습니다(연혁이 조회되지 않았습니다)"}
-    idx = next((i for i, v in enumerate(vers) if v["pub"] == rd), -1)
+        return {"err": "이 %s의 이전 시행본 목록을 가져오지 못했습니다(연혁이 조회되지 않았습니다)" % ("행정규칙" if kind == "adm" else "법령")}
+    if mst:
+        idx = next((i for i, v in enumerate(vers) if v["mst"] == str(mst)), -1)
+    else:
+        idx = next((i for i, v in enumerate(vers) if v["pub"] == rd), -1)
+        if idx < 0 and kind == "adm":
+            idx = next((i for i, v in enumerate(vers) if v["date"] == rd), -1)
     if idx < 0:
         return {"err": "%s 개정을 담은 시행본을 연혁에서 찾지 못했습니다" % rev_date}
     if idx == 0:
-        return {"err": "이 개정이 조회되는 가장 오래된 시행본입니다(비교할 이전 시행본이 없습니다)"}
+        return {"err": "이 개정이 조회되는 가장 오래된 시행본입니다(비교할 이전 시행본이 없습니다)", "next_mst": vers[1]["mst"] if len(vers) > 1 else "", "next_pub": vers[1]["pub"] if len(vers) > 1 else ""}
     A, B = vers[idx - 1], vers[idx]
-    la = L.load_whole(oc, A["mst"], name, getter)
-    lb = L.load_whole(oc, B["mst"], name, getter)
+    ld = (lambda m, d: L.load_adm(oc, m, name, d, getter)) if kind == "adm" else (lambda m, d: L.load_whole(oc, m, name, getter))
+    la = ld(A["mst"], A["date"])
+    lb = ld(B["mst"], B["date"])
     a, b = la["arts"].get(key), lb["arts"].get(key)
     flat = lambda x: re.sub(r"\s+", " ", " ".join(t for _, t in x["lines"])).strip()
-    res = {"old_date": A["date"], "new_date": B["date"], "pub": rd, "kind": B["kind"], "label": (b or a or {}).get("label", ""), "title": (b or a or {}).get("title", ""),
-           "old_mst": A["mst"], "new_mst": B["mst"]}
+    res = {"old_date": A["date"], "new_date": B["date"], "pub": B["pub"], "kind": B["kind"], "label": (b or a or {}).get("label", ""), "title": (b or a or {}).get("title", ""),
+           "old_mst": A["mst"], "new_mst": B["mst"], "idx": idx, "total": len(vers),
+           "prev_mst": vers[idx - 1]["mst"] if idx >= 2 else "", "prev_pub": vers[idx - 1]["pub"] if idx >= 2 else "",
+           "next_mst": vers[idx + 1]["mst"] if idx + 1 < len(vers) else "", "next_pub": vers[idx + 1]["pub"] if idx + 1 < len(vers) else ""}
     if a and b:
         ta, tb = flat(a), flat(b)
         if ta == tb and (a["title"] or "") == (b["title"] or ""):
