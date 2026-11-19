@@ -607,7 +607,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.65";
+const VERSION = "10.66";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1169,6 +1169,16 @@ function ahRender(cx, dt, r) {
   $("#cmpPos").textContent = r.idx + " / " + (r.total - 1) + "번째 개정 (연혁 시행본 " + r.total + "개)";
   $("#cmpL").scrollTop = 0; $("#ovCmp").classList.add("on"); cmpPlace();
 }
+async function openAdmHist(key) {                                    // 행정규칙은 본문에 '<개정 …>' 표시가 없으므로 🕘 단추로 최신 개정부터 거꾸로 따라감
+  if (needOC() || !cur.doc) return;
+  const cx = { kind: cur.doc.kind, name: cur.doc.name, key };
+  const r = await call("art_hist", [OC, cx.kind, cx.name, key, "", "last"], cx.name + " 개정 연혁 비교 중… (이전 시행본을 받느라 처음엔 오래 걸립니다)");
+  if (!r) return;
+  if (r.err) return toast(r.err, true);
+  if (r.st === "동일" || r.st === "없음") return ahStepFrom(cx, r, -1);
+  ahRender(cx, r.pub || "", r);
+}
+async function ahStepFrom(cx, r, dir) { AH = { cx, dt: "", r }; await ahStep(dir); }
 async function openArtHist(a) {
   if (needOC()) return;
   const cx = histCtx(a); if (!cx) return;
@@ -1182,7 +1192,7 @@ async function openArtHist(a) {
 async function ahStep(dir) {                                          // 이전(-1)·다음(+1) 개정으로. 이 조문이 안 바뀐 개정은 건너뜀
   if (!AH) return;
   let { cx, r } = AH, mst = dir < 0 ? r.prev_mst : r.next_mst, skipped = 0, last = null;
-  while (mst && skipped < 12) {
+  while (mst && skipped < 25) {
     const x = await (skipped ? callQuiet : call)("art_hist", [OC, cx.kind, cx.name, cx.key, "", mst], cx.name + (dir < 0 ? " 이전" : " 다음") + " 개정 비교 중…");
     if (!x || x.err) { if (x && x.err) toast(x.err, true); return; }
     last = x;
@@ -1276,7 +1286,7 @@ async function openChain(key) {
 }
 $("#chNo").onclick = () => $("#ovChain").classList.remove("on");
 $("#chL").addEventListener("click", async (e) => { const n = e.target.closest("[data-chi]"); if (!n) return; const x = CHN[+n.dataset.chi]; $("#ovChain").classList.remove("on"); await openHitArt(x); });
-document.addEventListener("click", (e) => { const b = e.target.closest && e.target.closest(".chb"); if (b) { e.stopPropagation(); openChain(b.dataset.ck); } });
+document.addEventListener("click", (e) => { const h = e.target.closest && e.target.closest(".hsb"); if (h && cur.doc) { e.stopPropagation(); openAdmHist(h.dataset.hk); return; } const b = e.target.closest && e.target.closest(".chb"); if (b) { e.stopPropagation(); openChain(b.dataset.ck); } });
 
 // ---- 인용 링크 미리보기 (마우스를 올리면)
 const cpv = document.createElement("div"); cpv.id = "cpv"; document.body.appendChild(cpv);
@@ -1494,7 +1504,7 @@ function artHTML(a, ctx, opt) {
     let lh = lineHTML(l[1], l[2], l[0], ctx, opt.self, a.key);
     if (i === 0) lh = lh.replace(/^(제\d+조(?:의\d+)?\([^)<]*\))/, '<b class="al">$1</b>').replace(/^(제\d+(?:조|장|절|편)(?:의\d+)?|\d+(?:-\d+)+\.?|\d+\.)(?=\s|\(|<|$)/, '<b class="al">$1</b>');
     const body = '<div class="ln l' + Math.min(l[0], 4) + (hl ? " hl" : "") + '" data-k="' + a.key + '" data-i="' + i + '">' + lh + "</div>";
-    h += i === 0 && opt.fav ? '<div class="ah">' + body + '<button class="fv' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? " on" : "") + '" data-fk="' + a.key + '">' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? "★" : "☆") + "</button>" + (cur.doc.kind === "law" ? '<button class="chb" data-ck="' + a.key + '" title="위임 사슬: 이 조문이 시행령·시행규칙·지침 어디서 구체화되는지">⛓</button>' : "") + "</div>" : body;
+    h += i === 0 && opt.fav ? '<div class="ah">' + body + '<button class="fv' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? " on" : "") + '" data-fk="' + a.key + '">' + (favIdx(cur.doc.kind, cur.doc.rawmst, a.key) >= 0 ? "★" : "☆") + "</button>" + (cur.doc.kind === "law" ? '<button class="chb" data-ck="' + a.key + '" title="위임 사슬: 이 조문이 시행령·시행규칙·지침 어디서 구체화되는지">⛓</button>' : cur.doc.kind === "adm" ? '<button class="chb hsb" data-hk="' + a.key + '" title="이 조문의 개정 연혁 비교(이전·다음 개정으로 넘기며 봄)">🕘</button>' : "") + "</div>" : body;
   });
   if (tb) h += "</table></div>";
   if (fold) h += '</div><button class="mrb" data-n="' + (a.lines.length - FOLD) + '">▼ 나머지 ' + (a.lines.length - FOLD) + '줄 펼치기</button>';

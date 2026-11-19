@@ -624,7 +624,9 @@ def art_hist(oc, kind, name, key, rev_date, mst="", dummy=""):
     vers = _vers_cached(oc, kind, name)
     if len(vers) < 2:
         return {"err": "이 %s의 이전 시행본 목록을 가져오지 못했습니다(연혁이 조회되지 않았습니다)" % ("행정규칙" if kind == "adm" else "법령")}
-    if mst:
+    if mst == "last":
+        idx = len(vers) - 1
+    elif mst:
         idx = next((i for i, v in enumerate(vers) if v["mst"] == str(mst)), -1)
     else:
         idx = next((i for i, v in enumerate(vers) if v["pub"] == rd), -1)
