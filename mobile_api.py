@@ -534,6 +534,127 @@ def rev_check(oc, items):
     return out
 
 
+def _digits(x):
+    return re.sub(r"\D", "", str(x or ""))
+
+
+def _ymd(x):
+    p = re.findall(r"\d+", str(x or ""))
+    if len(p) >= 3:
+        return "%04d%02d%02d" % (int(p[0]), int(p[1]), int(p[2]))
+    return _digits(x)
+
+
+def _versions(oc, name, navs=("", "1", "2")):
+    """같은 법령의 시행본 목록(현행·연혁·시행예정) -> [{mst, date(시행일), pub(공포일), kind}] 시행일 순.
+    법제처 목록 검색의 nw 값(1 연혁, 2 시행예정)을 쓴다. 값을 못 알아들으면 현행만 나올 뿐 오류는 아니다."""
+    nm = lambda x: re.sub(r"[\sㆍ·]", "", x or "")
+    out, seen = [], set()
+    for nw in navs:
+        prm = {"OC": oc, "target": "law", "type": "JSON", "query": name, "display": 100}
+        if nw:
+            prm["nw"] = nw
+        try:
+            d = L._get("lawSearch.do", prm, getter)
+        except Exception:  # noqa: BLE001
+            continue
+        rows = []
+        L._dicts_with(d, "법령명한글", rows)
+        for r in rows:
+            mst = str(r.get("법령일련번호") or "")
+            if not mst or mst in seen or nm(r.get("법령명한글")) != nm(name):
+                continue
+            seen.add(mst)
+            out.append({"mst": mst, "date": _digits(r.get("시행일자")), "pub": _digits(r.get("공포일자")), "kind": str(r.get("제개정구분명") or "")})
+    out.sort(key=lambda v: (v["date"], v["mst"]))
+    return out
+
+
+def art_hist(oc, kind, name, key, rev_date):
+    """본문의 '<개정 2021.1.5>' 를 누르면: 그 개정 때 이 조문이 어떻게 바뀌었는지(개정 직전 시행본 ↔ 그 개정을 담은 시행본)"""
+    if kind != "law":
+        return {"err": "개정 비교는 법령(법·시행령·시행규칙)만 됩니다"}
+    rd = _ymd(rev_date)
+    vers = _versions(oc, name)
+    if len(vers) < 2:
+        return {"err": "이 법령의 이전 시행본 목록을 가져오지 못했습니다(연혁이 조회되지 않았습니다)"}
+    idx = next((i for i, v in enumerate(vers) if v["pub"] == rd), -1)
+    if idx < 0:
+        return {"err": "%s 개정을 담은 시행본을 연혁에서 찾지 못했습니다" % rev_date}
+    if idx == 0:
+        return {"err": "이 개정이 조회되는 가장 오래된 시행본입니다(비교할 이전 시행본이 없습니다)"}
+    A, B = vers[idx - 1], vers[idx]
+    la = L.load_whole(oc, A["mst"], name, getter)
+    lb = L.load_whole(oc, B["mst"], name, getter)
+    a, b = la["arts"].get(key), lb["arts"].get(key)
+    flat = lambda x: re.sub(r"\s+", " ", " ".join(t for _, t in x["lines"])).strip()
+    res = {"old_date": A["date"], "new_date": B["date"], "pub": rd, "kind": B["kind"], "label": (b or a or {}).get("label", ""), "title": (b or a or {}).get("title", ""),
+           "old_mst": A["mst"], "new_mst": B["mst"]}
+    if a and b:
+        ta, tb = flat(a), flat(b)
+        if ta == tb and (a["title"] or "") == (b["title"] or ""):
+            res.update({"st": "동일", "old": [["=", ta]], "new": [["=", tb]]})
+        else:
+            oa, ob = _tok_diff(ta, tb)
+            res.update({"st": "수정", "old": oa, "new": ob, "otitle": a["title"] if (a["title"] or "") != (b["title"] or "") else ""})
+    elif b:
+        res.update({"st": "신설", "old": [], "new": [["+", flat(b)]]})
+    elif a:
+        res.update({"st": "삭제", "old": [["-", flat(a)]], "new": []})
+    else:
+        res.update({"st": "없음", "old": [], "new": []})
+    return res
+
+
+def upcoming(oc, items):
+    """즐겨찾기 법령 중 곧 시행될(시행일이 오늘 이후인) 시행본이 있는 것 -> {kind|name: {rawmst, date}}"""
+    import datetime
+    today = datetime.date.today().strftime("%Y%m%d")
+    out = {}
+    for kind, name in items[:25]:
+        if kind != "law":
+            continue
+        try:
+            vs = _versions(oc, name, ("2",))
+        except Exception:  # noqa: BLE001
+            continue
+        fut = [v for v in vs if v["date"] and v["date"] > today]
+        if fut:
+            out["%s|%s" % (kind, name)] = {"rawmst": fut[0]["mst"], "date": fut[0]["date"]}
+    return out
+
+
+def tt_ord(oc, base, i, city=""):
+    """3단 비교의 '조례' 열: 이 줄의 법 조문 제목 낱말로 기본 자치단체 조례에서 조문 찾기"""
+    tt = L._TT_CACHE[L._split_name(base)[0]]
+    r = tt["rows"][i]
+    law0 = tt["laws"][0]
+    a = law0["arts"][r["key"]] if law0 else None
+    if not a:
+        return {"arts": []}
+    toks = []
+    for w in re.split(r"[\s·ㆍ,()]+", a.get("title", "")):
+        w = re.sub(r"(에서의|에서|으로의|의)$", "", w)
+        if len(w) >= 2 and w not in ("및", "경우", "기준", "대한", "관한", "관련") and w not in toks:
+            toks.append(w)
+    if not toks:
+        return {"arts": []}
+    res = L.ordin_lookup(oc, city or "고양시", toks, getter)
+    arts, seen = [], set()
+    for h in res["hits"]:
+        lw = L._LAW_CACHE.get(str(h["mst"]))
+        ar = lw["arts"].get(h.get("key")) if lw else None
+        if not ar or (h["mst"], h["key"]) in seen:
+            continue
+        seen.add((h["mst"], h["key"]))
+        aj = _art_json(ar, h["lawname"], True, lw)
+        aj["mst"] = str(h["mst"])
+        arts.append(aj)
+        if len(arts) >= 6:
+            break
+    return {"ordname": res.get("ordname", ""), "arts": arts, "toks": toks, "total": res.get("total", 0)}
+
+
 def _tok_diff(a, b):
     """두 글을 낱말 단위로 비교 -> (옛 글 조각, 새 글 조각). 조각 = [종류('=','-','+'), 글]"""
     import difflib
@@ -656,7 +777,7 @@ def net_preload(items):
     return len(items or {})
 
 
-FUNCS = {"net_export": net_export, "net_preload": net_preload, "cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "compare_ver": compare_ver, "chain": chain, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
+FUNCS = {"net_export": net_export, "net_preload": net_preload, "art_hist": art_hist, "upcoming": upcoming, "tt_ord": tt_ord, "cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "compare_ver": compare_ver, "chain": chain, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
          "tt_open": tt_open, "fav_rel": fav_rel, "tt_row": tt_row, "set_api_base": set_api_base}
 
 
