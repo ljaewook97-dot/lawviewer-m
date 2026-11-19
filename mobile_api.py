@@ -545,19 +545,19 @@ def _ymd(x):
     return _digits(x)
 
 
-def _versions(oc, name, navs=("", "1", "2")):
-    """같은 법령의 시행본 목록(현행·연혁·시행예정) -> [{mst, date(시행일), pub(공포일), kind}] 시행일 순.
-    법제처 목록 검색의 nw 값(1 연혁, 2 시행예정)을 쓴다. 값을 못 알아들으면 현행만 나올 뿐 오류는 아니다."""
+def _versions(oc, name, nw="", pages=6):
+    """같은 법령의 시행본 목록(연혁·현행·시행예정 모두) -> [{mst, date(시행일), pub(공포일), kind}] 시행일 순.
+    법제처 '시행일 법령' 목록(target=eflaw)을 쪽(100개)씩 넘기며 모은다. nw=2 면 시행예정만."""
     nm = lambda x: re.sub(r"[\sㆍ·]", "", x or "")
     out, seen = [], set()
-    for nw in navs:
-        prm = {"OC": oc, "target": "law", "type": "JSON", "query": name, "display": 100}
+    for pg in range(1, pages + 1):
+        prm = {"OC": oc, "target": "eflaw", "type": "JSON", "query": name, "display": 100, "page": pg}
         if nw:
             prm["nw"] = nw
         try:
             d = L._get("lawSearch.do", prm, getter)
         except Exception:  # noqa: BLE001
-            continue
+            break
         rows = []
         L._dicts_with(d, "법령명한글", rows)
         for r in rows:
@@ -566,6 +566,8 @@ def _versions(oc, name, navs=("", "1", "2")):
                 continue
             seen.add(mst)
             out.append({"mst": mst, "date": _digits(r.get("시행일자")), "pub": _digits(r.get("공포일자")), "kind": str(r.get("제개정구분명") or "")})
+        if len(rows) < 100:
+            break
     out.sort(key=lambda v: (v["date"], v["mst"]))
     return out
 
@@ -615,7 +617,7 @@ def upcoming(oc, items):
         if kind != "law":
             continue
         try:
-            vs = _versions(oc, name, ("2",))
+            vs = _versions(oc, name, "2", 1)
         except Exception:  # noqa: BLE001
             continue
         fut = [v for v in vs if v["date"] and v["date"] > today]
