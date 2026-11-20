@@ -558,6 +558,11 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   .fgh{background:color-mix(in srgb,var(--text) 5%,var(--surf));color:var(--text)}
   .fgh:hover{background:color-mix(in srgb,var(--text) 9%,var(--surf))}
 }
+/* v10.77 개정 표시 더 연하게 */
+.am{color:var(--muted);opacity:.7;font-size:.74em}
+.am .rvd{color:inherit;font-weight:400;text-decoration:underline dotted;text-decoration-color:color-mix(in srgb,var(--muted) 55%,transparent);text-underline-offset:2px}
+.am .rvd:hover{color:var(--acc-d);opacity:1;text-decoration-style:solid}
+.am:hover{opacity:1}
 </style>
 </head>
 <body>
@@ -687,7 +692,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.76";
+const VERSION = "10.77";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
