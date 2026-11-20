@@ -267,8 +267,8 @@ AMEND_RE = re.compile(
 HEADER_RE = re.compile(r"^제\d+조(?:의\d+)?\s*(?:\([^)]*\))?")
 TOKEN = re.compile(
     r"「(?P<law>[^」]+)」"
-    r"|(?P<same>같은 법 시행령|같은 법|이 법|이 영|이 규칙)"
-    r"|(?<![가-힣])(?P<abbr>법|영)(?=\s*제\d+조)"
+    r"|(?P<same>같은 법 시행령|같은 법 시행규칙|같은 법|이 법|이 영|이 규칙)"
+    r"|(?<![가-힣」])(?<!법 )(?<!조례 )(?<!령 )(?<!」 )(?P<abbr>법|영|시행규칙)(?=\s*제\d+조)"
     r"|제(?P<n>\d+)조(?:의(?P<b>\d+))?"
 )
 ALIAS_RE = re.compile(r"\s*\(이하\s*[\"“']?([^)\"”']{1,20})[\"”']?(?:이?라\s*한다|이?라\s*함|이?라\s*약칭한다)\)")
@@ -334,9 +334,11 @@ def extract_refs(text, selfname=""):
         if tok in ("법", "이 법"):
             return None if not sfx else base
         if tok in ("영", "이 영"):
-            return None if sfx == "시행령" else base + " 시행령"
+            return None if (sfx == "시행령" or not base) else base + " 시행령"
         if tok == "이 규칙":
-            return None if sfx == "시행규칙" else base + " 시행규칙"
+            return None if (sfx == "시행규칙" or not base) else base + " 시행규칙"
+        if tok == "시행규칙":
+            return (base + " 시행규칙") if base and (sfx or base) else None
         return None
 
     refs, seen = [], set()
@@ -352,6 +354,8 @@ def extract_refs(text, selfname=""):
                 cur = last_ext
             elif tok == "같은 법 시행령":
                 cur = (_split_name(last_ext)[0] if last_ext else base) + " 시행령"
+            elif tok == "같은 법 시행규칙":
+                cur = (_split_name(last_ext)[0] if last_ext else base) + " 시행규칙"
             else:
                 cur = abbr(tok)
             if cur:
@@ -1158,9 +1162,11 @@ def cite_spans(text, selfname=""):
         if tok in ("법", "이 법"):
             return None if not sfx else base
         if tok in ("영", "이 영"):
-            return None if sfx == "시행령" else base + " 시행령"
+            return None if (sfx == "시행령" or not base) else base + " 시행령"
         if tok == "이 규칙":
-            return None if sfx == "시행규칙" else base + " 시행규칙"
+            return None if (sfx == "시행규칙" or not base) else base + " 시행규칙"
+        if tok == "시행규칙":
+            return (base + " 시행규칙") if base and (sfx or base) else None
         return None
 
     out = []
@@ -1179,6 +1185,8 @@ def cite_spans(text, selfname=""):
                 cur = last_ext
             elif tok == "같은 법 시행령":
                 cur = (_split_name(last_ext)[0] if last_ext else base) + " 시행령"
+            elif tok == "같은 법 시행규칙":
+                cur = (_split_name(last_ext)[0] if last_ext else base) + " 시행규칙"
             else:
                 cur = abbr(tok)
             if cur:
@@ -1328,6 +1336,32 @@ def ordin_refname(name):
         if kw in name:
             return base + " 시행규칙"
     return ""
+
+
+_LAWQ = re.compile(r"「([^」]+)」")
+
+
+def ordin_parent_name(units):
+    """조례 제1조(목적)·제2조(정의)에 적힌 모법 이름 -> '주차장법'. ① '「주차장법」(이하 "법"이라 한다)' 처럼 '법' 으로 줄여 부른 것 ② 처음 나오는 「…법」·「…법률」. 없으면 ''"""
+    texts = []
+    for u in units:
+        if str(u.get("조문여부") or "조문") != "조문":
+            continue
+        texts.append(" ".join(t for _lv, t in unit_lines(u)))
+        if len(texts) >= 3:
+            break
+    first = ""
+    for t in texts:
+        t = AMEND_RE.sub(" ", t)
+        for m in _LAWQ.finditer(t):
+            nm = m.group(1).strip()
+            if re.search(r"(시행령|시행규칙|조례|규칙)$", nm) or not re.search(r"(법|법률)$", nm):
+                continue
+            am = ALIAS_RE.match(t, m.end())
+            if am and am.group(1).strip() in ("법", "이 법"):
+                return nm
+            first = first or nm
+    return first
 
 
 def parse_ordin_query(q):
@@ -2244,8 +2278,13 @@ def load_ordin(oc, mst, name, getter=None):
     _walk_units(d, units)
     if not units:
         raise LawError("조례 조문을 읽지 못했습니다 — 응답 구조: " + _shape(d))
-    ref = ordin_refname(name)
     nu = [_norm_ordin_unit(u) for u in units]
+    pn = ""
+    try:
+        pn = ordin_parent_name(nu)                      # 조례 속 '법 제6조'·'영 제5조'·'시행규칙 제6조' 는 그 조례의 모법(예: 주차장법) 것
+    except Exception:  # noqa: BLE001
+        pn = ""
+    ref = (pn + " 시행규칙") if pn else ordin_refname(name)
     law = analyze_units(nu, ref or name)
     if not law["order"]:                                # 제목만 읽히고 조문이 하나도 없으면 구조를 못 맞춘 것 — 구조를 알려 준다
         raise LawError("조례 조문을 하나도 읽지 못했습니다 — 응답 구조: " + _shape(d) + " | 첫 건: " + _shape(units[0]))
