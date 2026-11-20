@@ -466,7 +466,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 #s2tabs{position:sticky;top:0;z-index:4;display:none;gap:3px;padding:5px 0 0;margin:0 -2px;background:color-mix(in srgb,var(--surf) 94%,gray);border-bottom:1px solid var(--line)}
 #s2tabs button{border:1px solid var(--line);border-bottom:0;border-radius:7px 7px 0 0;padding:4px 12px;font-size:.84em;font-weight:700;color:var(--sub);background:var(--surf)}
 #s2tabs button.on{background:var(--acc-soft);color:var(--acc-d);border-color:color-mix(in srgb,var(--acc) 40%,var(--line))}
-#doc2.tabs #s2h{top:33px}
+#doc2.tabs #s2h{top:var(--s2th,33px)}
 #doc2.hist #s2h,#doc2.hist #doc2Body{display:none}
 #s2hist{display:none}#doc2.hist #s2hist{display:block}
 #s2hist .modal{position:static!important;left:auto!important;right:auto!important;top:auto!important;transform:none!important;width:auto!important;max-height:none!important;box-shadow:none!important;border:0!important;background:transparent!important;padding:8px 0 40px!important;overflow:visible!important;display:flex;flex-direction:column}
@@ -507,7 +507,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 .am .rvd{position:relative;color:var(--acc-d);font-weight:600;text-decoration:underline;text-decoration-style:solid;text-decoration-color:color-mix(in srgb,var(--acc) 45%,transparent)}
 .am .rvd:hover{background:var(--acc-soft);border-radius:3px}
 #rvtip{display:none;position:fixed;z-index:80;white-space:nowrap;font-size:.8em;font-weight:600;padding:3px 9px;border-radius:5px;background:var(--text);color:var(--surf);box-shadow:0 2px 8px rgba(0,0,0,.25);pointer-events:none}#rvtip.on{display:block}
-.cmpr .rt.cl{max-height:5.1em;overflow:hidden;-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
+.cmpr .rt.cl .x{display:none}
 .cmpr .rh{font-weight:800;color:var(--acc-d);margin:6px 0 1px}.cmpr .rt>.rh:first-child{margin-top:0}
 .cmpr .rm{display:block;margin:2px 0 0 auto;border:0;background:none;color:var(--acc);font-size:.78em;font-weight:700;cursor:pointer}
 .cmpa .cl{min-height:1em}.cmpa .fx{display:none}.cmpa .fm{margin:2px 0;padding:1px 6px;font-size:.84em;color:var(--muted);background:color-mix(in srgb,var(--text) 5%,transparent);border-radius:4px;cursor:pointer;text-align:center}
@@ -540,12 +540,12 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   #ltabs .lt:hover b,#ltabs .lt.on b{width:auto;padding:1px 5px;opacity:.6;margin-left:0}
   #ltabs .lt:hover b:hover{opacity:1}
   #ltabs .lt span{min-width:0}
-  #s2tabs{height:33px;box-sizing:border-box;align-items:flex-end}
+  #s2tabs{align-items:flex-end}
   #doc2 .s2h{background:var(--surf);border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent);padding:3px 2px;margin-bottom:2px}
   #doc2 .s2h button{flex:none;border-color:transparent;background:none;padding:1px 7px;color:var(--sub)}
   #doc2 .s2h button:hover{background:var(--acc-soft);border-color:var(--line)}
   #doc2 .s2h button.on{border-color:color-mix(in srgb,var(--acc) 45%,transparent)}
-  #list .tag.law,#list .tag.adm,#list .tag.ordin,#list .tag.fb{background:color-mix(in srgb,var(--tg) 13%,var(--surf))!important;color:var(--tg)!important;border:1px solid color-mix(in srgb,var(--tg) 28%,transparent);font-weight:600}
+  #list .tag.law,#list .tag.adm,#list .tag.ordin,#list .tag.fb{background:color-mix(in srgb,var(--tg) 13%,var(--surf))!important;color:color-mix(in srgb,var(--tg) 72%,var(--text))!important;border:1px solid color-mix(in srgb,var(--tg) 40%,transparent);font-weight:600}
   #list .tag.law{--tg:var(--law)}#list .tag.adm{--tg:var(--adm)}#list .tag.ordin{--tg:var(--ordin)}
   #list .tag.fb.rl{--tg:#1565C0}#list .tag.fb.ry{--tg:#2E7D32}#list .tag.fb.rc{--tg:#EF6C00}
   .fgh{background:color-mix(in srgb,var(--line) 45%,var(--surf));color:var(--sub)}
@@ -687,7 +687,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.73";
+const VERSION = "10.75";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1205,7 +1205,8 @@ const cmpSeg = (a) => a.map((x) => x[0] === "=" ? esc(x[1]) : x[0] === "-" ? "<d
 const reasonHTML = (t) => {
   if (!t) return '<div class="muted" style="font-size:.78em;margin-top:6px">이 시행본은 제·개정 이유가 조회되지 않았습니다.</div>';
   const L = String(t).split("\n"), nb = L.filter((x) => x.trim()).length;
-  const body = L.map((x) => /^\s*[◇◆■□▣]/.test(x) ? '<div class="rh">' + esc(x.trim()) + "</div>" : "<div>" + (esc(x) || "&nbsp;") + "</div>").join("");
+  let seen = 0;
+  const body = L.map((x) => { if (x.trim()) seen++; const c = seen > 3 || (seen === 3 && !x.trim()) ? " x" : ""; return /^\s*[◇◆■□▣]/.test(x) ? '<div class="rh' + c + '">' + esc(x.trim()) + "</div>" : '<div class="' + c.trim() + '">' + (esc(x) || "&nbsp;") + "</div>"; }).join("");
   return '<details class="cmpr" open><summary>재개정 사유(제·개정 이유)</summary><div class="rt' + (nb > 4 ? " cl" : "") + '">' + body + "</div>" + (nb > 4 ? '<button class="rm" data-rm>더 보기 ▾</button>' : "") + "</details>";
 };
 const cmpLines = (a) => { const L = [[]]; a.forEach(([k, t]) => String(t).split("\n").forEach((p, i) => { if (i > 0) L.push([]); if (p) L[L.length - 1].push([k, p]); })); return L; };
@@ -2578,6 +2579,11 @@ $("#bTheme").onclick = (e) => {
     tip.style.top = Math.max(6, r.top - tip.offsetHeight - 6) + "px";
   });
   document.addEventListener("scroll", () => tip.classList.remove("on"), true);
+})();
+// ---- 오른쪽 칸 탭 줄의 실제 높이를 재서 그 아래 윗줄 위치를 맞춘다(글자 크기·배율이 달라도 겹치지 않게)
+(function () {
+  const t = $("#s2tabs"), d = $("#doc2"); if (!t || !window.ResizeObserver) return;
+  new ResizeObserver(() => { const h = t.offsetHeight; if (h) d.style.setProperty("--s2th", h + "px"); }).observe(t);
 })();
 // ---- 본문|오른쪽 칸 폭 끌기 (가운데 경계선)
 (function () {
