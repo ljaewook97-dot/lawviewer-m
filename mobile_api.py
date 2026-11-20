@@ -272,8 +272,12 @@ def _doc_json(law, selfname_target):
     base = L._split_name(refname)[0] if law.get("kind") == "adm" else None
     annex = []
     for x in (law.get("annex") or []):
+        url = L.annex_url(x.get("pdf") or x.get("link") or "")
+        web = False
+        if not url and law.get("kind") == "ordin" and not x.get("text") and not x.get("deleted"):      # 조례 별표는 본문·파일 링크가 안 올 때가 있어 법제처 화면으로 안내
+            url, web = L.ordin_web_url(law.get("name") or refname), True
         annex.append({"label": x["label"], "title": x["title"], "lines": _ax_lines(law, refname, x),
-                      "url": L.annex_url(x.get("pdf") or x.get("link") or ""), "deleted": bool(x.get("deleted"))})
+                      "url": url, "web": web, "deleted": bool(x.get("deleted"))})
     return {"name": law["name"], "kind": law.get("kind", "law"), "mst": law["mst"], "date": law.get("date", ""),
             "refname": refname, "adm_base": base, "items": items, "arts": arts, "annex": annex}
 

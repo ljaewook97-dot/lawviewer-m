@@ -697,7 +697,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.82";
+const VERSION = "10.83";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1673,7 +1673,7 @@ function annexHTML(x, i, idp, ctx, self) {
     h += '<div class="ln l' + Math.min(l[0], 4) + '">' + (l[2] && l[2].length ? lineHTML(l[1], l[2], l[0], ctx, self, "") : esc(l[1])) + "</div>";
   });
   if (tb) h += "</table></div>";
-  if (x.url) h += '<a class="axl" href="' + esc(x.url) + '" target="_blank" rel="noopener">원본 파일 열기 ▸</a>';
+  if (x.url) h += '<a class="axl" href="' + esc(x.url) + '" target="_blank" rel="noopener">' + (x.web ? "법제처에서 보기 ▸ (이 별표 본문이 응답에 없습니다)" : "원본 파일 열기 ▸") + "</a>";
   return h + "</div>";
 }
 function lnTxt9(t) { try { return "      " + JSON.parse(t).map((c) => String(c[1]).replace(/\n/g, " ")).join(" | "); } catch (e) { return t; } }

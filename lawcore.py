@@ -1030,6 +1030,9 @@ def extract_annex(d):
             kind = "별표" if "별표" in kind else "서식" if "서식" in kind else kind
         no, bn = _num(r.get("별표번호")), _num(r.get("별표가지번호"))
         title = html.unescape(str(r.get("별표제목") or "")).strip()
+        tm = re.match(r"^[\[【]\s*(별표|서식|별지)\s*(?:제\s*)?(\d+)\s*(?:호)?(?:\s*의\s*(\d+))?\s*[\]】]", title)
+        if tm:                                                    # 조례 별표는 번호란이 순번이고 진짜 번호·종류는 제목의 【별표 3】에 있다
+            kind, no, bn = ("서식" if tm.group(1) == "별지" else tm.group(1)), int(tm.group(2)), int(tm.group(3) or 0)
         label = "%s %d%s" % (kind, no, ("의%d" % bn) if bn else "") if no else (kind + (" " + title[:10] if title else ""))
         k = (label, title)
         if k in seen:
@@ -1037,9 +1040,18 @@ def extract_annex(d):
         seen.add(k)
         raw = []
         _raw_lines(r.get("별표내용"), raw)
-        ttl = re.sub(r"^\[[^\]]*\]\s*", "", title)
+        if not raw:                                               # 본문 칸 이름이 다르게 온 경우('…내용')
+            for k2, v2 in r.items():
+                if "내용" in str(k2) and k2 != "별표내용" and v2:
+                    _raw_lines(v2, raw)
+                    break
+        ttl = re.sub(r"^\s*(?:\[[^\]]*\]|【[^】]*】)\s*", "", title)
         link = str(r.get("별표서식파일링크") or r.get("별표서식파일링크URL") or "")
         pdf = str(r.get("별표서식PDF파일링크") or "")
+        if not link and not pdf:                                  # 링크 칸 이름이 다르게 온 경우: '링크·URL·파일' 이 들어간 칸 중 PDF를 먼저
+            cand = [(str(k2), str(v2)) for k2, v2 in r.items() if isinstance(v2, str) and re.search(r"링크|URL|파일", str(k2)) and v2.strip()[:1] in ("/", "h")]
+            pdf = next((v for k, v in cand if "PDF" in k.upper()), "")
+            link = next((v for k, v in cand if "PDF" not in k.upper()), "")
         out.append({"label": label, "kind": kind, "no": no, "bn": bn, "title": ttl, "text": format_annex(raw, title), "link": link, "pdf": pdf,
                     "deleted": ttl.strip().startswith("삭제")})
     return out
