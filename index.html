@@ -462,10 +462,16 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 #bSet.accDot{position:relative}#bSet.accDot::after{content:"";position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:#e53935;box-shadow:0 0 0 2px var(--acc)}
 #ovCmp .modal{display:flex;flex-direction:column;padding:14px}.cmpr{border:1px solid var(--line);border-radius:10px;padding:6px 10px;margin:0 0 8px;background:var(--acc-soft)}.cmpr summary{cursor:pointer;font-weight:700;font-size:.84em;color:var(--acc-d)}.cmpr .rt{font-size:.84em;line-height:1.65;margin-top:5px;white-space:normal;max-height:34vh;overflow:auto}
 #cmpNav{display:flex;gap:6px;align-items:center;margin-top:6px}#cmpNav .btn{flex:none;min-height:32px;padding:0 10px;font-size:.84em}#cmpNav .btn:disabled{opacity:.35}#cmpPos{flex:1;text-align:center;font-size:.78em}
-@media (min-width:1000px){body.cmpd #doc{right:calc(var(--rw) + (100vw - var(--lw) - var(--rw)) / 2)}
-#ovCmp.dock .modal{position:fixed!important;top:calc(var(--hh) + var(--th) + var(--bh))!important;bottom:0!important;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) / 2)!important;right:var(--rw)!important;width:auto!important;transform:none!important;max-height:none!important;border-radius:0!important;border:0!important;border-left:3px solid var(--line)!important;box-shadow:none!important}
-body.pv #ovCmp.dock .modal{bottom:var(--ph)!important}
-#ovCmp.dock .modal h3::after{content:"  ⠿ 끌면 창으로 분리"!important}
+@media (min-width:1000px){
+#s2tabs{position:sticky;top:0;z-index:4;display:none;gap:3px;padding:5px 0 0;margin:0 -2px;background:color-mix(in srgb,var(--surf) 94%,gray);border-bottom:1px solid var(--line)}
+#s2tabs button{border:1px solid var(--line);border-bottom:0;border-radius:7px 7px 0 0;padding:4px 12px;font-size:.84em;font-weight:700;color:var(--sub);background:var(--surf)}
+#s2tabs button.on{background:var(--acc-soft);color:var(--acc-d);border-color:color-mix(in srgb,var(--acc) 40%,var(--line))}
+#doc2.tabs #s2h{top:33px}
+#doc2.hist #s2h,#doc2.hist #doc2Body{display:none}
+#s2hist{display:none}#doc2.hist #s2hist{display:block}
+#s2hist .modal{position:static!important;left:auto!important;right:auto!important;top:auto!important;transform:none!important;width:auto!important;max-height:none!important;box-shadow:none!important;border:0!important;background:transparent!important;padding:8px 0 40px!important;overflow:visible!important;display:flex;flex-direction:column}
+#s2hist .cmpl{overflow:visible;flex:none}
+#s2hist .modal h3{cursor:move;user-select:none;touch-action:none}#s2hist .modal h3::after{content:"  ⠿ 끌면 창으로 분리";font-size:.6em;font-weight:400;color:var(--muted)}
 #cmpDz{display:none;position:fixed;z-index:41;pointer-events:none;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) / 2);right:var(--rw);border:3px dashed var(--line);background:color-mix(in srgb,var(--surf) 60%,transparent);align-items:center;justify-content:center;font-weight:800;color:var(--muted);font-size:1.1em}
 #cmpDz.on{display:flex}#cmpDz.hot{border-color:var(--acc);background:color-mix(in srgb,var(--acc-soft) 80%,transparent);color:var(--acc-d)}
 }
@@ -524,7 +530,7 @@ body.pv #ovCmp.dock .modal{bottom:var(--ph)!important}
 <div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="ctx"></div><div id="dz"><div data-z="L">◀ 왼쪽(본문)에 열기</div><div data-z="R">오른쪽에 나란히 ▶</div></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
 <div class="view" id="doc"><div class="s2h" id="s1h"></div><div id="sumBox" class="sumbox"></div><div id="stk" class="stk" style="display:none"></div><div class="body" id="docBody"></div></div>
 <div class="view tt" id="tt"></div>
-<div id="doc2"><div class="s2h" id="s2h"></div><div class="body" id="doc2Body"></div></div>
+<div id="doc2"><div id="s2tabs"><button data-t="cite" class="on">🔗 인용 조문</button><button data-t="hist">🕘 재개정 연혁</button></div><div class="s2h" id="s2h"></div><div class="body" id="doc2Body"></div><div class="body" id="s2hist"><div class="empty" id="s2hEmpty" style="padding:30px 10px">본문의 '&lt;개정 …&gt;' 날짜(법령)나 조문 오른쪽 🕘 단추(행정규칙)를 누르면 여기에 그 개정 때 바뀐 내용과 재개정 사유가 나옵니다.</div></div></div>
 
 <div id="pbox"><div class="sheet" id="sheet"></div><div class="sheet" id="sheet2"></div></div>
 <div id="side"></div>
@@ -598,14 +604,14 @@ body.pv #ovCmp.dock .modal{bottom:var(--ph)!important}
   <div id="kbL"></div>
   <div style="margin-top:10px"><button class="btn g" id="kbNo">닫기</button></div>
 </div></div>
-<div class="over" id="ovCmp"><div class="modal">
+<div class="over" id="ovCmp"><div class="modal" id="cmpModal">
   <h3 id="cmpT">신구 비교</h3>
   <div class="muted" id="cmpS" style="font-size:.82em;line-height:1.5"></div>
   <div id="cmpNav" style="display:none"><button class="btn g" id="cmpPrev">◀ 이전 개정</button><span id="cmpPos" class="muted"></span><button class="btn g" id="cmpNext">다음 개정 ▶</button></div>
   <div class="cmpl" id="cmpL"></div>
   <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" style="flex:1" id="cmpOpen">새 시행본 열기</button><button class="btn g" id="cmpDockBtn" style="display:none">창으로 띄우기</button><button class="btn g" id="cmpNo">닫기</button></div>
 </div></div>
-<div id="cmpDz">여기에 놓으면 오른쪽 칸에 붙습니다</div>
+<div id="cmpDz">여기에 놓으면 오른쪽 칸의 '재개정 연혁' 탭에 들어갑니다</div>
 <div class="over" id="ovRep"><div class="modal">
   <h3>이상한 줄 신고 목록</h3>
   <div class="muted" style="font-size:.82em;line-height:1.5;margin-bottom:6px">본문에서 줄을 드래그해 ⚑를 누르면 여기에 쌓입니다. 「전체 복사」로 복사해 Claude에게 붙여넣으면 어느 줄이 문제인지 바로 알 수 있습니다.</div>
@@ -616,7 +622,7 @@ body.pv #ovCmp.dock .modal{bottom:var(--ph)!important}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.68";
+const VERSION = "10.69";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1141,13 +1147,13 @@ async function openCmp(f) {                                   // 개정 배지: 
       (x.new.length ? '<div class="cs cn"><b>현재</b>' + cmpSeg(x.new) + "</div>" : "") + "</div>";
   }).join("") : '<div class="empty">조문 내용은 바뀐 곳이 없습니다.<br>(별표·부칙만 바뀌었을 수 있습니다)</div>');
   CMPF.ch = c.changes;
-  $("#cmpL").scrollTop = 0; $("#ovCmp").classList.add("on"); cmpPlace();
+  $("#cmpL").scrollTop = 0; cmpShow();
 }
-$("#cmpNo").onclick = () => $("#ovCmp").classList.remove("on");
-$("#cmpOpen").onclick = async () => { const z = CMPF; if (!z) return; $("#ovCmp").classList.remove("on"); await openDoc(z.f.kind, z.r.rawmst, z.f.lawname, z.r.date, z.f.key || ""); };
+$("#cmpNo").onclick = () => cmpHide();
+$("#cmpOpen").onclick = async () => { const z = CMPF; if (!z) return; cmpHide(); await openDoc(z.f.kind, z.r.rawmst, z.f.lawname, z.r.date, z.f.key || ""); };
 $("#cmpL").addEventListener("click", async (e) => {
   const g = e.target.closest("[data-cg]"); if (!g || !CMPF) return;
-  const x = CMPF.ch[+g.dataset.cg]; $("#ovCmp").classList.remove("on");
+  const x = CMPF.ch[+g.dataset.cg]; cmpHide();
   await openDoc(CMPF.f.kind, CMPF.r.rawmst, CMPF.f.lawname, CMPF.r.date, x.key);
 });
 // ---- 본문의 '<개정 2021.1.5>' 날짜를 누르면: 그 개정 때 이 조문이 어떻게 바뀌었는지(개정 직전 시행본 ↔ 그 개정을 담은 시행본)
@@ -1177,7 +1183,7 @@ function ahRender(cx, dt, r) {
   $("#cmpNav").style.display = ""; $("#cmpPrev").disabled = !r.prev_mst; $("#cmpNext").disabled = !r.next_mst;
   $("#cmpPrev").title = r.prev_mst ? dfmt(r.prev_pub) + " 개정으로" : "더 이전 시행본 없음"; $("#cmpNext").title = r.next_mst ? dfmt(r.next_pub) + " 개정으로" : "더 새 시행본 없음";
   $("#cmpPos").textContent = r.idx + " / " + (r.total - 1) + "번째 개정 (연혁 시행본 " + r.total + "개)";
-  $("#cmpL").scrollTop = 0; $("#ovCmp").classList.add("on"); cmpPlace();
+  $("#cmpL").scrollTop = 0; cmpShow();
 }
 async function openAdmHist(key) {                                    // 행정규칙은 본문에 '<개정 …>' 표시가 없으므로 🕘 단추로 최신 개정부터 거꾸로 따라감
   if (needOC() || !cur.doc) return;
@@ -1218,53 +1224,73 @@ async function ahStep(dir) {                                          // 이전(
 $("#cmpPrev").onclick = () => ahStep(-1);
 $("#cmpNext").onclick = () => ahStep(1);
 // 비교 창을 제목줄로 끌어 옆으로(어디로든) 옮김 — 넓은 화면에서는 뒤쪽 본문도 그대로 보고 누를 수 있음
-let CMPD = LS.get("lv_cmpdock", true);                              // 개정 비교 창을 오른쪽 칸에 붙여 두는지(기본: 붙임 = 본문 | 비교 이분할)
+let CMPD = LS.get("lv_cmpdock", true);                              // 개정 비교를 오른쪽 칸의 '재개정 연혁' 탭에 보여 줄지(기본) / 떠 있는 창으로 볼지
 const cmpIsDock = () => CMPD !== false && isDT() && cur.view !== "tt";
+const cmpInPane = () => $("#s2hist").contains($("#cmpModal"));
 function cmpPlace() {
-  const m = $("#ovCmp .modal"); if (cmpIsDock()) return;
+  const m = $("#cmpModal"); if (cmpInPane()) return;
   if (!isDT()) { ["left", "transform", "top"].forEach((p) => m.style.removeProperty(p)); return; }
   const p = LS.get("lv_cmppos", null); if (!p) return;
   const w = m.offsetWidth || 700;
   if (p.l > -w + 80 && p.l < innerWidth - 80 && p.t >= 0 && p.t < innerHeight - 40) { m.style.setProperty("left", p.l + "px", "important"); m.style.setProperty("transform", "none", "important"); m.style.top = p.t + "px"; }
 }
-let cmpSig = "";
-function cmpApply() {
-  const ov = $("#ovCmp"), m = $("#ovCmp .modal"), dk = cmpIsDock(), on = ov.classList.contains("on"), sig = on + "|" + dk;
-  ov.classList.toggle("dock", dk);
-  const btn = $("#cmpDockBtn"); btn.textContent = dk ? "창으로 띄우기" : "오른쪽에 붙이기"; btn.style.display = isDT() && cur.view !== "tt" ? "" : "none";
-  if (dk) ["left", "transform", "top"].forEach((p) => m.style.removeProperty(p)); else cmpPlace();
-  const had = document.body.classList.contains("cmpd"); document.body.classList.toggle("cmpd", dk && on);
-  if (had !== (dk && on)) window.dispatchEvent(new Event("resize"));
-  cmpSig = sig;
+function s2Tabs() {                                                  // 오른쪽 칸 위쪽 탭: 인용 조문 / 재개정 연혁 (인용 칸일 때만)
+  const on = !!(SPLIT && SPLIT.mode === "cite"), d2 = $("#doc2");
+  $("#s2tabs").style.display = on ? "flex" : "none"; d2.classList.toggle("tabs", on);
+  if (!on) d2.classList.remove("hist");
+  const hist = d2.classList.contains("hist");
+  $("#s2tabs").querySelectorAll("button").forEach((b) => b.classList.toggle("on", (b.dataset.t === "hist") === hist));
 }
-new MutationObserver(() => { const ov = $("#ovCmp"); if ((ov.classList.contains("on") + "|" + cmpIsDock()) !== cmpSig) cmpApply(); }).observe($("#ovCmp"), { attributes: true, attributeFilter: ["class"] });
-$("#cmpDockBtn").onclick = () => { CMPD = !cmpIsDock(); LS.set("lv_cmpdock", CMPD); cmpApply(); };
-// 비교 창 제목줄을 끌면 창으로 떨어져 나와 어디로든 옮길 수 있고, 오른쪽 칸 자리(점선)에 놓으면 다시 붙음
+function s2Tab(t) { $("#doc2").classList.toggle("hist", t === "hist"); s2Tabs(); $("#doc2").scrollTop = 0; }
+$("#s2tabs").onclick = (e) => { const b = e.target.closest("button"); if (b) s2Tab(b.dataset.t); };
+function cmpToWindow() {
+  const m = $("#cmpModal"), ov = $("#ovCmp"); if (m.parentNode === ov) return;
+  ov.appendChild(m); $("#s2hEmpty").style.display = "";
+  if ($("#doc2").classList.contains("hist")) s2Tab("cite");
+}
+function cmpToPane() {
+  const m = $("#cmpModal"); ["left", "transform", "top"].forEach((p) => m.style.removeProperty(p));
+  if (!cmpInPane()) $("#s2hist").appendChild(m);
+  $("#ovCmp").classList.remove("on"); $("#s2hEmpty").style.display = "none";
+}
+function cmpShow() {                                                 // 기본: 오른쪽 칸(인용 칸)을 열어 '재개정 연혁' 탭에 / 좁은 화면·3단 비교·창 선택이면 떠 있는 창
+  let pane = false;
+  if (cmpIsDock()) { if (!SPLIT) openCiteCol(); pane = !!(SPLIT && SPLIT.mode === "cite"); }
+  if (pane) { cmpToPane(); s2Tab("hist"); } else { cmpToWindow(); $("#ovCmp").classList.add("on"); cmpPlace(); }
+  const btn = $("#cmpDockBtn"); btn.textContent = pane ? "창으로 띄우기" : "오른쪽 탭으로"; btn.style.display = isDT() && cur.view !== "tt" ? "" : "none";
+}
+function cmpHide() { if (cmpInPane()) s2Tab("cite"); else $("#ovCmp").classList.remove("on"); }
+$("#cmpDockBtn").onclick = () => { CMPD = !cmpInPane(); LS.set("lv_cmpdock", CMPD); cmpShow(); };
+// 제목줄을 끌면 창으로 떨어져 나와 어디로든 옮길 수 있고, 오른쪽 칸 자리(점선)에 놓으면 '재개정 연혁' 탭으로 들어감
 (function () {
-  const m = $("#ovCmp .modal"), h = $("#cmpT"), dz = $("#cmpDz"); let d = null, hot = false;
-  h.addEventListener("pointerdown", (e) => { if (!isDT() || e.button) return; const r = m.getBoundingClientRect(); d = { x: e.clientX - r.left, y: e.clientY - r.top, sx: e.clientX, sy: e.clientY, mv: false, wasDock: cmpIsDock() }; try { h.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); });
-  h.addEventListener("pointermove", (e) => {
+  const m = $("#cmpModal"), h = $("#cmpT"), dz = $("#cmpDz"); let d = null, hot = false;
+  const mv = (e) => {
     if (!d) return;
     if (!d.mv) {
       if (Math.abs(e.clientX - d.sx) + Math.abs(e.clientY - d.sy) < 6) return;
       d.mv = true;
-      if (d.wasDock) { CMPD = false; cmpApply(); d.x = Math.min(350, (m.offsetWidth || 700) / 2); d.y = 16; }
+      if (d.wasPane) { CMPD = false; cmpShow(); d.x = Math.min(350, (m.offsetWidth || 700) / 2); d.y = 16; }
       dz.classList.add("on");
     }
     const w = m.offsetWidth;
     const l = Math.min(Math.max(e.clientX - d.x, -w + 80), innerWidth - 80), t = Math.min(Math.max(e.clientY - d.y, 0), innerHeight - 40);
     m.style.setProperty("left", l + "px", "important"); m.style.setProperty("transform", "none", "important"); m.style.top = t + "px";
     hot = e.clientX >= dz.getBoundingClientRect().left && cur.view !== "tt"; dz.classList.toggle("hot", hot);
-  });
+  };
   const end = () => {
+    document.removeEventListener("pointermove", mv, true); document.removeEventListener("pointerup", end, true); document.removeEventListener("pointercancel", end, true);
     if (!d) return; const z = d; d = null; dz.classList.remove("on", "hot");
     if (!z.mv) return;
-    if (hot) { CMPD = true; LS.set("lv_cmpdock", true); cmpApply(); }
+    if (hot) { CMPD = true; LS.set("lv_cmpdock", true); cmpShow(); }
     else { LS.set("lv_cmpdock", false); const r = m.getBoundingClientRect(); LS.set("lv_cmppos", { l: Math.round(r.left), t: Math.round(r.top) }); }
     hot = false;
   };
-  h.addEventListener("pointerup", end); h.addEventListener("pointercancel", end);
-  h.addEventListener("dblclick", () => { if (cur.view === "tt") return; CMPD = true; LS.set("lv_cmpdock", true); cmpApply(); });
+  h.addEventListener("pointerdown", (e) => {
+    if (!isDT() || e.button) return; const r = m.getBoundingClientRect();
+    d = { x: e.clientX - r.left, y: e.clientY - r.top, sx: e.clientX, sy: e.clientY, mv: false, wasPane: cmpInPane() }; e.preventDefault();
+    document.addEventListener("pointermove", mv, true); document.addEventListener("pointerup", end, true); document.addEventListener("pointercancel", end, true);
+  });
+  h.addEventListener("dblclick", () => { if (cur.view === "tt") return; CMPD = true; LS.set("lv_cmpdock", true); cmpShow(); });
 })();
 // ---- 단축키 안내판
 const KBS = [["Alt + ← / →", "이전·다음 탭"], ["Alt + 마우스 휠", "탭 전환(휠을 돌리는 방향으로)"], ["Alt + Shift + ← / →", "화면 뒤로·앞으로"], ["Ctrl + Tab (Shift)", "다음·이전 탭"], ["Ctrl + W", "현재 탭 닫기"],
@@ -1719,7 +1745,7 @@ async function openSplit(i) {                                    // 열어 둔 �
 const CS = { key: "", list: [], tok: 0, pin: false, cache: {}, top: null };
 const csId = (c) => (c.law || c.self || (cur.doc && cur.doc.name) || "") + "|" + c.n + ":" + (c.b || 0);
 function openCiteCol() {
-  SPLIT = { mode: "cite" }; CS.key = ""; CS.pin = false; CS.top = null;
+  LS.set("lv_citeoff", false); SPLIT = { mode: "cite" }; CS.key = ""; CS.pin = false; CS.top = null;
   $("#dbSplit").classList.add("on");
   show(cur.view === "tt" ? "doc" : cur.view === "home" && !cur.doc ? "home" : "doc", cur.doc ? cur.doc.name : "");
   paintSplit();
@@ -1823,7 +1849,7 @@ function csPaint() {
   const b = $("#doc2Body"), keep = $("#doc2").scrollTop; b.innerHTML = h; bindCites(b); applyNotesSplit(); $("#doc2").scrollTop = keep;
   b.querySelectorAll(".csh[data-k]").forEach((x) => (x.onclick = () => openByName(x.dataset.n, x.dataset.k)));
   b.querySelectorAll(".csc.top").forEach((x) => { const z = document.createElement("button"); z.className = "csx"; z.textContent = "✕"; z.title = "누른 인용 닫기"; z.onclick = (e) => { e.stopPropagation(); CS.top = null; csPaint(); }; x.querySelector(".csh").appendChild(z); });
-  $("#s2X").onclick = closeSplit;
+  $("#s2X").onclick = () => { LS.set("lv_citeoff", true); closeSplit(); };
   $("#s2Pick").onclick = (e) => pickSplit(e.currentTarget.getBoundingClientRect());
   $("#s2Pin").onclick = () => { CS.pin = !CS.pin; if (!CS.pin) csBuild(csReadKey()); else csPaint(); };
 }
@@ -1915,9 +1941,10 @@ async function dropRef(ref, side) {
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && dg) { dg = null; stop(); } }, true);
   document.addEventListener("click", (e) => { const el = e.target.closest && e.target.closest(".lt,.card,.hr"); if (el && el.__dragged && Date.now() - el.__dragged < 500) { e.stopPropagation(); e.preventDefault(); } }, true);
 })();
-function closeSplit() { CS.tok++; CS.top = null; SPLIT = null; setTimeout(paintS1h, 0); document.body.classList.remove("split"); $("#doc2Body").innerHTML = ""; $("#dbSplit").classList.remove("on"); }
+function closeSplit() { const wasHist = $("#doc2").classList.contains("hist"); cmpToWindow(); if (wasHist) { $("#ovCmp").classList.add("on"); cmpPlace(); } CS.tok++; CS.top = null; SPLIT = null; setTimeout(paintS1h, 0); document.body.classList.remove("split"); $("#doc2Body").innerHTML = ""; $("#dbSplit").classList.remove("on"); s2Tabs(); }
 function paintSplit() {                                          // 오른쪽 칸을 그린다(본문을 다시 그릴 때마다 함께 — 인용 번호가 본문과 이어지게)
   if (!SPLIT) return;
+  s2Tabs();
   if (SPLIT.mode === "cite") { CS.key = ""; setTimeout(() => { if (SPLIT && SPLIT.mode === "cite") { if (CS.pin) csPaint(); else csBuild(csReadKey(), true); } }, 80); return; }
   const d = SPLIT.d, self = d.kind === "adm" && d.adm_base ? d.adm_base : d.name, keep = $("#doc2").scrollTop;
   let h = "";
@@ -2009,6 +2036,7 @@ function showDoc(d, kind, rawmst, key, fromTab) {
   if (tab === "t") paintToc();
   if (isDT() && $("#fq").value.trim()) findRun(key);
   if (isDT()) { const k0 = key && d.arts[key] ? key : (d.items.find((x) => x.k === "a") || {}).key; sideKey = ""; if (k0) setCurArt(k0); else paintSide(); }
+  if (isDT() && !SPLIT && !LS.get("lv_citeoff", false)) openCiteCol();     // 처음 열면 인용 칸이 열려 있음(닫으면 기억)
 }
 function paintDocFav() { const on = favIdx(cur.doc.kind, cur.doc.rawmst, "") >= 0; $("#bFav").textContent = on ? "★" : "☆"; $("#dbFav").textContent = on ? "★ 즐겨찾기" : "☆ 즐겨찾기"; }
 $("#bFav").onclick = () => { toggleFav(cur.doc, ""); paintDocFav(); };
@@ -2370,7 +2398,7 @@ $("#dbWeb").onclick = async () => {
   const d = cur.doc; if (!d) return toast("먼저 법령을 여세요", true);
   try { const u = await call("web_url", [d.kind, d.name, d.arts[sideKey] ? sideKey : ""], ""); window.open(u, "_blank", "noopener"); } catch (e) { toast("법제처 주소를 만들지 못했습니다", true); }
 };
-$("#dbSplit").onclick = (e) => { if (SPLIT) return closeSplit(); if (!cur.doc) return toast("먼저 법령을 여세요", true); openCiteCol(); };
+$("#dbSplit").onclick = (e) => { if (SPLIT) { LS.set("lv_citeoff", true); return closeSplit(); } if (!cur.doc) return toast("먼저 법령을 여세요", true); openCiteCol(); };
 $("#dbTT").onclick = () => { if (!cur.doc) return toast("먼저 법령을 여세요", true); $("#bTT").click(); };
 $("#dbFav").onclick = () => { if (!cur.doc) return toast("먼저 법령을 여세요", true); toggleFav(cur.doc, ""); paintDocFav(); };
 // ---- 이전에 보던 조문으로(◀ 뒤로, Alt+←)
