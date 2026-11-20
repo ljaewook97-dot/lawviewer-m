@@ -363,8 +363,8 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #dz div{flex:1;display:flex;align-items:center;justify-content:center;border:2px dashed var(--line);border-radius:10px;background:color-mix(in srgb,var(--surf) 70%,transparent);font-weight:800;color:var(--muted);font-size:1.05em}
   #dz div.ov{border-color:var(--acc);background:color-mix(in srgb,var(--acc-soft) 85%,transparent);color:var(--acc-d)}
   .dragghost{position:fixed;z-index:71;pointer-events:none;padding:4px 10px;border-radius:6px;background:var(--acc);color:var(--acc-t);font-size:.85em;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis}
-  body.split #doc{right:calc(var(--rw) + (100vw - var(--lw) - var(--rw)) / 2)}
-  body.split #doc2{display:block;position:fixed;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) / 2);right:var(--rw);overflow-y:auto;padding:0 16px;background:color-mix(in srgb,var(--surf) 94%,gray);border-left:3px solid var(--line);z-index:2}
+  body.split #doc{right:calc(var(--rw) + (100vw - var(--lw) - var(--rw)) * (1 - var(--sf,.5)))}
+  body.split #doc2{display:block;position:fixed;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) * var(--sf,.5));right:var(--rw);overflow-y:auto;padding:0 16px;background:color-mix(in srgb,var(--surf) 94%,gray);border-left:3px solid var(--line);z-index:2}
   body.split.pv #doc2{bottom:var(--ph)}
   #doc2 .body{padding:0 2px 50px;max-width:var(--bw,none);margin-left:auto;margin-right:auto}
   #doc2 .s2h{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:6px;padding:5px 2px;margin:0 -2px 4px;background:color-mix(in srgb,var(--surf) 94%,gray);border-bottom:1px solid var(--line);font-size:.85em;font-weight:700}
@@ -472,7 +472,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 #s2hist .modal{position:static!important;left:auto!important;right:auto!important;top:auto!important;transform:none!important;width:auto!important;max-height:none!important;box-shadow:none!important;border:0!important;background:transparent!important;padding:8px 0 40px!important;overflow:visible!important;display:flex;flex-direction:column}
 #s2hist .cmpl{overflow:visible;flex:none}
 #s2hist .modal h3{cursor:move;user-select:none;touch-action:none}#s2hist .modal h3::after{content:"  ⠿ 끌면 창으로 분리";font-size:.6em;font-weight:400;color:var(--muted)}
-#cmpDz{display:none;position:fixed;z-index:41;pointer-events:none;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) / 2);right:var(--rw);border:3px dashed var(--line);background:color-mix(in srgb,var(--surf) 60%,transparent);align-items:center;justify-content:center;font-weight:800;color:var(--muted);font-size:1.1em}
+#cmpDz{display:none;position:fixed;z-index:41;pointer-events:none;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) * var(--sf,.5));right:var(--rw);border:3px dashed var(--line);background:color-mix(in srgb,var(--surf) 60%,transparent);align-items:center;justify-content:center;font-weight:800;color:var(--muted);font-size:1.1em}
 #cmpDz.on{display:flex}#cmpDz.hot{border-color:var(--acc);background:color-mix(in srgb,var(--acc-soft) 80%,transparent);color:var(--acc-d)}
 }
 @media (min-width:1000px){#ovCmp.on{background:transparent;pointer-events:none}#ovCmp .modal{pointer-events:auto;box-shadow:0 10px 36px rgba(0,0,0,.38);border:1px solid var(--line)}#ovCmp .modal h3{cursor:move;user-select:none;touch-action:none;padding-bottom:2px}#ovCmp .modal h3::after{content:"  ⠿ 끌어서 옮기기";font-size:.6em;font-weight:400;color:var(--muted)}}#ovCmp .cmpl{flex:1;min-height:0;overflow:auto;margin-top:6px}
@@ -495,6 +495,43 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .art.fold .more{display:none}
 .mrb{display:block;width:100%;margin-top:6px;padding:7px;border:1px dashed var(--line);border-radius:8px;background:transparent;color:var(--acc-d);font:inherit;font-size:.86em;font-weight:700;cursor:pointer}
 .art.fold .mrb{background:linear-gradient(var(--bg0,transparent),transparent)}
+/* ===== v10.70 디자인 */
+a.c{color:color-mix(in srgb,var(--link) 66%,var(--surf));border-bottom-color:color-mix(in srgb,var(--link) 14%,transparent)}
+a.c:hover{color:var(--link);border-bottom-color:var(--link);background:color-mix(in srgb,var(--link) 10%,transparent)}
+a.c.dg{color:color-mix(in srgb,var(--acc-d) 70%,var(--surf))}a.c.dg:hover{color:var(--acc-d)}
+.art{padding:20px 0 16px}
+b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
+.ln.l0:first-child{margin-bottom:4px}
+.ln.l1>.mk,.ln.l2>.mk,.ln.l3>.mk{color:var(--acc-d);font-weight:700;padding-right:.15em}
+.am{opacity:.95;color:var(--sub);font-size:.76em}
+.am .rvd{position:relative;color:var(--acc-d);font-weight:600;text-decoration:underline;text-decoration-style:solid;text-decoration-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+.am .rvd:hover{background:var(--acc-soft);border-radius:3px}
+#rvtip{display:none;position:fixed;z-index:80;white-space:nowrap;font-size:.8em;font-weight:600;padding:3px 9px;border-radius:5px;background:var(--text);color:var(--surf);box-shadow:0 2px 8px rgba(0,0,0,.25);pointer-events:none}#rvtip.on{display:block}
+.cmpr .rt.cl{max-height:5.1em;overflow:hidden;-webkit-mask-image:linear-gradient(#000 55%,transparent);mask-image:linear-gradient(#000 55%,transparent)}
+.cmpr .rh{font-weight:800;color:var(--acc-d);margin:6px 0 1px}.cmpr .rt>.rh:first-child{margin-top:0}
+.cmpr .rm{display:block;margin:2px 0 0 auto;border:0;background:none;color:var(--acc);font-size:.78em;font-weight:700;cursor:pointer}
+.cmpa .cl{min-height:1em}.cmpa .fx{display:none}.cmpa .fm{margin:2px 0;padding:1px 6px;font-size:.84em;color:var(--muted);background:color-mix(in srgb,var(--text) 5%,transparent);border-radius:4px;cursor:pointer;text-align:center}
+.cmpa .fm.o+.fx,.cmpa.full .fx{display:block}.cmpa.full .fm{display:none}
+.cmpa del{background:color-mix(in srgb,#B71C1C 36%,transparent);border-radius:2px}.cmpa ins{background:color-mix(in srgb,#2E7D32 38%,transparent);border-radius:2px;font-weight:600}
+.nr.nc{border-left:3px solid var(--hc,var(--line));background:color-mix(in srgb,var(--hc,transparent) 7%,transparent);border-radius:0 6px 6px 0}
+.nr.nc .nt{background:color-mix(in srgb,var(--hc,transparent) 16%,transparent)!important}
+.nr.nc[data-hc=h1]{--hc:#E0B400}.nr.nc[data-hc=h2]{--hc:#2E9E4F}.nr.nc[data-hc=h3]{--hc:#E0506E}.nr.nc[data-hc=h4]{--hc:#2F7FE0}.nr.nc[data-hc=h5]{--hc:#E8800C}
+#dens .sm.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+#skel{display:none;position:fixed;z-index:12;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;left:var(--lw);right:var(--rw);padding:26px 22px;background:var(--surf);pointer-events:none;overflow:hidden}
+#skel.on{display:block}
+#skel .sk{border-radius:5px;background:linear-gradient(90deg,color-mix(in srgb,var(--line) 75%,var(--surf)),color-mix(in srgb,var(--line) 25%,var(--surf)),color-mix(in srgb,var(--line) 75%,var(--surf)));background-size:200% 100%;animation:skl 1.3s linear infinite;max-width:var(--bw,900px);margin:0 auto 9px}
+#skel .sk.h{height:22px;width:50%;margin-bottom:22px}#skel .sk.t{height:15px;width:30%;margin-top:18px}#skel .sk.l{height:12px;width:100%}
+@keyframes skl{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){#skel .sk{animation:none}}
+#sgrip{display:none}
+@media (min-width:1000px){
+  body.split #sgrip{display:block;position:fixed;z-index:30;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;width:11px;margin-left:-5px;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) * var(--sf,.5));cursor:ew-resize;touch-action:none}
+  body.split #sgrip:hover,body.split #sgrip.on{background:color-mix(in srgb,var(--acc) 40%,transparent)}
+  #ltabs .lt{box-shadow:inset 0 3px 0 var(--tc)}
+  #ltabs .lt span{max-width:15em}
+  #dbar .tb.ic{padding:0 7px;min-width:26px;font-size:.95em}
+  #dbar .tb.pri{font-weight:700}
+}
 </style>
 </head>
 <body>
@@ -522,12 +559,12 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <button class="tb" id="bL" title="왼쪽 목록 접기/펴기 (F7)">◀ 목록</button>
   <span class="fbox"><span>🔍</span><input id="fq" placeholder="본문에서 찾기" autocomplete="off"></span>
   <button class="tb" id="fPrev" title="이전 (Shift+Enter)">▲</button><button class="tb" id="fNext" title="다음 (Enter)">▼</button>
-  <button class="tb" id="fClr">✕ 지우기</button><span id="fCnt" class="muted"></span><input id="gk" class="fq2" placeholder="조문 번호 (예: 52의2)" autocomplete="off" title="Ctrl+G · 조문 번호를 치고 Enter">
+  <button class="tb ic" id="fClr" title="찾기 강조 지우기">✕</button><span id="fCnt" class="muted"></span><input id="gk" class="fq2" placeholder="조문 번호 (예: 52의2)" autocomplete="off" title="Ctrl+G · 조문 번호를 치고 Enter">
   <span class="sp"></span>
-  <button class="tb pri" id="dbTT">3단 비교</button><button class="tb pri" id="dbFav">☆ 즐겨찾기</button><span class="dsep"></span><button class="tb" id="dbCopy">조문 복사</button><button class="tb" id="dbCite" title="「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">인용 복사</button><button class="tb" id="dbWeb" title="법제처 화면에서 열기">법제처 열기</button>
-  <button class="tb" id="dbSplit" title="오른쪽 칸: 지금 보는 조문이 인용하는 조문을 따라 보여 줍니다(오른쪽 칸 '바꾸기 ▾'에서 다른 법령 나란히 보기도 가능)">⫴ 인용 칸</button><button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
+  <button class="tb pri" id="dbTT">3단 비교</button><button class="tb pri" id="dbFav">☆ 즐겨찾기</button><span class="dsep"></span><button class="tb ic" id="dbCopy" title="조문 복사">⧉</button><button class="tb ic" id="dbCite" title="인용 복사 — 「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">❝</button><button class="tb ic" id="dbWeb" title="법제처 화면에서 열기">↗</button>
+  <button class="tb pri" id="dbSplit" title="오른쪽 칸: 지금 보는 조문이 인용하는 조문을 따라 보여 줍니다(오른쪽 칸 '바꾸기 ▾'에서 다른 법령 나란히 보기도 가능)">⫴ 인용 칸</button><button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
 </div>
-<div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="ctx"></div><div id="dz"><div data-z="L">◀ 왼쪽(본문)에 열기</div><div data-z="R">오른쪽에 나란히 ▶</div></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
+<div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="sgrip" title="끌어서 왼쪽·오른쪽 칸 폭 조절 (더블클릭: 반반)"></div><div id="ctx"></div><div id="dz"><div data-z="L">◀ 왼쪽(본문)에 열기</div><div data-z="R">오른쪽에 나란히 ▶</div></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
 <div class="view" id="doc"><div class="s2h" id="s1h"></div><div id="sumBox" class="sumbox"></div><div id="stk" class="stk" style="display:none"></div><div class="body" id="docBody"></div></div>
 <div class="view tt" id="tt"></div>
 <div id="doc2"><div id="s2tabs"><button data-t="cite" class="on">🔗 인용 조문</button><button data-t="hist">🕘 재개정 연혁</button></div><div class="s2h" id="s2h"></div><div class="body" id="doc2Body"></div><div class="body" id="s2hist"><div class="empty" id="s2hEmpty" style="padding:30px 10px">본문의 '&lt;개정 …&gt;' 날짜(법령)나 조문 오른쪽 🕘 단추(행정규칙)를 누르면 여기에 그 개정 때 바뀐 내용과 재개정 사유가 나옵니다.</div></div></div>
@@ -549,6 +586,8 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <section class="sg"><h4>화면</h4>
     <label>읽기 모드 (한 번에 바꾸기)</label>
     <div id="presets" style="display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px"><button class="sm" data-p="paper">종이</button><button class="sm" data-p="dark">어둡게</button><button class="sm" data-p="big">큰 글씨</button><button class="sm" data-p="reset">기본</button></div>
+    <label>글자·줄 간격 한 번에 (본문과 오른쪽 칸 모두)</label>
+    <div id="dens" style="display:flex;gap:6px;margin:2px 0 8px"><button class="sm" data-n="c">촘촘하게</button><button class="sm" data-n="n">보통</button><button class="sm" data-n="l">넉넉하게</button></div>
     <label>색상 테마</label>
     <select id="theme"><optgroup label="밝은 테마"><option value="">기본 (청록)</option><option value="light">밝은 파랑</option><option value="sky">하늘</option><option value="mono">모노 (흑백)</option><option value="hc">고대비</option><option value="paper">종이</option><option value="sand">모래</option><option value="sage">세이지</option><option value="lavender">라벤더</option><option value="rose">로즈</option></optgroup><optgroup label="어두운 테마"><option value="dim">어스름 (부드러운 어두움)</option><option value="graphite">차콜</option><option value="dark">남색</option><option value="ocean">심해</option><option value="nord">노드</option><option value="solar">솔라</option><option value="forest">숲</option><option value="plum">자두</option><option value="ember">잿불</option><option value="midnight">미드나이트 (검정)</option></optgroup></select>
     <div class="g2">
@@ -622,7 +661,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.69";
+const VERSION = "10.70";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -733,6 +772,12 @@ function applyPrefs() {
   try { document.documentElement.style.colorScheme = document.documentElement.dataset.dark ? "dark" : "light"; } catch (e) {}
 }
 applyPrefs();
+const DENS = { c: [-1, "1.5"], n: [0, ""], l: [2, "1.9"] };
+document.querySelectorAll("#dens button").forEach((b) => (b.onclick = () => {
+  const d = DENS[b.dataset.n]; LS.set(FSK(), FSD() + d[0]); LS.set("lv_lh", d[1]); LS.set("lv_den", b.dataset.n);
+  $("#fsz").value = FSD() + d[0]; $("#lhs").value = d[1];
+  applyPrefs(); document.querySelectorAll("#dens button").forEach((x) => x.classList.toggle("on", x === b)); toast(b.textContent + " 으로 바꿨습니다");
+}));
 const PRESETS = { paper: ["paper", 14, "1.7", "900"], dark: ["graphite", 14, "1.7", "900"], big: ["", 18, "1.7", "720"], reset: ["", null, "", ""] };
 document.querySelectorAll("#presets button").forEach((b) => (b.onclick = () => {
   const p = PRESETS[b.dataset.p]; LS.set("lv_theme", p[0]); LS.set(FSK(), p[1] || FSD()); LS.set("lv_lh", p[2]); LS.set("lv_bw", p[3]); if (b.dataset.p === "reset") { LS.set("lv_ff", ""); $("#ffs").value = ""; }
@@ -1131,7 +1176,27 @@ const upTag = (f) => { const u = UPC.m && UPC.m[(f.kind || "law") + "|" + (f.law
 const revTag = (f, i) => revTag0(f, i) + upTag(f);
 const dfmt = (d) => { d = digs(d); return d.length === 8 ? d.slice(0, 4) + "." + d.slice(4, 6) + "." + d.slice(6) : d || "?"; };
 const cmpSeg = (a) => a.map((x) => x[0] === "=" ? esc(x[1]) : x[0] === "-" ? "<del>" + esc(x[1]) + "</del>" : "<ins>" + esc(x[1]) + "</ins>").join("");
-const reasonHTML = (t) => t ? '<details class="cmpr" open><summary>재개정 사유(제·개정 이유)</summary><div class="rt">' + esc(t).replace(/\n/g, "<br>") + "</div></details>" : '<div class="muted" style="font-size:.78em;margin-top:6px">이 시행본은 제·개정 이유가 조회되지 않았습니다.</div>';
+const reasonHTML = (t) => {
+  if (!t) return '<div class="muted" style="font-size:.78em;margin-top:6px">이 시행본은 제·개정 이유가 조회되지 않았습니다.</div>';
+  const L = String(t).split("\n"), nb = L.filter((x) => x.trim()).length;
+  const body = L.map((x) => /^\s*[◇◆■□▣]/.test(x) ? '<div class="rh">' + esc(x.trim()) + "</div>" : "<div>" + (esc(x) || "&nbsp;") + "</div>").join("");
+  return '<details class="cmpr" open><summary>재개정 사유(제·개정 이유)</summary><div class="rt' + (nb > 4 ? " cl" : "") + '">' + body + "</div>" + (nb > 4 ? '<button class="rm" data-rm>더 보기 ▾</button>' : "") + "</details>";
+};
+const cmpLines = (a) => { const L = [[]]; a.forEach(([k, t]) => String(t).split("\n").forEach((p, i) => { if (i > 0) L.push([]); if (p) L[L.length - 1].push([k, p]); })); return L; };
+const cmpSeg2 = (a) => {                                          // 바뀐 줄 앞뒤 한 줄만 남기고 나머지는 접는다
+  const L = cmpLines(a); if (L.length < 6) return cmpSeg(a);
+  const ch = L.map((l) => l.some((x) => x[0] !== "=")); if (!ch.some(Boolean)) return cmpSeg(a);
+  const keep = L.map((_, i) => ch[i] || ch[i - 1] || ch[i + 1]); let h = "", i = 0;
+  const ln = (l) => '<div class="cl">' + (cmpSeg(l) || "&nbsp;") + "</div>";
+  while (i < L.length) {
+    if (keep[i]) { h += ln(L[i]); i++; continue; }
+    let j = i; while (j < L.length && !keep[j]) j++;
+    if (j - i <= 1) h += ln(L[i]); else h += '<div class="fm" data-cf>⋯ 바뀌지 않은 ' + (j - i) + '줄 접힘 (눌러 펼치기)</div><div class="fx">' + L.slice(i, j).map(ln).join("") + "</div>";
+    i = j;
+  }
+  return h;
+};
+const cmpFullBtn = (h) => h.indexOf('class="fm"') >= 0 ? '<span class="go" data-cfa>전문 보기</span>' : "";
 let CMPF = null;
 async function openCmp(f) {                                   // 개정 배지: 담아 둔 시행본 ↔ 새 시행본 신구 비교
   const r = f && revNew(f); if (!r || needOC()) return;
@@ -1141,16 +1206,23 @@ async function openCmp(f) {                                   // 개정 배지: 
   $("#cmpS").textContent = "이전 " + dfmt(f.date) + " → 현재 " + dfmt(r.date) + " · 바뀐 조문 " + c.total + "개" + (c.same ? " (그대로 " + c.same + "개)" : "") + (c.truncated ? " · 앞의 300개만 표시" : "");
   $("#cmpL").innerHTML = reasonHTML(c.reason) + (c.changes.length ? c.changes.map((x, i) => {
     const cl = x.st === "신설" ? "n" : x.st === "삭제" ? "d" : "";
-    return '<div class="cmpa"><div class="ch"><span>' + esc(x.label) + (x.title ? " " + esc(x.title) : "") + '</span><span class="st ' + cl + '">' + x.st + "</span>" + (x.st !== "삭제" ? '<span class="go" data-cg="' + i + '">본문에서 보기</span>' : "") + "</div>" +
+    const ho = x.old.length ? cmpSeg2(x.old) : "", hn = x.new.length ? cmpSeg2(x.new) : "";
+    return '<div class="cmpa"><div class="ch"><span>' + esc(x.label) + (x.title ? " " + esc(x.title) : "") + '</span><span class="st ' + cl + '">' + x.st + "</span>" + cmpFullBtn(ho + hn) + (x.st !== "삭제" ? '<span class="go" data-cg="' + i + '">본문에서 보기</span>' : "") + "</div>" +
       (x.otitle ? '<div class="cs co"><b>제목</b><del>' + esc(x.otitle) + "</del></div>" : "") +
-      (x.old.length ? '<div class="cs co"><b>이전</b>' + cmpSeg(x.old) + "</div>" : "") +
-      (x.new.length ? '<div class="cs cn"><b>현재</b>' + cmpSeg(x.new) + "</div>" : "") + "</div>";
+      (ho ? '<div class="cs co"><b>이전</b>' + ho + "</div>" : "") +
+      (hn ? '<div class="cs cn"><b>현재</b>' + hn + "</div>" : "") + "</div>";
   }).join("") : '<div class="empty">조문 내용은 바뀐 곳이 없습니다.<br>(별표·부칙만 바뀌었을 수 있습니다)</div>');
   CMPF.ch = c.changes;
   $("#cmpL").scrollTop = 0; cmpShow();
 }
 $("#cmpNo").onclick = () => cmpHide();
 $("#cmpOpen").onclick = async () => { const z = CMPF; if (!z) return; cmpHide(); await openDoc(z.f.kind, z.r.rawmst, z.f.lawname, z.r.date, z.f.key || ""); };
+$("#cmpL").addEventListener("click", (e) => {
+  const t = e.target; if (!t.closest) return;
+  const rm = t.closest("[data-rm]"); if (rm) { const rt = rm.parentNode.querySelector(".rt"); const o = rt.classList.toggle("cl"); rm.textContent = o ? "더 보기 ▾" : "접기 ▴"; return; }
+  const cf = t.closest("[data-cf]"); if (cf) { cf.classList.toggle("o"); return; }
+  const ca = t.closest("[data-cfa]"); if (ca) { const c = ca.closest(".cmpa"); const f = c.classList.toggle("full"); ca.textContent = f ? "변경부만 보기" : "전문 보기"; }
+});
 $("#cmpL").addEventListener("click", async (e) => {
   const g = e.target.closest("[data-cg]"); if (!g || !CMPF) return;
   const x = CMPF.ch[+g.dataset.cg]; cmpHide();
@@ -1174,12 +1246,13 @@ function ahRender(cx, dt, r) {
   const pubD = r.pub ? dfmt(r.pub) : dt;
   $("#cmpS").textContent = pubD + " 개정" + (r.kind ? " (" + r.kind + ")" : "") + " · 이전 시행본(시행 " + dfmt(r.old_date) + ") → 이 개정 시행본(시행 " + dfmt(r.new_date) + ")";
   const cl = r.st === "신설" ? "n" : r.st === "삭제" ? "d" : "";
-  $("#cmpL").innerHTML = reasonHTML(r.reason) + '<div class="cmpa"><div class="ch"><span>' + esc(r.label || "") + (r.title ? " " + esc(r.title) : "") + '</span><span class="st ' + cl + '">' + esc(r.st) + "</span></div>" +
+  const ho = r.old.length && r.st !== "동일" ? cmpSeg2(r.old) : "", hn = r.new.length ? cmpSeg2(r.new) : "";
+  $("#cmpL").innerHTML = reasonHTML(r.reason) + '<div class="cmpa"><div class="ch"><span>' + esc(r.label || "") + (r.title ? " " + esc(r.title) : "") + '</span><span class="st ' + cl + '">' + esc(r.st) + "</span>" + cmpFullBtn(ho + hn) + "</div>" +
     (r.st === "동일" ? '<div class="muted" style="font-size:.86em;padding:4px 0">이 개정에서 이 조문은 바뀌지 않았습니다(다른 조문이 바뀐 개정입니다).</div>' : "") +
     (r.st === "없음" ? '<div class="muted" style="font-size:.86em;padding:4px 0">이 조문 번호가 두 시행본 모두에 없습니다(조 번호 체계가 달라졌을 수 있습니다).</div>' : "") +
     (r.otitle ? '<div class="cs co"><b>제목</b><del>' + esc(r.otitle) + "</del></div>" : "") +
-    (r.old.length && r.st !== "동일" ? '<div class="cs co"><b>이전</b>' + cmpSeg(r.old) + "</div>" : "") +
-    (r.new.length ? '<div class="cs cn"><b>' + (r.st === "동일" ? "내용" : "이후") + "</b>" + cmpSeg(r.new) + "</div>" : "") + "</div>";
+    (ho ? '<div class="cs co"><b>이전</b>' + ho + "</div>" : "") +
+    (hn ? '<div class="cs cn"><b>' + (r.st === "동일" ? "내용" : "이후") + "</b>" + hn + "</div>" : "") + "</div>";
   $("#cmpNav").style.display = ""; $("#cmpPrev").disabled = !r.prev_mst; $("#cmpNext").disabled = !r.next_mst;
   $("#cmpPrev").title = r.prev_mst ? dfmt(r.prev_pub) + " 개정으로" : "더 이전 시행본 없음"; $("#cmpNext").title = r.next_mst ? dfmt(r.next_pub) + " 개정으로" : "더 새 시행본 없음";
   $("#cmpPos").textContent = r.idx + " / " + (r.total - 1) + "번째 개정 (연혁 시행본 " + r.total + "개)";
@@ -1503,7 +1576,7 @@ let CITES = [];              // 눌러서 열 인용 목록(전역 번호)
 function seg(s, bold) {
   let out = "", last = 0, m;
   AMEND.lastIndex = 0;
-  while ((m = AMEND.exec(s))) { out += esc(s.slice(last, m.index)) + '<span class="am">' + esc(m[0]).replace(/(\d{4})\.\s?(\d{1,2})\.\s?(\d{1,2})/g, (x) => '<a class="rvd" data-d="' + x.replace(/\s/g, "") + '" title="눌러서 이때 이 조문이 어떻게 바뀌었는지 보기">' + x + "</a>") + "</span>"; last = m.index + m[0].length; }
+  while ((m = AMEND.exec(s))) { out += esc(s.slice(last, m.index)) + '<span class="am">' + esc(m[0]).replace(/(\d{4})\.\s?(\d{1,2})\.\s?(\d{1,2})/g, (x) => '<a class="rvd" data-d="' + x.replace(/\s/g, "") + '" data-tip="이때 어떻게 바뀌었는지 보기">' + x + "</a>") + "</span>"; last = m.index + m[0].length; }
   out += esc(s.slice(last));
   return bold ? "<b>" + out + "</b>" : out;
 }
@@ -1595,14 +1668,23 @@ function bindCites(root) {
 }
 
 // ---------------------------------------------------------------- 문서 열기
+function skel(on) {                                              // 받는 중: 본문 모양의 회색 틀(PC 넓은 화면)
+  let el = $("#skel");
+  if (!on) { if (el) el.classList.remove("on"); return; }
+  if (!isDT()) return;
+  if (!el) { el = document.createElement("div"); el.id = "skel"; el.innerHTML = '<div class="sk h"></div>' + Array.from({ length: 4 }, (_, i) => '<div class="sk t"></div><div class="sk l"></div><div class="sk l" style="width:' + (92 - i * 7) + '%"></div><div class="sk l" style="width:' + (70 - i * 5) + '%"></div>').join(""); document.body.appendChild(el); }
+  el.classList.add("on");
+}
 async function openDoc(kind, rawmst, name, date, key) {
   if (needOC()) return;
-  const d = await call("open_doc", [OC, kind, rawmst, name, date || ""], name + " 받는 중…");
+  skel(true); let d;
+  try { d = await call("open_doc", [OC, kind, rawmst, name, date || ""], name + " 받는 중…"); } finally { skel(false); }
   showDoc(d, kind, rawmst, key);
 }
 async function openByName(name, key) {
   if (needOC()) return;
-  const d = await call("open_by_name", [OC, name], name + " 받는 중…");
+  skel(true); let d;
+  try { d = await call("open_by_name", [OC, name], name + " 받는 중…"); } finally { skel(false); }
   showDoc(d, "law", d.mst, key);
 }
 let TTTABS = [], TTCUR = -1;   // 3단 비교 탭(법마다 하나)
@@ -1685,12 +1767,14 @@ async function loadLTab(i, msg) {                                 // 아직 안 
   restoreScroll(t);
 }
 const tabCls = (d) => d.kind === "adm" ? "k-adm" : d.kind === "ordin" ? "k-ord" : /시행규칙$/.test(d.name) ? "k-rule" : /시행령$/.test(d.name) ? "k-dec" : "k-law";
+const TABABB = { "국토의 계획 및 이용에 관한 법률": "국토계획법", "도시 및 주거환경정비법": "도시정비법", "도시공원 및 녹지 등에 관한 법률": "도시공원법", "산업입지 및 개발에 관한 법률": "산업입지법", "개발제한구역의 지정 및 관리에 관한 특별조치법": "개발제한구역법", "도시재정비 촉진을 위한 특별법": "도시재정비법", "건축물의 분양에 관한 법률": "건축물분양법", "택지개발촉진법": "택지개발법", "수도권정비계획법": "수도권정비법", "공공주택 특별법": "공공주택법", "노후계획도시 정비 및 지원에 관한 특별법": "노후계획도시법", "도시 및 주거환경정비법 시행령": "도시정비법 시행령" };
+const tabShort = (nm) => { nm = String(nm); const m = /^(.*?)\s*(시행령|시행규칙)$/.exec(nm); const base = m ? m[1] : nm; return (TABABB[base] || base) + (m ? " " + m[2] : ""); };
 const tabKL = (d) => ({ "k-adm": "행정", "k-ord": "자치", "k-rule": "칙", "k-dec": "령", "k-law": "법" })[tabCls(d)];
 const ltName = (n) => String(n).replace(/\s*시행령$/, "(령)").replace(/\s*시행규칙$/, "(칙)");
 function paintLTabs() {
   saveTabs();
   const bar = $("#ltabs");
-  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + ltabs.map((t, i) => '<div class="lt ' + tabCls(t.d) + (t.d.stub ? " lz" : "") + (t.d === cur.doc && !SUMACT && cur.view !== "tt" ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><i class="lk">' + tabKL(t.d) + '</i><span>' + esc(String(t.d.name).replace(/\s*(시행령|시행규칙)$/, "")) + '</span><b data-x="' + i + '">✕</b></div>').join("") + TTTABS.map((x, j) => '<div class="lt k-tt' + (cur.view === "tt" && j === TTCUR ? " on" : "") + '" data-tt="' + j + '" title="3단 비교 — ' + esc(x.base) + '"><i class="lk">3단</i><span>' + esc(x.base) + '</span><b data-xt="' + j + '">✕</b></div>').join("");
+  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + ltabs.map((t, i) => '<div class="lt ' + tabCls(t.d) + (t.d.stub ? " lz" : "") + (t.d === cur.doc && !SUMACT && cur.view !== "tt" ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><i class="lk">' + tabKL(t.d) + '</i><span>' + esc(tabShort(t.d.name)) + '</span><b data-x="' + i + '">✕</b></div>').join("") + TTTABS.map((x, j) => '<div class="lt k-tt' + (cur.view === "tt" && j === TTCUR ? " on" : "") + '" data-tt="' + j + '" title="3단 비교 — ' + esc(x.base) + '"><i class="lk">3단</i><span>' + esc(x.base) + '</span><b data-xt="' + j + '">✕</b></div>').join("");
   bar.querySelectorAll(".lt[data-i]").forEach((el) => (el.oncontextmenu = (e) => {
     e.preventDefault(); const i = +el.dataset.i;
     showMenu(e.clientX, e.clientY, [["오른쪽에 나란히 보기", () => openSplit(i)], ["이 탭 닫기", () => closeLTab(i), "dz"]].concat(SPLIT ? [["나란히 보기 닫기", closeSplit]] : []));
@@ -2455,6 +2539,34 @@ $("#bTheme").onclick = (e) => {
     g.addEventListener("dblclick", () => { LS.set(key, def); apply(); });
   });
 })();
+// ---- 개정 표시 위에 마우스를 올리면 안내 풍선
+(function () {
+  const tip = document.createElement("div"); tip.id = "rvtip"; document.body.appendChild(tip);
+  document.addEventListener("mouseover", (e) => {
+    const a = e.target.closest && e.target.closest("a.rvd[data-tip]");
+    if (!a) { tip.classList.remove("on"); return; }
+    tip.textContent = a.dataset.tip; tip.classList.add("on");
+    const r = a.getBoundingClientRect(), w = tip.offsetWidth;
+    tip.style.left = Math.max(6, Math.min(innerWidth - w - 6, r.left + r.width / 2 - w / 2)) + "px";
+    tip.style.top = Math.max(6, r.top - tip.offsetHeight - 6) + "px";
+  });
+  document.addEventListener("scroll", () => tip.classList.remove("on"), true);
+})();
+// ---- 본문|오른쪽 칸 폭 끌기 (가운데 경계선)
+(function () {
+  const g = $("#sgrip"), root = document.documentElement.style; let on = false;
+  const apply = () => root.setProperty("--sf", String(LS.get("lv_sf", 0.5)));
+  apply();
+  g.addEventListener("pointerdown", (e) => { on = true; g.classList.add("on"); g.setPointerCapture(e.pointerId); e.preventDefault(); });
+  g.addEventListener("pointermove", (e) => {
+    if (!on) return;
+    const a = $("#doc").getBoundingClientRect().left, b = $("#doc2").getBoundingClientRect().right;
+    LS.set("lv_sf", Math.round(Math.max(0.25, Math.min(0.75, (e.clientX - a) / Math.max(1, b - a))) * 1000) / 1000); apply();
+  });
+  const end = () => { on = false; g.classList.remove("on"); };
+  g.addEventListener("pointerup", end); g.addEventListener("pointercancel", end);
+  g.addEventListener("dblclick", () => { LS.set("lv_sf", 0.5); apply(); });
+})();
 // ---- 미리보기 칸 높이 끌기
 (function () {
   const g = $("#pgrip"); let on = false;
@@ -2717,7 +2829,7 @@ function paintNotesList() {
       h += '<div class="lg' + (COLL.has(k) ? " c" : "") + '" data-g="' + esc(k) + '"><button class="lgh" title="' + esc(g.law) + '"><span class="car">▾</span><span class="lgn">' + esc(g.law) + '</span><span class="cnt">' + g.cnt + '건</span></button><div class="lgb">';
       g.ord.forEach((ak) => {
         const a2 = g.arts[ak]; h += '<div class="nsub">' + esc(a2.lab) + "</div>";
-        a2.items.forEach((n) => { h += '<div class="nr nc" data-id="' + n.id + '"><div class="nrt"><span class="nt ' + n.c + '">' + esc(n.t) + "</span>" + (n.lost ? ' <span class="muted">· (본문이 바뀌어 위치를 못 찾음)</span>' : "") + (n.m ? '<div class="nmm">📝 ' + esc(n.m) + "</div>" : "") + '</div><button class="sm" data-x="' + n.id + '" title="지우기">✕</button></div>'; });
+        a2.items.forEach((n) => { h += '<div class="nr nc" data-hc="' + n.c + '" data-id="' + n.id + '"><div class="nrt"><span class="nt ' + n.c + '">' + esc(n.t) + "</span>" + (n.lost ? ' <span class="muted">· (본문이 바뀌어 위치를 못 찾음)</span>' : "") + (n.m ? '<div class="nmm">📝 ' + esc(n.m) + "</div>" : "") + '</div><button class="sm" data-x="' + n.id + '" title="지우기">✕</button></div>'; });
       });
       h += "</div></div>";
     });
