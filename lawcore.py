@@ -2101,14 +2101,14 @@ def _shape(o, depth=0):
     return type(o).__name__ if not isinstance(o, str) else "'%s'" % o[:12]
 
 
-_HO_CAND = re.compile(r"(?<!\d)(\d{1,2})\.\s*(?=[^\s\d])")
+_HO_CAND = re.compile(r"(\d{1,4})\.\s*(?=[^\s\d])")
 _HO_SP = re.compile(r"(?:(?<=\s)|^)(\d{1,2})\.\s*(?=[^\s\d])")
 _BRK = re.compile(r"<[^>]*>|\[[^\]]*\]")
 _MOK_CAND = re.compile(r"(?<=[\s>)])([가-하])\.\s*(?=[^\s\d])")
 _MOK = "가나다라마바사아자차카타파하"
 
 
-def _cut_run(seg, cand, nth):
+def _cut_run(seg, cand, nth, glue=False):
     """seg 안에서 번호가 1(가)부터 차례로 이어지는 자리(앞 글자에 바로 붙은 것)를 찾아 그 위치들을 돌려준다."""
     cuts, want = [], 0
     brk = [(m.start(), m.end()) for m in _BRK.finditer(seg)]          # <개정 2012. 9. 28.> 같은 꺾쇠 안의 숫자는 번호가 아니다
@@ -2117,6 +2117,12 @@ def _cut_run(seg, cand, nth):
             continue
         if re.search(r"\d\.\s*$", seg[:m.start()]):                      # '2011. 1. 1.' 처럼 날짜의 한 토막
             continue
+        if glue:                                                           # '별표 2' 바로 뒤에 다음 호 번호 '2.' 가 붙어 '별표 22.' 로 보이는 경우
+            d, w = m.group(1), str(want + 1)
+            if int(d) != want + 1 and len(d) > len(w) and d.endswith(w) and d[:-len(w)] in (w, str(want)):
+                cuts.append(m.start() + len(d) - len(w))
+                want += 1
+                continue
         v = nth(m.group(1))
         if v == want + 1:
             cuts.append(m.start())
@@ -2132,7 +2138,7 @@ def _split_inline(t):
         if not seg:
             continue
         pieces = [seg]
-        cuts = _cut_run(seg, _HO_CAND, int)
+        cuts = _cut_run(seg, _HO_CAND, int, True)
         if len(cuts) >= 2 or (len(cuts) == 1 and cuts[0] > 0 and re.match(r"^[①-⑳]|^제\d", seg)):
             pos = [0] + cuts
             pieces = [seg[a:b].strip() for a, b in zip(pos, pos[1:] + [len(seg)]) if seg[a:b].strip()]
@@ -2169,12 +2175,25 @@ def load_ordin(oc, mst, name, getter=None):
         raise LawError("조례 조문을 하나도 읽지 못했습니다 — 응답 구조: " + _shape(d) + " | 첫 건: " + _shape(units[0]))
     for a_ in law["arts"].values():                    # 줄바꿈 없이 ①②·1.2.가 붙어 온 조문은 번호 앞에서 줄을 나눈다
         ln = a_["lines"]
-        if ln and all(lv == 0 and isinstance(t, str) for lv, t in ln):
-            parts = []
-            for lv, t in ln:
-                parts += [(0, x) for x in _split_inline(t)]
-            if len(parts) > len(ln):
-                a_["lines"] = parts
+        if not ln or not all(isinstance(t, str) for lv, t in ln if lv != 9):
+            continue
+        flat = all(lv == 0 for lv, _ in ln)
+        parts = []
+        for lv, t in ln:
+            if lv == 9 or len(t) < 20:
+                parts.append((lv, t))
+                continue
+            ps = _split_inline(t)
+            if len(ps) <= 1:
+                parts.append((lv, t))
+            elif flat:
+                parts += [(0, x) for x in ps]
+            else:
+                rk = [(0 if re.match(r"^[①-⑳]", x) else 1 if re.match(r"^\d{1,2}\. ", x) else 2 if re.match(r"^[가-하]\. ", x) else None) for x in ps]
+                base = next((r for r in rk if r is not None), 0)
+                parts += [(lv + (max(0, r - base) if r is not None else 0), x) for r, x in zip(rk, ps)]
+        if len(parts) > len(ln):
+            a_["lines"] = parts
     for a_ in law["arts"].values():                    # 한 덩어리 글로 온 조례 조문: 줄 머리의 번호로 항(①)·호(1.)·목(가.) 들여쓰기 단계를 매김
         ln = a_["lines"]
         if len(ln) > 1 and all(lv == 0 for lv, _ in ln):
