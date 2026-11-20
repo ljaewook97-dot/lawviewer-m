@@ -295,14 +295,19 @@ def search(oc, q):
     if kind == "empty":
         kind = "name"
     msg = ""
-    if kind == "art":
-        if "조례" in q:
-            name, jo, ji = L.parse_ordin_query(q)
-            if not name:
-                return {"hits": [], "total": 0, "msg": "조례 이름을 알 수 없습니다. 예) 고양시 도시계획 조례 55조"}
-            p = {"name": name, "suffix": "", "jo": jo, "ji": ji}
-        else:
-            p = L.parse_query(q)
+    if "조례" in q:                                         # 지자체 조례: '남양주시 도시계획 조례' (이름 목록) · '남양주시 도시계획 조례 제55조' (그 조문 바로 열기)
+        name, jo, ji = L.parse_ordin_query(q)
+        if not name:
+            return {"hits": [], "total": 0, "msg": "조례 이름을 알 수 없습니다. 예) 고양시 도시계획 조례 55조"}
+        if jo:
+            try:
+                f = L.find_ordin(oc, name, getter)
+            except Exception as e:  # noqa: BLE001
+                return {"hits": [], "total": 0, "msg": "'%s' 조례를 찾지 못했습니다 — 이름만 쳐서 목록에서 골라 보세요" % name}
+            return {"hits": [], "total": 0, "open": {"kind": "ordin", "rawmst": f["mst"], "name": f["name"], "date": f["date"], "key": "%d:%d" % (jo, ji or 0)}}
+        kind = "name"
+    elif kind == "art":
+        p = L.parse_query(q)
         if p.get("jo"):
             return {"hits": [], "total": 0, "open": {"name": L.full_name(p), "key": "%d:%d" % (p["jo"], p.get("ji") or 0)}}
         kind = "law"

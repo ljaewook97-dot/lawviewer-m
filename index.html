@@ -697,7 +697,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.84";
+const VERSION = "10.85";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -945,7 +945,7 @@ async function doSearch() {
     return;
   }
   const r = await call("search", [OC, q], "찾는 중…");
-  if (r.open) { try { await openByName(r.open.name, r.open.key || undefined); return; } catch (e) { toast(String(e && e.message || e)); } }
+  if (r.open) { try { if (r.open.kind) await openDoc(r.open.kind, r.open.rawmst, r.open.name, r.open.date, r.open.key || undefined); else await openByName(r.open.name, r.open.key || undefined); return; } catch (e) { toast(String(e && e.message || e)); } }
   hits = r.hits; hitNote = r.msg || ""; hitToks = []; setTab("r");
   if (!hits.length) $("#list").innerHTML = '<div class="empty">' + esc(r.msg || "찾은 것이 없습니다.") + "</div>";
 }
