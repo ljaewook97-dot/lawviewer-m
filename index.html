@@ -460,7 +460,8 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .accRow .bt{display:flex;gap:4px}.accRow .bt button,.accF button{height:30px;padding:0 9px;border:1px solid var(--line);border-radius:8px;background:var(--surf);color:var(--text);font-weight:600;font-size:.8em}.accRow .bt button[data-a=ok],.accF button.on{background:var(--acc);color:var(--acc-t);border-color:var(--acc)}
 .accF{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}.accCf{flex-basis:100%;margin-top:6px;padding:8px 10px;border:1px solid #e5484d;border-radius:10px;font-size:.85em;line-height:1.5}.accCf div{display:flex;gap:6px;margin-top:6px}.accCf .btn{min-height:34px;padding:0 12px}
 #bSet.accDot{position:relative}#bSet.accDot::after{content:"";position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:#e53935;box-shadow:0 0 0 2px var(--acc)}
-#ovCmp .modal{display:flex;flex-direction:column;padding:14px}#cmpNav{display:flex;gap:6px;align-items:center;margin-top:6px}#cmpNav .btn{flex:none;min-height:32px;padding:0 10px;font-size:.84em}#cmpNav .btn:disabled{opacity:.35}#cmpPos{flex:1;text-align:center;font-size:.78em}
+#ovCmp .modal{display:flex;flex-direction:column;padding:14px}.cmpr{border:1px solid var(--line);border-radius:10px;padding:6px 10px;margin:0 0 8px;background:var(--acc-soft)}.cmpr summary{cursor:pointer;font-weight:700;font-size:.84em;color:var(--acc-d)}.cmpr .rt{font-size:.84em;line-height:1.65;margin-top:5px;white-space:normal;max-height:34vh;overflow:auto}
+#cmpNav{display:flex;gap:6px;align-items:center;margin-top:6px}#cmpNav .btn{flex:none;min-height:32px;padding:0 10px;font-size:.84em}#cmpNav .btn:disabled{opacity:.35}#cmpPos{flex:1;text-align:center;font-size:.78em}
 @media (min-width:1000px){#ovCmp.on{background:transparent;pointer-events:none}#ovCmp .modal{pointer-events:auto;box-shadow:0 10px 36px rgba(0,0,0,.38);border:1px solid var(--line)}#ovCmp .modal h3{cursor:move;user-select:none;touch-action:none;padding-bottom:2px}#ovCmp .modal h3::after{content:"  ⠿ 끌어서 옮기기";font-size:.6em;font-weight:400;color:var(--muted)}}#ovCmp .cmpl{flex:1;min-height:0;overflow:auto;margin-top:6px}
 #cpv{position:fixed;z-index:60;max-width:470px;min-width:240px;background:var(--surf);color:var(--text);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 22px rgba(0,0,0,.22);padding:8px 11px;font-size:.84em;line-height:1.55;pointer-events:none;display:none}
 #cpv.on{display:block}#cpv .pt{font-weight:700;color:var(--acc-d);margin-bottom:3px}#cpv .pl{margin:1px 0}#cpv .pl.h{background:var(--acc-soft);border-radius:4px}#cpv .pm{color:var(--muted)}
@@ -607,7 +608,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.66";
+const VERSION = "10.67";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1116,6 +1117,7 @@ const upTag = (f) => { const u = UPC.m && UPC.m[(f.kind || "law") + "|" + (f.law
 const revTag = (f, i) => revTag0(f, i) + upTag(f);
 const dfmt = (d) => { d = digs(d); return d.length === 8 ? d.slice(0, 4) + "." + d.slice(4, 6) + "." + d.slice(6) : d || "?"; };
 const cmpSeg = (a) => a.map((x) => x[0] === "=" ? esc(x[1]) : x[0] === "-" ? "<del>" + esc(x[1]) + "</del>" : "<ins>" + esc(x[1]) + "</ins>").join("");
+const reasonHTML = (t) => t ? '<details class="cmpr" open><summary>재개정 사유(제·개정 이유)</summary><div class="rt">' + esc(t).replace(/\n/g, "<br>") + "</div></details>" : '<div class="muted" style="font-size:.78em;margin-top:6px">이 시행본은 제·개정 이유가 조회되지 않았습니다.</div>';
 let CMPF = null;
 async function openCmp(f) {                                   // 개정 배지: 담아 둔 시행본 ↔ 새 시행본 신구 비교
   const r = f && revNew(f); if (!r || needOC()) return;
@@ -1123,13 +1125,13 @@ async function openCmp(f) {                                   // 개정 배지: 
   const c = await call("compare_ver", [OC, f.kind, f.lawname, f.rawmst, f.date || "", r.rawmst, r.date || "", f.key || ""], f.lawname + " 신구 비교 중…");
   $("#cmpT").textContent = f.lawname + " 신구 비교";
   $("#cmpS").textContent = "이전 " + dfmt(f.date) + " → 현재 " + dfmt(r.date) + " · 바뀐 조문 " + c.total + "개" + (c.same ? " (그대로 " + c.same + "개)" : "") + (c.truncated ? " · 앞의 300개만 표시" : "");
-  $("#cmpL").innerHTML = c.changes.length ? c.changes.map((x, i) => {
+  $("#cmpL").innerHTML = reasonHTML(c.reason) + (c.changes.length ? c.changes.map((x, i) => {
     const cl = x.st === "신설" ? "n" : x.st === "삭제" ? "d" : "";
     return '<div class="cmpa"><div class="ch"><span>' + esc(x.label) + (x.title ? " " + esc(x.title) : "") + '</span><span class="st ' + cl + '">' + x.st + "</span>" + (x.st !== "삭제" ? '<span class="go" data-cg="' + i + '">본문에서 보기</span>' : "") + "</div>" +
       (x.otitle ? '<div class="cs co"><b>제목</b><del>' + esc(x.otitle) + "</del></div>" : "") +
       (x.old.length ? '<div class="cs co"><b>이전</b>' + cmpSeg(x.old) + "</div>" : "") +
       (x.new.length ? '<div class="cs cn"><b>현재</b>' + cmpSeg(x.new) + "</div>" : "") + "</div>";
-  }).join("") : '<div class="empty">조문 내용은 바뀐 곳이 없습니다.<br>(별표·부칙만 바뀌었을 수 있습니다)</div>';
+  }).join("") : '<div class="empty">조문 내용은 바뀐 곳이 없습니다.<br>(별표·부칙만 바뀌었을 수 있습니다)</div>');
   CMPF.ch = c.changes;
   $("#cmpL").scrollTop = 0; $("#ovCmp").classList.add("on"); cmpPlace();
 }
@@ -1158,7 +1160,7 @@ function ahRender(cx, dt, r) {
   const pubD = r.pub ? dfmt(r.pub) : dt;
   $("#cmpS").textContent = pubD + " 개정" + (r.kind ? " (" + r.kind + ")" : "") + " · 이전 시행본(시행 " + dfmt(r.old_date) + ") → 이 개정 시행본(시행 " + dfmt(r.new_date) + ")";
   const cl = r.st === "신설" ? "n" : r.st === "삭제" ? "d" : "";
-  $("#cmpL").innerHTML = '<div class="cmpa"><div class="ch"><span>' + esc(r.label || "") + (r.title ? " " + esc(r.title) : "") + '</span><span class="st ' + cl + '">' + esc(r.st) + "</span></div>" +
+  $("#cmpL").innerHTML = reasonHTML(r.reason) + '<div class="cmpa"><div class="ch"><span>' + esc(r.label || "") + (r.title ? " " + esc(r.title) : "") + '</span><span class="st ' + cl + '">' + esc(r.st) + "</span></div>" +
     (r.st === "동일" ? '<div class="muted" style="font-size:.86em;padding:4px 0">이 개정에서 이 조문은 바뀌지 않았습니다(다른 조문이 바뀐 개정입니다).</div>' : "") +
     (r.st === "없음" ? '<div class="muted" style="font-size:.86em;padding:4px 0">이 조문 번호가 두 시행본 모두에 없습니다(조 번호 체계가 달라졌을 수 있습니다).</div>' : "") +
     (r.otitle ? '<div class="cs co"><b>제목</b><del>' + esc(r.otitle) + "</del></div>" : "") +

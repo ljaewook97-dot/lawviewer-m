@@ -1036,6 +1036,17 @@ def extract_annex(d):
     return out
 
 
+def extract_reason(d):
+    """응답 JSON 에서 제정·개정이유(제개정이유내용)를 글로 뽑는다(없으면 빈 글)."""
+    rows = []
+    _dicts_with(d, "제개정이유내용", rows)
+    raw = []
+    for r in rows[:1]:
+        _raw_lines(r.get("제개정이유내용"), raw)
+    txt = "\n".join(x.rstrip() for x in raw).strip()
+    return txt[:6000]
+
+
 def annex_url(link):
     link = str(link or "")
     if not link:
@@ -1054,6 +1065,7 @@ def load_whole(oc, mst, lawname, getter=None):
         raise LawError("법령 전체 조문을 읽지 못했습니다")
     law = analyze_units(units, lawname)
     law["annex"] = extract_annex(d)
+    law["reason"] = extract_reason(d)
     _LAW_CACHE[mst] = law
     return law
 
@@ -1965,6 +1977,7 @@ def load_adm(oc, mst, name, date="", getter=None):
     law["kind"], law["refname"], law["date"] = "adm", ref, date
     law["name"], law["mst"] = name, k
     law["annex"] = extract_annex(d)
+    law["reason"] = extract_reason(d)
     _LAW_CACHE[k] = law
     return law
 
@@ -2101,6 +2114,7 @@ def load_ordin(oc, mst, name, getter=None):
                                        else 4 if re.match(r"^\d+\)\s|^[가나다라마바사아자차카타파하]\)\s", t) else 0), t) for lv, t in ln[1:]]
     law["kind"], law["refname"] = "ordin", ref
     law["annex"] = extract_annex(d)
+    law["reason"] = extract_reason(d)
     _LAW_CACHE[k] = law
     return law
 

@@ -643,7 +643,7 @@ def art_hist(oc, kind, name, key, rev_date, mst="", dummy=""):
     a, b = la["arts"].get(key), lb["arts"].get(key)
     flat = lambda x: re.sub(r"\s+", " ", " ".join(t for _, t in x["lines"])).strip()
     res = {"old_date": A["date"], "new_date": B["date"], "pub": B["pub"], "kind": B["kind"], "label": (b or a or {}).get("label", ""), "title": (b or a or {}).get("title", ""),
-           "old_mst": A["mst"], "new_mst": B["mst"], "idx": idx, "total": len(vers),
+           "old_mst": A["mst"], "new_mst": B["mst"], "reason": lb.get("reason", ""), "idx": idx, "total": len(vers),
            "prev_mst": vers[idx - 1]["mst"] if idx >= 2 else "", "prev_pub": vers[idx - 1]["pub"] if idx >= 2 else "",
            "next_mst": vers[idx + 1]["mst"] if idx + 1 < len(vers) else "", "next_pub": vers[idx + 1]["pub"] if idx + 1 < len(vers) else ""}
     if a and b:
@@ -761,7 +761,7 @@ def compare_ver(oc, kind, name, old_mst, old_date, new_mst, new_date, key=""):
     if key:
         out.sort(key=lambda x: 0 if x["key"] == key else 1)
     return {"changes": out[:300], "total": len(out), "same": same, "truncated": len(out) > 300,
-            "old_date": old_date, "new_date": new_date}
+            "old_date": old_date, "new_date": new_date, "reason": B.get("reason", "")}
 
 
 def chain(oc, mst, key):
