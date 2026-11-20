@@ -2092,6 +2092,31 @@ def _shape(o, depth=0):
     return type(o).__name__ if not isinstance(o, str) else "'%s'" % o[:12]
 
 
+_HO_CAND = re.compile(r"(?<=[가-힣\.\)」:;,])(\d{1,2})\.\s*(?=[^\s\d])")
+
+
+def _split_inline(t):
+    """한 줄로 붙어 온 조례 조문을 항(①)·호(1.) 단위 줄로 나눈다 — 번호 앞에서만 자르고 글자는 바꾸지 않는다."""
+    out = []
+    for seg in re.split(r"(?<=[^\s제「(])(?=[①-⑳])|(?<=\s)(?=[①-⑳])", t):
+        seg = seg.strip()
+        if not seg:
+            continue
+        cuts, want = [], 1
+        for m in _HO_CAND.finditer(seg):
+            if int(m.group(1)) == want:
+                cuts.append(m.start())
+                want += 1
+        if len(cuts) >= 2 or (len(cuts) == 1 and want == 2 and cuts[0] > 0 and re.match(r"^[①-⑳]|^제\d", seg) is not None):
+            pos = [0] + cuts
+            for a, b in zip(pos, pos[1:] + [len(seg)]):
+                if seg[a:b].strip():
+                    out.append(seg[a:b].strip())
+        else:
+            out.append(seg)
+    return out
+
+
 def load_ordin(oc, mst, name, getter=None):
     """조례 전체를 받아 법령과 같은 구조로 분석(같은 일련번호는 이 실행 동안 재사용)."""
     k = "o" + str(mst)
@@ -2107,6 +2132,14 @@ def load_ordin(oc, mst, name, getter=None):
     law = analyze_units(nu, ref or name)
     if not law["order"]:                                # 제목만 읽히고 조문이 하나도 없으면 구조를 못 맞춘 것 — 구조를 알려 준다
         raise LawError("조례 조문을 하나도 읽지 못했습니다 — 응답 구조: " + _shape(d) + " | 첫 건: " + _shape(units[0]))
+    for a_ in law["arts"].values():                    # 줄바꿈 없이 ①②·1.2.가 붙어 온 조문은 번호 앞에서 줄을 나눈다
+        ln = a_["lines"]
+        if ln and all(lv == 0 and isinstance(t, str) for lv, t in ln):
+            parts = []
+            for lv, t in ln:
+                parts += [(0, x) for x in _split_inline(t)]
+            if len(parts) > len(ln):
+                a_["lines"] = parts
     for a_ in law["arts"].values():                    # 한 덩어리 글로 온 조례 조문: 줄 머리의 번호로 항(①)·호(1.)·목(가.) 들여쓰기 단계를 매김
         ln = a_["lines"]
         if len(ln) > 1 and all(lv == 0 for lv, _ in ln):

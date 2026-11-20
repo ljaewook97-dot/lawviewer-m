@@ -563,6 +563,11 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 .am .rvd{color:inherit;font-weight:400;text-decoration:underline dotted;text-decoration-color:color-mix(in srgb,var(--muted) 55%,transparent);text-underline-offset:2px}
 .am .rvd:hover{color:var(--acc-d);opacity:1;text-decoration-style:solid}
 .am:hover{opacity:1}
+/* v10.80 조례 열: 지자체 선택 + 조례 본문 줄 나눔 */
+.tt .col.ord .ocity{display:flex;gap:6px;margin:2px 0 8px}.tt .col.ord .ocin{flex:1;min-width:0;height:30px;border:1px solid var(--line);border-radius:8px;background:var(--surf);color:var(--text);padding:0 10px;font:inherit;font-size:.86em}
+.tt .col.ord .ocin:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 18%,transparent)}
+.tt .col.ord .ocgo{height:30px;padding:0 12px;border:0;border-radius:8px;background:var(--acc);color:#fff;font:inherit;font-size:.84em;font-weight:600;cursor:pointer}
+.tt .col.ord .oa .ln+.ln{margin-top:.28em}
 </style>
 </head>
 <body>
@@ -692,7 +697,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.79";
+const VERSION = "10.80";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1428,17 +1433,27 @@ function tierBar(lawOnly) {
 }
 // ---- 3단 비교에 '조례' 열(이 조문 제목으로 기본 자치단체 조례에서 관련 조문)
 let TTORD = LS.get("lv_ttord", false);
+const CITYLIST = "서울특별시 종로구,서울특별시 중구,서울특별시 용산구,서울특별시 성동구,서울특별시 광진구,서울특별시 동대문구,서울특별시 중랑구,서울특별시 성북구,서울특별시 강북구,서울특별시 도봉구,서울특별시 노원구,서울특별시 은평구,서울특별시 서대문구,서울특별시 마포구,서울특별시 양천구,서울특별시 강서구,서울특별시 구로구,서울특별시 금천구,서울특별시 영등포구,서울특별시 동작구,서울특별시 관악구,서울특별시 서초구,서울특별시 강남구,서울특별시 송파구,서울특별시 강동구,고양시,수원시,성남시,용인시,부천시,안산시,안양시,남양주시,화성시,평택시,의정부시,시흥시,파주시,김포시,광명시,광주시,군포시,하남시,오산시,양주시,이천시,구리시,안성시,의왕시,포천시,양평군,여주시,동두천시,과천시,가평군,연천군,인천광역시,부산광역시,대구광역시,대전광역시,광주광역시,울산광역시,세종특별자치시,춘천시,원주시,강릉시,청주시,천안시,아산시,전주시,목포시,여수시,순천시,포항시,경주시,구미시,창원시,김해시,진주시,제주시,서귀포시".split(",");
+let _cdl = null;
+function cityDL() { if (!_cdl) { _cdl = document.createElement("datalist"); _cdl.id = "cityList"; _cdl.innerHTML = CITYLIST.map((c) => '<option value="' + c + '">').join(""); document.body.appendChild(_cdl); } }
+const ttCity = () => LS.get("lv_ttcity", "") || LS.get("lv_city", "고양시");
 async function ttOrdFill(i) {
   const g = $("#tt .ttg"); if (!g) return;
+  cityDL();
+  g.querySelectorAll(".col.ord").forEach((x) => x.remove());
+  const city = ttCity();
   const col = document.createElement("div"); col.className = "col ord"; col.dataset.ci = "3"; col.style.setProperty("--kc", "#00838F");
-  const hd = (n) => '<div class="ch"><span class="kb">조례</span><span class="kn">' + esc(n) + "</span></div>";
-  col.innerHTML = hd(LS.get("lv_city", "고양시") + " 조례 찾는 중…"); g.classList.add("g4"); g.appendChild(col);
+  const hd = (n, msg) => '<div class="ch"><span class="kb">조례</span><span class="kn">' + esc(n || "") + '</span></div><div class="cb"><div class="ocity"><input class="ocin" list="cityList" value="' + esc(city) + '" placeholder="시·군·구 (예: 남양주시)" spellcheck="false"><button class="ocgo" type="button">찾기</button></div>' + (msg || "");
+  col.innerHTML = hd(city + " 조례", '<div class="muted" style="padding:8px 0">찾는 중…</div>'); g.classList.add("g4"); g.appendChild(col);
   if (!isDT()) col.classList.toggle("off", TTK !== "a" && TTK !== "3");
-  const r = await callQuiet("tt_ord", [OC, TT.base, i, LS.get("lv_city", "고양시")]);
+  const go = () => { const v = col.querySelector(".ocin").value.trim(); if (!v) return; LS.set("lv_ttcity", v); ttOrdFill(i); };
+  const wire = () => { const inp = col.querySelector(".ocin"); col.querySelector(".ocgo").onclick = go; inp.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); go(); } }; inp.onfocus = () => inp.select(); };
+  wire();
+  const r = await callQuiet("tt_ord", [OC, TT.base, i, city]);
   if (TTI !== i || !col.isConnected) return;
-  if (!r || !r.arts || !r.arts.length) { col.innerHTML = hd(LS.get("lv_city", "고양시") + " 조례") + '<div class="muted" style="padding:8px 0">이 조문 제목으로 찾은 조례 조문이 없습니다' + (r && r.toks && r.toks.length ? "<br>(검색어: " + esc(r.toks.join(" ")) + ")" : "") + "</div>"; return; }
+  if (!r || !r.arts || !r.arts.length) { col.innerHTML = hd(r && r.ordname || city + " 조례", '<div class="muted" style="padding:8px 0">' + (r ? "이 조문 제목으로 찾은 조례 조문이 없습니다" + (r.toks && r.toks.length ? "<br>(검색어: " + esc(r.toks.join(" ")) + ")" : "") : esc(city) + " 조례를 불러오지 못했습니다<br>(지자체 이름을 확인하세요)") + "</div>"); wire(); return; }
   col.innerHTML = hd(r.ordname) + r.arts.map((a) => '<div class="oa">' + artHTML(a, a.mst, { idp: "t3-", self: r.ordname }) + "</div>").join("") + (r.total > r.arts.length ? '<div class="muted" style="padding:6px 0;font-size:.82em">…관련 조문 ' + r.total + "개 중 앞 " + r.arts.length + "개</div>" : "");
-  bindCites(col);
+  wire(); bindCites(col);
 }
 // ---- 위임 사슬
 let CHN = [];
