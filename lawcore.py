@@ -1073,7 +1073,7 @@ def annex_url(link):
     if not link:
         return ""
     if link.startswith("http"):
-        return link
+        return re.sub(r"^http://(www\.)?law\.go\.kr", "https://www.law.go.kr", link)       # http 주소는 https 페이지에서 크롬이 내려받기를 막는다
     return "https://www.law.go.kr" + link if link.startswith("/") else ""          # 'hwp' 같은 파일 형식 글자는 주소가 아니다
 
 
