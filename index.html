@@ -517,9 +517,9 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 .nr.nc .nt{background:color-mix(in srgb,var(--hc,transparent) 16%,transparent)!important}
 .nr.nc[data-hc=h1]{--hc:#E0B400}.nr.nc[data-hc=h2]{--hc:#2E9E4F}.nr.nc[data-hc=h3]{--hc:#E0506E}.nr.nc[data-hc=h4]{--hc:#2F7FE0}.nr.nc[data-hc=h5]{--hc:#E8800C}
 #dens .sm.on{background:var(--acc);color:#fff;border-color:var(--acc)}
-#skel{display:none;position:fixed;z-index:12;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;left:var(--lw);right:var(--rw);padding:26px 22px;background:var(--surf);pointer-events:none;overflow:hidden}
+#skel{display:none;position:fixed;z-index:12;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;left:var(--lw);right:var(--rw);padding:26px 22px 26px 26px;background:var(--surf);pointer-events:none;overflow:hidden}
 #skel.on{display:block}
-#skel .sk{border-radius:5px;background:linear-gradient(90deg,color-mix(in srgb,var(--line) 75%,var(--surf)),color-mix(in srgb,var(--line) 25%,var(--surf)),color-mix(in srgb,var(--line) 75%,var(--surf)));background-size:200% 100%;animation:skl 1.3s linear infinite;max-width:var(--bw,900px);margin:0 auto 9px}
+#skel .sk{margin-left:0!important;margin-right:0!important;border-radius:5px;background:linear-gradient(90deg,color-mix(in srgb,var(--line) 75%,var(--surf)),color-mix(in srgb,var(--line) 25%,var(--surf)),color-mix(in srgb,var(--line) 75%,var(--surf)));background-size:200% 100%;animation:skl 1.3s linear infinite;max-width:var(--bw,900px);margin:0 auto 9px}
 #skel .sk.h{height:22px;width:50%;margin-bottom:22px}#skel .sk.t{height:15px;width:30%;margin-top:18px}#skel .sk.l{height:12px;width:100%}
 @keyframes skl{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){#skel .sk{animation:none}}
@@ -617,8 +617,8 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
     <label>색상 테마</label>
     <select id="theme"><optgroup label="밝은 테마"><option value="">기본 (청록)</option><option value="light">밝은 파랑</option><option value="sky">하늘</option><option value="mono">모노 (흑백)</option><option value="hc">고대비</option><option value="paper">종이</option><option value="sand">모래</option><option value="sage">세이지</option><option value="lavender">라벤더</option><option value="rose">로즈</option></optgroup><optgroup label="어두운 테마"><option value="dim">어스름 (부드러운 어두움)</option><option value="graphite">차콜</option><option value="dark">남색</option><option value="ocean">심해</option><option value="nord">노드</option><option value="solar">솔라</option><option value="forest">숲</option><option value="plum">자두</option><option value="ember">잿불</option><option value="midnight">미드나이트 (검정)</option></optgroup></select>
     <div class="g2">
-      <div><label>글자 크기</label><select id="fsz"><option value="12">아주 작게</option><option value="13">조밀</option><option value="14">작게 (PC 기본)</option><option value="16">보통</option><option value="18">크게</option><option value="20">아주 크게</option></select></div>
-      <div><label>줄 간격</label><select id="lhs"><option value="">기본</option><option value="1.3">좁게</option><option value="1.7">넓게</option><option value="2">아주 넓게</option></select></div>
+      <div><label>글자 크기</label><select id="fsz"><option value="12">아주 작게</option><option value="13">조밀</option><option value="14">작게 (PC 기본)</option><option value="15">조금 작게</option><option value="16">보통</option><option value="18">크게</option><option value="20">아주 크게</option></select></div>
+      <div><label>줄 간격</label><select id="lhs"><option value="">기본</option><option value="1.3">좁게</option><option value="1.5">약간 좁게</option><option value="1.7">넓게</option><option value="1.9">약간 넓게</option><option value="2">아주 넓게</option></select></div>
     </div>
     <button class="sm" id="kbOpen" type="button" style="margin:4px 0 8px">⌨ 단축키 안내 (?)</button>
     <label>글꼴</label>
@@ -687,7 +687,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.75";
+const VERSION = "10.76";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -802,8 +802,15 @@ const DENS = { c: [-1, "1.5"], n: [0, ""], l: [2, "1.9"] };
 document.querySelectorAll("#dens button").forEach((b) => (b.onclick = () => {
   const d = DENS[b.dataset.n]; LS.set(FSK(), FSD() + d[0]); LS.set("lv_lh", d[1]); LS.set("lv_den", b.dataset.n);
   $("#fsz").value = FSD() + d[0]; $("#lhs").value = d[1];
-  applyPrefs(); document.querySelectorAll("#dens button").forEach((x) => x.classList.toggle("on", x === b)); toast(b.textContent + " 으로 바꿨습니다");
+  applyPrefs(); densMark(); toast(b.textContent + " 으로 바꿨습니다");
 }));
+function densMark() {                                                   // 지금 글자 크기·줄 간격이 어느 밀도 단추와 같은지 표시
+  const fs = parseInt($("#fsz").value, 10), lh = $("#lhs").value;
+  const cur = fs === FSD() - 1 && lh === "1.5" ? "c" : fs === FSD() && lh === "" ? "n" : fs === FSD() + 2 && lh === "1.9" ? "l" : "";
+  document.querySelectorAll("#dens button").forEach((x) => x.classList.toggle("on", x.dataset.n === cur));
+}
+$("#bSet").addEventListener("click", () => setTimeout(densMark, 0));
+["#fsz", "#lhs"].forEach((id) => $(id).addEventListener("change", densMark));
 const PRESETS = { paper: ["paper", 14, "1.7", "900"], dark: ["graphite", 14, "1.7", "900"], big: ["", 18, "1.7", "720"], reset: ["", null, "", ""] };
 document.querySelectorAll("#presets button").forEach((b) => (b.onclick = () => {
   const p = PRESETS[b.dataset.p]; LS.set("lv_theme", p[0]); LS.set(FSK(), p[1] || FSD()); LS.set("lv_lh", p[2]); LS.set("lv_bw", p[3]); if (b.dataset.p === "reset") { LS.set("lv_ff", ""); $("#ffs").value = ""; }

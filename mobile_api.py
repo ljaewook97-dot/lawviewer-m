@@ -91,7 +91,7 @@ def set_api_base(base):
 
 
 # ---- 보내는 모양 만들기
-_ANNEX_RE = re.compile(r"별표\s*(\d+)(?:\s*의\s*(\d+))?|서식\s*제?\s*(\d+)\s*호")
+_ANNEX_RE = re.compile(r"별표\s*(\d+)(?:\s*의\s*(\d+))?|별지\s*제\s*(\d+)\s*호(?:\s*의\s*(\d+))?\s*서식|서식\s*제?\s*(\d+)\s*호")
 _CODE_RE = re.compile(r"(?<![\d-])\d{1,2}(?:-\d{1,2}){2}(?![\d-])")
 
 
@@ -112,7 +112,12 @@ def _spans(text, selfname, law=None, lv=0):
             for m in _ANNEX_RE.finditer(text):
                 if m.start() < hdr:
                     continue
-                lab = ("별표 %s%s" % (m.group(1), ("의" + m.group(2)) if m.group(2) else "")) if m.group(1) else "서식 %s" % m.group(3)
+                if m.group(1):
+                    lab = "별표 %s%s" % (m.group(1), ("의" + m.group(2)) if m.group(2) else "")
+                elif m.group(3):
+                    lab = "서식 %s%s" % (m.group(3), ("의" + m.group(4)) if m.group(4) else "")          # '별지 제3호서식'·'별지 제3호의2서식'
+                else:
+                    lab = "서식 %s" % m.group(5)
                 if re.search(r"같은\s*법(?:\s*시행령|\s*시행규칙)?\s*$", text[:m.start()]):
                     continue                                              # '같은 법 시행령 별표 1' — 어느 법인지 앞 문장에 달려 있어 잘못 잇는 것보다 잇지 않는다
                 other = _annex_owner(text, m.start(), selfname)          # '「건축법 시행령」 별표 1'·'영 별표 1' -> 보고 있는 법령이 아니라 그 법령의 별표
