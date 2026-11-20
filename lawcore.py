@@ -1049,7 +1049,7 @@ def extract_annex(d):
         link = str(r.get("별표서식파일링크") or r.get("별표서식파일링크URL") or "")
         pdf = str(r.get("별표서식PDF파일링크") or "")
         if not link and not pdf:                                  # 링크 칸 이름이 다르게 온 경우: '링크·URL·파일' 이 들어간 칸 중 PDF를 먼저
-            cand = [(str(k2), str(v2)) for k2, v2 in r.items() if isinstance(v2, str) and re.search(r"링크|URL|파일", str(k2)) and v2.strip()[:1] in ("/", "h")]
+            cand = [(str(k2), str(v2)) for k2, v2 in r.items() if isinstance(v2, str) and re.search(r"링크|URL|파일", str(k2)) and (v2.strip().startswith("/") or v2.strip().lower().startswith("http"))]
             pdf = next((v for k, v in cand if "PDF" in k.upper()), "")
             link = next((v for k, v in cand if "PDF" not in k.upper()), "")
         out.append({"label": label, "kind": kind, "no": no, "bn": bn, "title": ttl, "text": format_annex(raw, title), "link": link, "pdf": pdf,
@@ -1072,7 +1072,9 @@ def annex_url(link):
     link = str(link or "")
     if not link:
         return ""
-    return link if link.startswith("http") else "https://www.law.go.kr" + link
+    if link.startswith("http"):
+        return link
+    return "https://www.law.go.kr" + link if link.startswith("/") else ""          # 'hwp' 같은 파일 형식 글자는 주소가 아니다
 
 
 def load_whole(oc, mst, lawname, getter=None):
