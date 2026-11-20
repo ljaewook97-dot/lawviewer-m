@@ -540,7 +540,8 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   #ltabs .lt:hover b,#ltabs .lt.on b{width:auto;padding:1px 5px;opacity:.6;margin-left:0}
   #ltabs .lt:hover b:hover{opacity:1}
   #ltabs .lt span{min-width:0}
-  #doc2 .s2h{background:transparent;border-bottom:0;padding:3px 2px;margin-bottom:2px}
+  #s2tabs{height:33px;box-sizing:border-box;align-items:flex-end}
+  #doc2 .s2h{background:var(--surf);border-bottom:1px solid color-mix(in srgb,var(--line) 60%,transparent);padding:3px 2px;margin-bottom:2px}
   #doc2 .s2h button{flex:none;border-color:transparent;background:none;padding:1px 7px;color:var(--sub)}
   #doc2 .s2h button:hover{background:var(--acc-soft);border-color:var(--line)}
   #doc2 .s2h button.on{border-color:color-mix(in srgb,var(--acc) 45%,transparent)}
@@ -550,6 +551,12 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   .fgh{background:color-mix(in srgb,var(--line) 45%,var(--surf));color:var(--sub)}
   .sbox .btn{padding:0 9px}.sbox select{font-size:.8em}.sbox input{font-size:.9em}
   .art.cur{background:color-mix(in srgb,var(--text) 3%,transparent);box-shadow:inset 3px 0 0 color-mix(in srgb,var(--acc) 50%,transparent);border-radius:0 6px 6px 0;border-bottom-color:var(--line)}
+}
+/* ===== v10.73 */
+.ln.l1>.mk,.ln.l2>.mk,.ln.l3>.mk,.ln.l4>.mk{color:var(--sub);font-weight:600}
+@media (min-width:1000px){
+  .fgh{background:color-mix(in srgb,var(--text) 5%,var(--surf));color:var(--text)}
+  .fgh:hover{background:color-mix(in srgb,var(--text) 9%,var(--surf))}
 }
 </style>
 </head>
@@ -680,7 +687,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.71";
+const VERSION = "10.73";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1787,13 +1794,14 @@ async function loadLTab(i, msg) {                                 // 아직 안 
 }
 const tabCls = (d) => d.kind === "adm" ? "k-adm" : d.kind === "ordin" ? "k-ord" : /시행규칙$/.test(d.name) ? "k-rule" : /시행령$/.test(d.name) ? "k-dec" : "k-law";
 const TABABB = { "국토의 계획 및 이용에 관한 법률": "국토계획법", "도시 및 주거환경정비법": "도시정비법", "도시공원 및 녹지 등에 관한 법률": "도시공원법", "산업입지 및 개발에 관한 법률": "산업입지법", "개발제한구역의 지정 및 관리에 관한 특별조치법": "개발제한구역법", "도시재정비 촉진을 위한 특별법": "도시재정비법", "건축물의 분양에 관한 법률": "건축물분양법", "택지개발촉진법": "택지개발법", "수도권정비계획법": "수도권정비법", "공공주택 특별법": "공공주택법", "노후계획도시 정비 및 지원에 관한 특별법": "노후계획도시법", "도시 및 주거환경정비법 시행령": "도시정비법 시행령" };
+const midCut = (t, n) => { t = String(t); return t.length <= n ? t : t.slice(0, Math.ceil(n * 0.6)) + "…" + t.slice(t.length - Math.floor(n * 0.4)); };
 const tabShort = (nm) => { nm = String(nm); const m = /^(.*?)\s*(시행령|시행규칙)$/.exec(nm); const base = m ? m[1] : nm; return (TABABB[base] || base) + (m ? " " + m[2] : ""); };
 const tabKL = (d) => ({ "k-adm": "행정", "k-ord": "자치", "k-rule": "칙", "k-dec": "령", "k-law": "법" })[tabCls(d)];
 const ltName = (n) => String(n).replace(/\s*시행령$/, "(령)").replace(/\s*시행규칙$/, "(칙)");
 function paintLTabs() {
   saveTabs();
   const bar = $("#ltabs");
-  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + ltabs.map((t, i) => '<div class="lt ' + tabCls(t.d) + (t.d.stub ? " lz" : "") + (t.d === cur.doc && !SUMACT && cur.view !== "tt" ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><i class="lk">' + tabKL(t.d) + '</i><span>' + esc(tabShort(t.d.name)) + '</span><b data-x="' + i + '">✕</b></div>').join("") + TTTABS.map((x, j) => '<div class="lt k-tt' + (cur.view === "tt" && j === TTCUR ? " on" : "") + '" data-tt="' + j + '" title="3단 비교 — ' + esc(x.base) + '"><i class="lk">3단</i><span>' + esc(x.base) + '</span><b data-xt="' + j + '">✕</b></div>').join("");
+  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + ltabs.map((t, i) => '<div class="lt ' + tabCls(t.d) + (t.d.stub ? " lz" : "") + (t.d === cur.doc && !SUMACT && cur.view !== "tt" ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><i class="lk">' + tabKL(t.d) + '</i><span>' + esc(midCut(tabShort(t.d.name), 17)) + '</span><b data-x="' + i + '">✕</b></div>').join("") + TTTABS.map((x, j) => '<div class="lt k-tt' + (cur.view === "tt" && j === TTCUR ? " on" : "") + '" data-tt="' + j + '" title="3단 비교 — ' + esc(x.base) + '"><i class="lk">3단</i><span>' + esc(x.base) + '</span><b data-xt="' + j + '">✕</b></div>').join("");
   bar.querySelectorAll(".lt[data-i]").forEach((el) => (el.oncontextmenu = (e) => {
     e.preventDefault(); const i = +el.dataset.i;
     showMenu(e.clientX, e.clientY, [["오른쪽에 나란히 보기", () => openSplit(i)], ["이 탭 닫기", () => closeLTab(i), "dz"]].concat(SPLIT ? [["나란히 보기 닫기", closeSplit]] : []));
