@@ -324,8 +324,8 @@ def search(oc, q):
         if names:
             return {"hits": [], "total": 0, "open": {"name": names[0] if len(names) == 1 else L.full_name(L.parse_query(q)), "key": ""}}
         return {"hits": [], "total": 0, "open": {"name": L.full_name(L.parse_query(q)), "key": ""}}
-    r = L.name_search(oc, q, getter)
-    return {"hits": _hits(r), "total": r["total"], "msg": msg or ("'%s' 이름의 법령·행정규칙·자치법규를 찾지 못했습니다." % q if not r["hits"] else "")}
+    r = L.name_or_text_search(oc, q, getter)
+    return {"hits": _hits(r), "total": r["total"], "msg": msg or r.get("note", "") or ("'%s' 이름의 법령·행정규칙·자치법규를 찾지 못했고, 조례 본문에서도 없습니다." % q if not r["hits"] else "")}
 
 
 def suggest(oc, q):

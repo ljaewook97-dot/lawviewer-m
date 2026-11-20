@@ -1943,6 +1943,68 @@ def name_search(oc, q, getter=None):
     return {"hits": hits[:60], "toks": toks, "total": len(hits), "searched": [], "note": "법령·행정규칙·자치법규 이름", "ordname": "이름"}
 
 
+_CITY_RE = re.compile(r"^[가-힣]{2,6}[시군구]$")
+_NOT_CITY = ("도시", "특별시", "광역시", "농촌", "시가", "지구", "구역", "지역")
+
+
+def split_city(q):
+    """'남양주시 건축제한 용적률' -> ('남양주시', ['건축제한', '용적률']). 시·군·구 이름이 없으면 ('', 낱말들). '서울특별시 강남구' 도 한 덩어리로."""
+    toks = [x for x in re.split(r"[\s,]+", str(q or "").strip()) if x]
+    city, rest = "", []
+    for i, t in enumerate(toks):
+        if not city and _CITY_RE.match(t) and t not in _NOT_CITY:
+            city = t
+            if i > 0 and re.match(r"^[가-힣]{2,6}(특별시|광역시|특별자치시|도|특별자치도)$", toks[i - 1]) and rest and rest[-1] == toks[i - 1]:
+                city = rest.pop() + " " + t
+            continue
+        rest.append(t)
+    return city, [t for t in rest if t != "조례"]
+
+
+def ordin_text_search(oc, city, kws, getter=None, limit=8, whole=100):
+    """법제처 자치법규 '본문 검색'(search=2): 그 지자체 조례 중 낱말이 본문에 들어간 것 -> name_search 와 같은 꼴의 hit 목록(이름에 낱말이 없어도 찾는다)."""
+    q = " ".join(([city] if city else []) + list(kws))
+    if not q.strip():
+        return []
+    d = _get("lawSearch.do", {"OC": oc, "target": "ordin", "type": "JSON", "query": q, "search": 2, "display": whole}, getter)
+    rows = []
+    _dicts_with(d, "자치법규명", rows)
+    cn = _nospace(city)
+    out, seen = [], set()
+    for r in rows:
+        nm = str(r.get("자치법규명") or "").strip()
+        mst = str(r.get("자치법규일련번호") or "")
+        org = str(r.get("지자체기관명") or "")
+        dt = str(r.get("시행일자") or "")
+        if not nm or not mst or mst in seen or dt.startswith("9999"):
+            continue
+        if cn and cn not in _nospace(org + nm):
+            continue
+        seen.add(mst)
+        out.append({"score": 1, "li": 0, "mst": "o" + mst, "rawmst": mst, "lawname": nm, "key": "", "label": nm, "title": "", "n": 0, "b": 0,
+                    "short": "자치법규 · " + org, "snippet": ("시행 %s.%s.%s · 본문에 '%s'" % (dt[:4], dt[4:6], dt[6:8], " ".join(kws))) if len(dt) == 8 else "본문에 '%s'" % " ".join(kws),
+                    "kind": "ordin", "date": dt, "adm": False, "_rank": (2, 1, len(nm))})
+    out.sort(key=lambda h: (len(h["lawname"]), h["lawname"]))
+    return out[:limit]
+
+
+def name_or_text_search(oc, q, getter=None):
+    """이름 검색(법령·행정규칙·자치법규). 이름에서 못 찾으면 지자체 조례 본문 검색으로 한 번 더 찾는다(법제처 검색처럼)."""
+    r = name_search(oc, q, getter)
+    if r["hits"]:
+        return r
+    city, kws = split_city(q)
+    if not city and not kws:
+        return r
+    try:
+        hits = ordin_text_search(oc, city, kws, getter, 30)
+    except Exception:  # noqa: BLE001
+        hits = []
+    if hits:
+        r = dict(r, hits=hits, total=len(hits), note="이름에는 없어서, %s 조례 본문에서 찾았습니다" % (city or "자치법규"))
+    return r
+
+
 def load_adm(oc, mst, name, date="", getter=None):
     """행정규칙 한 건을 받아 법령과 같은 구조로 분석"""
     k = "a" + str(mst)
@@ -2505,15 +2567,37 @@ def keyword_search(oc, q, scope=None, getter=None, limit=80, wide=True, city="")
                 ord_msts.add(o["mst"])
             else:                                              # 못 찾았으면 말없이 넘기지 않고 까닭을 알려 준다
                 city_miss.append("%s 도시계획 조례(%s)" % (cname, (LAST_ORD_ERR[-1] if LAST_ORD_ERR else "도시계획 조례 없음")[:60]))
-            # 도시계획 조례 말고도 그 지자체의 건축·주차장 등 다른 조례를 함께 찾는다(검색어에 쓴 주제는 맨 앞)
-            topics = [t for t in ORDIN_TOPICS if any(t in x for x in toks)] + [t for t in ORDIN_TOPICS if not any(t in x for x in toks)]
-            with ThreeEx(max_workers=6) as ex2:
-                for t, o2 in zip(topics, ex2.map(lambda t: _try_city_topic(oc, cname, t, getter), topics)):
-                    if o2 and o2["mst"] not in ord_msts:
-                        if cname not in ctoks:
-                            ctoks.append(cname)
-                        laws.append(o2)
-                        ord_msts.add(o2["mst"])
+            # 도시계획 조례 말고도 그 지자체의 다른 조례를 함께 찾는다: 법제처 본문 검색으로 낱말이 들어간 조례(건축·주차장·경관 …)를 먼저, 안 되면 주제 목록으로
+            kw_only = [x for x in toks if x not in cities]
+            found = []
+            if kw_only:
+                try:
+                    found = ordin_text_search(oc, cname, kw_only, getter, 8)
+                except Exception:  # noqa: BLE001
+                    found = []
+            if found:
+                def _ld(h):
+                    k2 = ("mst", h["rawmst"])
+                    if k2 not in _CITY_TOPIC:
+                        try:
+                            _CITY_TOPIC[k2] = {"mst": "o" + h["rawmst"], "rawmst": h["rawmst"], "name": h["lawname"], "date": h["date"], "ordin": True,
+                                               "law": load_ordin(oc, h["rawmst"], h["lawname"], getter)}
+                        except Exception:  # noqa: BLE001
+                            _CITY_TOPIC[k2] = None
+                    return _CITY_TOPIC[k2]
+                got = []
+                with ThreeEx(max_workers=6) as ex2:
+                    got = list(ex2.map(_ld, found))
+            else:
+                topics = [t for t in ORDIN_TOPICS if any(t in x for x in toks)] + [t for t in ORDIN_TOPICS if not any(t in x for x in toks)]
+                with ThreeEx(max_workers=6) as ex2:
+                    got = list(ex2.map(lambda t: _try_city_topic(oc, cname, t, getter), topics))
+            for o2 in got:
+                if o2 and o2["mst"] not in ord_msts:
+                    if cname not in ctoks:
+                        ctoks.append(cname)
+                    laws.append(o2)
+                    ord_msts.add(o2["mst"])
         if ctoks:
             toks = [x for x in toks if x not in ctoks] or toks
         if city and city not in cities:
