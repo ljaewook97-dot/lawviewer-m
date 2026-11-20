@@ -462,6 +462,13 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 #bSet.accDot{position:relative}#bSet.accDot::after{content:"";position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:#e53935;box-shadow:0 0 0 2px var(--acc)}
 #ovCmp .modal{display:flex;flex-direction:column;padding:14px}.cmpr{border:1px solid var(--line);border-radius:10px;padding:6px 10px;margin:0 0 8px;background:var(--acc-soft)}.cmpr summary{cursor:pointer;font-weight:700;font-size:.84em;color:var(--acc-d)}.cmpr .rt{font-size:.84em;line-height:1.65;margin-top:5px;white-space:normal;max-height:34vh;overflow:auto}
 #cmpNav{display:flex;gap:6px;align-items:center;margin-top:6px}#cmpNav .btn{flex:none;min-height:32px;padding:0 10px;font-size:.84em}#cmpNav .btn:disabled{opacity:.35}#cmpPos{flex:1;text-align:center;font-size:.78em}
+@media (min-width:1000px){body.cmpd #doc{right:calc(var(--rw) + (100vw - var(--lw) - var(--rw)) / 2)}
+#ovCmp.dock .modal{position:fixed!important;top:calc(var(--hh) + var(--th) + var(--bh))!important;bottom:0!important;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) / 2)!important;right:var(--rw)!important;width:auto!important;transform:none!important;max-height:none!important;border-radius:0!important;border:0!important;border-left:3px solid var(--line)!important;box-shadow:none!important}
+body.pv #ovCmp.dock .modal{bottom:var(--ph)!important}
+#ovCmp.dock .modal h3::after{content:"  ⠿ 끌면 창으로 분리"!important}
+#cmpDz{display:none;position:fixed;z-index:41;pointer-events:none;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) / 2);right:var(--rw);border:3px dashed var(--line);background:color-mix(in srgb,var(--surf) 60%,transparent);align-items:center;justify-content:center;font-weight:800;color:var(--muted);font-size:1.1em}
+#cmpDz.on{display:flex}#cmpDz.hot{border-color:var(--acc);background:color-mix(in srgb,var(--acc-soft) 80%,transparent);color:var(--acc-d)}
+}
 @media (min-width:1000px){#ovCmp.on{background:transparent;pointer-events:none}#ovCmp .modal{pointer-events:auto;box-shadow:0 10px 36px rgba(0,0,0,.38);border:1px solid var(--line)}#ovCmp .modal h3{cursor:move;user-select:none;touch-action:none;padding-bottom:2px}#ovCmp .modal h3::after{content:"  ⠿ 끌어서 옮기기";font-size:.6em;font-weight:400;color:var(--muted)}}#ovCmp .cmpl{flex:1;min-height:0;overflow:auto;margin-top:6px}
 #cpv{position:fixed;z-index:60;max-width:470px;min-width:240px;background:var(--surf);color:var(--text);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 22px rgba(0,0,0,.22);padding:8px 11px;font-size:.84em;line-height:1.55;pointer-events:none;display:none}
 #cpv.on{display:block}#cpv .pt{font-weight:700;color:var(--acc-d);margin-bottom:3px}#cpv .pl{margin:1px 0}#cpv .pl.h{background:var(--acc-soft);border-radius:4px}#cpv .pm{color:var(--muted)}
@@ -596,8 +603,9 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   <div class="muted" id="cmpS" style="font-size:.82em;line-height:1.5"></div>
   <div id="cmpNav" style="display:none"><button class="btn g" id="cmpPrev">◀ 이전 개정</button><span id="cmpPos" class="muted"></span><button class="btn g" id="cmpNext">다음 개정 ▶</button></div>
   <div class="cmpl" id="cmpL"></div>
-  <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" style="flex:1" id="cmpOpen">새 시행본 열기</button><button class="btn g" id="cmpNo">닫기</button></div>
+  <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" style="flex:1" id="cmpOpen">새 시행본 열기</button><button class="btn g" id="cmpDockBtn" style="display:none">창으로 띄우기</button><button class="btn g" id="cmpNo">닫기</button></div>
 </div></div>
+<div id="cmpDz">여기에 놓으면 오른쪽 칸에 붙습니다</div>
 <div class="over" id="ovRep"><div class="modal">
   <h3>이상한 줄 신고 목록</h3>
   <div class="muted" style="font-size:.82em;line-height:1.5;margin-bottom:6px">본문에서 줄을 드래그해 ⚑를 누르면 여기에 쌓입니다. 「전체 복사」로 복사해 Claude에게 붙여넣으면 어느 줄이 문제인지 바로 알 수 있습니다.</div>
@@ -608,7 +616,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.67";
+const VERSION = "10.68";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1210,23 +1218,53 @@ async function ahStep(dir) {                                          // 이전(
 $("#cmpPrev").onclick = () => ahStep(-1);
 $("#cmpNext").onclick = () => ahStep(1);
 // 비교 창을 제목줄로 끌어 옆으로(어디로든) 옮김 — 넓은 화면에서는 뒤쪽 본문도 그대로 보고 누를 수 있음
+let CMPD = LS.get("lv_cmpdock", true);                              // 개정 비교 창을 오른쪽 칸에 붙여 두는지(기본: 붙임 = 본문 | 비교 이분할)
+const cmpIsDock = () => CMPD !== false && isDT() && cur.view !== "tt";
 function cmpPlace() {
-  const m = $("#ovCmp .modal"); if (!isDT()) { ["left", "transform", "top"].forEach((p) => m.style.removeProperty(p)); return; }
+  const m = $("#ovCmp .modal"); if (cmpIsDock()) return;
+  if (!isDT()) { ["left", "transform", "top"].forEach((p) => m.style.removeProperty(p)); return; }
   const p = LS.get("lv_cmppos", null); if (!p) return;
   const w = m.offsetWidth || 700;
   if (p.l > -w + 80 && p.l < innerWidth - 80 && p.t >= 0 && p.t < innerHeight - 40) { m.style.setProperty("left", p.l + "px", "important"); m.style.setProperty("transform", "none", "important"); m.style.top = p.t + "px"; }
 }
+let cmpSig = "";
+function cmpApply() {
+  const ov = $("#ovCmp"), m = $("#ovCmp .modal"), dk = cmpIsDock(), on = ov.classList.contains("on"), sig = on + "|" + dk;
+  ov.classList.toggle("dock", dk);
+  const btn = $("#cmpDockBtn"); btn.textContent = dk ? "창으로 띄우기" : "오른쪽에 붙이기"; btn.style.display = isDT() && cur.view !== "tt" ? "" : "none";
+  if (dk) ["left", "transform", "top"].forEach((p) => m.style.removeProperty(p)); else cmpPlace();
+  const had = document.body.classList.contains("cmpd"); document.body.classList.toggle("cmpd", dk && on);
+  if (had !== (dk && on)) window.dispatchEvent(new Event("resize"));
+  cmpSig = sig;
+}
+new MutationObserver(() => { const ov = $("#ovCmp"); if ((ov.classList.contains("on") + "|" + cmpIsDock()) !== cmpSig) cmpApply(); }).observe($("#ovCmp"), { attributes: true, attributeFilter: ["class"] });
+$("#cmpDockBtn").onclick = () => { CMPD = !cmpIsDock(); LS.set("lv_cmpdock", CMPD); cmpApply(); };
+// 비교 창 제목줄을 끌면 창으로 떨어져 나와 어디로든 옮길 수 있고, 오른쪽 칸 자리(점선)에 놓으면 다시 붙음
 (function () {
-  const m = $("#ovCmp .modal"), h = $("#cmpT"); let d = null;
-  h.addEventListener("pointerdown", (e) => { if (!isDT() || e.button) return; const r = m.getBoundingClientRect(); d = { x: e.clientX - r.left, y: e.clientY - r.top }; h.setPointerCapture(e.pointerId); e.preventDefault(); });
+  const m = $("#ovCmp .modal"), h = $("#cmpT"), dz = $("#cmpDz"); let d = null, hot = false;
+  h.addEventListener("pointerdown", (e) => { if (!isDT() || e.button) return; const r = m.getBoundingClientRect(); d = { x: e.clientX - r.left, y: e.clientY - r.top, sx: e.clientX, sy: e.clientY, mv: false, wasDock: cmpIsDock() }; try { h.setPointerCapture(e.pointerId); } catch (_) {} e.preventDefault(); });
   h.addEventListener("pointermove", (e) => {
-    if (!d) return; const w = m.offsetWidth;
+    if (!d) return;
+    if (!d.mv) {
+      if (Math.abs(e.clientX - d.sx) + Math.abs(e.clientY - d.sy) < 6) return;
+      d.mv = true;
+      if (d.wasDock) { CMPD = false; cmpApply(); d.x = Math.min(350, (m.offsetWidth || 700) / 2); d.y = 16; }
+      dz.classList.add("on");
+    }
+    const w = m.offsetWidth;
     const l = Math.min(Math.max(e.clientX - d.x, -w + 80), innerWidth - 80), t = Math.min(Math.max(e.clientY - d.y, 0), innerHeight - 40);
     m.style.setProperty("left", l + "px", "important"); m.style.setProperty("transform", "none", "important"); m.style.top = t + "px";
+    hot = e.clientX >= dz.getBoundingClientRect().left && cur.view !== "tt"; dz.classList.toggle("hot", hot);
   });
-  const end = () => { if (!d) return; d = null; const r = m.getBoundingClientRect(); LS.set("lv_cmppos", { l: Math.round(r.left), t: Math.round(r.top) }); };
+  const end = () => {
+    if (!d) return; const z = d; d = null; dz.classList.remove("on", "hot");
+    if (!z.mv) return;
+    if (hot) { CMPD = true; LS.set("lv_cmpdock", true); cmpApply(); }
+    else { LS.set("lv_cmpdock", false); const r = m.getBoundingClientRect(); LS.set("lv_cmppos", { l: Math.round(r.left), t: Math.round(r.top) }); }
+    hot = false;
+  };
   h.addEventListener("pointerup", end); h.addEventListener("pointercancel", end);
-  h.addEventListener("dblclick", () => { ["left", "transform", "top"].forEach((p) => m.style.removeProperty(p)); LS.set("lv_cmppos", null); });
+  h.addEventListener("dblclick", () => { if (cur.view === "tt") return; CMPD = true; LS.set("lv_cmpdock", true); cmpApply(); });
 })();
 // ---- 단축키 안내판
 const KBS = [["Alt + ← / →", "이전·다음 탭"], ["Alt + 마우스 휠", "탭 전환(휠을 돌리는 방향으로)"], ["Alt + Shift + ← / →", "화면 뒤로·앞으로"], ["Ctrl + Tab (Shift)", "다음·이전 탭"], ["Ctrl + W", "현재 탭 닫기"],
