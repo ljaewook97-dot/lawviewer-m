@@ -985,6 +985,15 @@ def format_annex(raw, title=""):
     def flush_t():
         nonlocal tbuf
         if tbuf:
+            tb2 = []
+            for ln in tbuf:                                       # 줄바꿈 없이 ①②·1.2.가.나. 가 붙어 온 긴 줄은 번호 앞에서 나눈다
+                if len(ln) > 40 and not re.search(r"[─━═│┃┌┐└┘├┤┬┴┼]", ln):
+                    ps = _split_inline(ln)
+                    if len(ps) > 1:
+                        tb2 += [re.match(r"\s*", ln).group(0) + ps[0]] + ps[1:]
+                        continue
+                tb2.append(ln)
+            tbuf = tb2
             out.extend(_format_annex_old(tbuf, title if not out else ""))
             tbuf = []
     for kind, v in segs:
@@ -2092,28 +2101,54 @@ def _shape(o, depth=0):
     return type(o).__name__ if not isinstance(o, str) else "'%s'" % o[:12]
 
 
-_HO_CAND = re.compile(r"(?<=[가-힣\.\)」:;,])(\d{1,2})\.\s*(?=[^\s\d])")
+_HO_CAND = re.compile(r"(?<!\d)(\d{1,2})\.\s*(?=[^\s\d])")
+_HO_SP = re.compile(r"(?:(?<=\s)|^)(\d{1,2})\.\s*(?=[^\s\d])")
+_BRK = re.compile(r"<[^>]*>|\[[^\]]*\]")
+_MOK_CAND = re.compile(r"(?<=[\s>)])([가-하])\.\s*(?=[^\s\d])")
+_MOK = "가나다라마바사아자차카타파하"
+
+
+def _cut_run(seg, cand, nth):
+    """seg 안에서 번호가 1(가)부터 차례로 이어지는 자리(앞 글자에 바로 붙은 것)를 찾아 그 위치들을 돌려준다."""
+    cuts, want = [], 0
+    brk = [(m.start(), m.end()) for m in _BRK.finditer(seg)]          # <개정 2012. 9. 28.> 같은 꺾쇠 안의 숫자는 번호가 아니다
+    for m in cand.finditer(seg):
+        if any(a <= m.start() < b for a, b in brk):
+            continue
+        if re.search(r"\d\.\s*$", seg[:m.start()]):                      # '2011. 1. 1.' 처럼 날짜의 한 토막
+            continue
+        v = nth(m.group(1))
+        if v == want + 1:
+            cuts.append(m.start())
+            want = v
+    return cuts
 
 
 def _split_inline(t):
-    """한 줄로 붙어 온 조례 조문을 항(①)·호(1.) 단위 줄로 나눈다 — 번호 앞에서만 자르고 글자는 바꾸지 않는다."""
+    """한 줄로 붙어 온 조례 조문을 항(①)·호(1.)·목(가.) 단위 줄로 나눈다 — 번호 앞에서만 자르고 글자는 그대로(번호 뒤 띄어쓰기만 맞춤)."""
     out = []
     for seg in re.split(r"(?<=[^\s제「(])(?=[①-⑳])|(?<=\s)(?=[①-⑳])", t):
         seg = seg.strip()
         if not seg:
             continue
-        cuts, want = [], 1
-        for m in _HO_CAND.finditer(seg):
-            if int(m.group(1)) == want:
-                cuts.append(m.start())
-                want += 1
-        if len(cuts) >= 2 or (len(cuts) == 1 and want == 2 and cuts[0] > 0 and re.match(r"^[①-⑳]|^제\d", seg) is not None):
+        pieces = [seg]
+        cuts = _cut_run(seg, _HO_CAND, int)
+        if len(cuts) >= 2 or (len(cuts) == 1 and cuts[0] > 0 and re.match(r"^[①-⑳]|^제\d", seg)):
             pos = [0] + cuts
-            for a, b in zip(pos, pos[1:] + [len(seg)]):
-                if seg[a:b].strip():
-                    out.append(seg[a:b].strip())
-        else:
-            out.append(seg)
+            pieces = [seg[a:b].strip() for a, b in zip(pos, pos[1:] + [len(seg)]) if seg[a:b].strip()]
+        res = []
+        for pc in pieces:
+            pc = re.sub(r"^(\d{1,2})\.\s*(?=\S)", r"\1. ", pc)
+            mc = _cut_run(pc, _MOK_CAND, lambda x: _MOK.index(x) + 1 if x in _MOK else -1)
+            if len(mc) >= 2:
+                pos = [0] + mc
+                for a, b in zip(pos, pos[1:] + [len(pc)]):
+                    x = pc[a:b].strip()
+                    if x:
+                        res.append(re.sub(r"^([가-하])\.\s*(?=\S)", r"\1. ", x))
+            else:
+                res.append(pc)
+        out += res
     return out
 
 
