@@ -363,8 +363,8 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #dz div{flex:1;display:flex;align-items:center;justify-content:center;border:2px dashed var(--line);border-radius:10px;background:color-mix(in srgb,var(--surf) 70%,transparent);font-weight:800;color:var(--muted);font-size:1.05em}
   #dz div.ov{border-color:var(--acc);background:color-mix(in srgb,var(--acc-soft) 85%,transparent);color:var(--acc-d)}
   .dragghost{position:fixed;z-index:71;pointer-events:none;padding:4px 10px;border-radius:6px;background:var(--acc);color:var(--acc-t);font-size:.85em;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis}
-  body.split #doc{right:calc(var(--rw) + (100vw - var(--lw) - var(--rw)) * (1 - var(--sf,.5)))}
-  body.split #doc2{display:block;position:fixed;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) * var(--sf,.5));right:var(--rw);overflow-y:auto;padding:0 16px;background:color-mix(in srgb,var(--surf) 94%,gray);border-left:3px solid var(--line);z-index:2}
+  body.split #doc{right:calc(var(--rw) + (100vw - var(--lw) - var(--rw)) * (1 - var(--sf,.6)))}
+  body.split #doc2{display:block;position:fixed;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) * var(--sf,.6));right:var(--rw);overflow-y:auto;padding:0 16px;background:color-mix(in srgb,var(--surf) 94%,gray);border-left:3px solid var(--line);z-index:2}
   body.split.pv #doc2{bottom:var(--ph)}
   #doc2 .body{padding:0 2px 50px;max-width:var(--bw,none);margin-left:auto;margin-right:auto}
   #doc2 .s2h{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:6px;padding:5px 2px;margin:0 -2px 4px;background:color-mix(in srgb,var(--surf) 94%,gray);border-bottom:1px solid var(--line);font-size:.85em;font-weight:700}
@@ -472,7 +472,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 #s2hist .modal{position:static!important;left:auto!important;right:auto!important;top:auto!important;transform:none!important;width:auto!important;max-height:none!important;box-shadow:none!important;border:0!important;background:transparent!important;padding:8px 0 40px!important;overflow:visible!important;display:flex;flex-direction:column}
 #s2hist .cmpl{overflow:visible;flex:none}
 #s2hist .modal h3{cursor:move;user-select:none;touch-action:none}#s2hist .modal h3::after{content:"  ⠿ 끌면 창으로 분리";font-size:.6em;font-weight:400;color:var(--muted)}
-#cmpDz{display:none;position:fixed;z-index:41;pointer-events:none;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) * var(--sf,.5));right:var(--rw);border:3px dashed var(--line);background:color-mix(in srgb,var(--surf) 60%,transparent);align-items:center;justify-content:center;font-weight:800;color:var(--muted);font-size:1.1em}
+#cmpDz{display:none;position:fixed;z-index:41;pointer-events:none;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) * var(--sf,.6));right:var(--rw);border:3px dashed var(--line);background:color-mix(in srgb,var(--surf) 60%,transparent);align-items:center;justify-content:center;font-weight:800;color:var(--muted);font-size:1.1em}
 #cmpDz.on{display:flex}#cmpDz.hot{border-color:var(--acc);background:color-mix(in srgb,var(--acc-soft) 80%,transparent);color:var(--acc-d)}
 }
 @media (min-width:1000px){#ovCmp.on{background:transparent;pointer-events:none}#ovCmp .modal{pointer-events:auto;box-shadow:0 10px 36px rgba(0,0,0,.38);border:1px solid var(--line)}#ovCmp .modal h3{cursor:move;user-select:none;touch-action:none;padding-bottom:2px}#ovCmp .modal h3::after{content:"  ⠿ 끌어서 옮기기";font-size:.6em;font-weight:400;color:var(--muted)}}#ovCmp .cmpl{flex:1;min-height:0;overflow:auto;margin-top:6px}
@@ -525,12 +525,31 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 @media (prefers-reduced-motion:reduce){#skel .sk{animation:none}}
 #sgrip{display:none}
 @media (min-width:1000px){
-  body.split #sgrip{display:block;position:fixed;z-index:30;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;width:11px;margin-left:-5px;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) * var(--sf,.5));cursor:ew-resize;touch-action:none}
+  body.split #sgrip{display:block;position:fixed;z-index:30;top:calc(var(--hh) + var(--th) + var(--bh));bottom:0;width:11px;margin-left:-5px;left:calc(var(--lw) + (100vw - var(--lw) - var(--rw)) * var(--sf,.6));cursor:ew-resize;touch-action:none}
   body.split #sgrip:hover,body.split #sgrip.on{background:color-mix(in srgb,var(--acc) 40%,transparent)}
   #ltabs .lt{box-shadow:inset 0 3px 0 var(--tc)}
   #ltabs .lt span{max-width:15em}
   #dbar .tb.ic{padding:0 7px;min-width:26px;font-size:.95em}
   #dbar .tb.pri{font-weight:700}
+}
+/* ===== v10.71 */
+@media (min-width:1000px){
+  #ltabs .lt{flex:0 1 auto;min-width:92px;max-width:210px;gap:5px;padding:0 4px 0 8px}
+  #ltabs .lt i.lk{background:color-mix(in srgb,var(--tc) 13%,var(--surf));color:var(--tc);font-size:.72em;padding:0 4px;line-height:1.5;border:1px solid color-mix(in srgb,var(--tc) 30%,transparent)}
+  #ltabs .lt:not(.on) b{width:0;padding:1px 0;overflow:hidden;opacity:0;margin-left:-4px}
+  #ltabs .lt:hover b,#ltabs .lt.on b{width:auto;padding:1px 5px;opacity:.6;margin-left:0}
+  #ltabs .lt:hover b:hover{opacity:1}
+  #ltabs .lt span{min-width:0}
+  #doc2 .s2h{background:transparent;border-bottom:0;padding:3px 2px;margin-bottom:2px}
+  #doc2 .s2h button{flex:none;border-color:transparent;background:none;padding:1px 7px;color:var(--sub)}
+  #doc2 .s2h button:hover{background:var(--acc-soft);border-color:var(--line)}
+  #doc2 .s2h button.on{border-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+  #list .tag.law,#list .tag.adm,#list .tag.ordin,#list .tag.fb{background:color-mix(in srgb,var(--tg) 13%,var(--surf))!important;color:var(--tg)!important;border:1px solid color-mix(in srgb,var(--tg) 28%,transparent);font-weight:600}
+  #list .tag.law{--tg:var(--law)}#list .tag.adm{--tg:var(--adm)}#list .tag.ordin{--tg:var(--ordin)}
+  #list .tag.fb.rl{--tg:#1565C0}#list .tag.fb.ry{--tg:#2E7D32}#list .tag.fb.rc{--tg:#EF6C00}
+  .fgh{background:color-mix(in srgb,var(--line) 45%,var(--surf));color:var(--sub)}
+  .sbox .btn{padding:0 9px}.sbox select{font-size:.8em}.sbox input{font-size:.9em}
+  .art.cur{background:color-mix(in srgb,var(--text) 3%,transparent);box-shadow:inset 3px 0 0 color-mix(in srgb,var(--acc) 50%,transparent);border-radius:0 6px 6px 0;border-bottom-color:var(--line)}
 }
 </style>
 </head>
@@ -549,7 +568,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 </div>
 
 <div class="view on" id="home"><div class="pad">
-  <div class="sbox"><select id="qm" style="border:1px solid var(--line);border-radius:8px;background:var(--surf);color:var(--text);font:inherit;font-size:.85em;width:auto;min-width:0;padding:0 2px"><option value="name">이름</option><option value="kw">키워드</option></select><input id="q" placeholder="예) 국토계획법 71조" enterkeyhint="search" autocomplete="off"><button class="btn" id="bGo">검색</button><div id="sug"></div></div>
+  <div class="sbox"><select id="qm" style="border:1px solid var(--line);border-radius:8px;background:var(--surf);color:var(--text);font:inherit;font-size:.85em;width:auto;min-width:0;padding:0 2px"><option value="name">이름</option><option value="kw">키워드</option></select><input id="q" placeholder="예) 건축법 11조" enterkeyhint="search" autocomplete="off"><button class="btn" id="bGo">검색</button><div id="sug"></div></div>
   <div class="tabs"><button id="tR" class="on">검색결과</button><button id="tF">즐겨찾기</button><button id="tT">목차</button><button id="tN">표시</button></div>
   <div id="list"><div class="empty">법령·행정규칙·자치법규 이름을 치면<br>목록이 나옵니다.<br><span style="font-size:.85em">처음에는 ⚙ 에서 국가법령정보센터 인증키(OC)를 넣어 주세요.</span></div></div>
 </div></div>
@@ -564,7 +583,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   <button class="tb pri" id="dbTT">3단 비교</button><button class="tb pri" id="dbFav">☆ 즐겨찾기</button><span class="dsep"></span><button class="tb ic" id="dbCopy" title="조문 복사">⧉</button><button class="tb ic" id="dbCite" title="인용 복사 — 「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">❝</button><button class="tb ic" id="dbWeb" title="법제처 화면에서 열기">↗</button>
   <button class="tb pri" id="dbSplit" title="오른쪽 칸: 지금 보는 조문이 인용하는 조문을 따라 보여 줍니다(오른쪽 칸 '바꾸기 ▾'에서 다른 법령 나란히 보기도 가능)">⫴ 인용 칸</button><button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
 </div>
-<div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="sgrip" title="끌어서 왼쪽·오른쪽 칸 폭 조절 (더블클릭: 반반)"></div><div id="ctx"></div><div id="dz"><div data-z="L">◀ 왼쪽(본문)에 열기</div><div data-z="R">오른쪽에 나란히 ▶</div></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
+<div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="sgrip" title="끌어서 왼쪽·오른쪽 칸 폭 조절 (더블클릭: 기본 비율)"></div><div id="ctx"></div><div id="dz"><div data-z="L">◀ 왼쪽(본문)에 열기</div><div data-z="R">오른쪽에 나란히 ▶</div></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
 <div class="view" id="doc"><div class="s2h" id="s1h"></div><div id="sumBox" class="sumbox"></div><div id="stk" class="stk" style="display:none"></div><div class="body" id="docBody"></div></div>
 <div class="view tt" id="tt"></div>
 <div id="doc2"><div id="s2tabs"><button data-t="cite" class="on">🔗 인용 조문</button><button data-t="hist">🕘 재개정 연혁</button></div><div class="s2h" id="s2h"></div><div class="body" id="doc2Body"></div><div class="body" id="s2hist"><div class="empty" id="s2hEmpty" style="padding:30px 10px">본문의 '&lt;개정 …&gt;' 날짜(법령)나 조문 오른쪽 🕘 단추(행정규칙)를 누르면 여기에 그 개정 때 바뀐 내용과 재개정 사유가 나옵니다.</div></div></div>
@@ -661,7 +680,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.70";
+const VERSION = "10.71";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1926,7 +1945,7 @@ const jl = (n, b) => "제" + n + "조" + (b ? "의" + b : "");
 function csPaint() {
   if (!SPLIT || SPLIT.mode !== "cite") return;
   const a = cur.doc && cur.doc.arts[CS.key];
-  $("#s2h").innerHTML = '<span class="nm">🔗 인용 따라보기 · ' + (a ? esc(a.label) : "—") + (CS.list.length ? ' <span class="muted" style="font-weight:400">(' + CS.list.length + "곳)</span>" : "") + '</span><button id="s2Pin" class="' + (CS.pin ? "on" : "") + '" title="지금 내용으로 고정(스크롤해도 바뀌지 않음)">' + (CS.pin ? "📌 고정됨" : "📌 고정") + '</button><button id="s2Pick" title="다른 법령을 나란히 보기">바꾸기 ▾</button><button id="s2X" title="닫기">✕</button>';
+  $("#s2h").innerHTML = '<span class="nm">🔗 인용 따라보기 · ' + (a ? esc(a.label) : "—") + (CS.list.length ? ' <span class="muted" style="font-weight:400">(' + CS.list.length + "곳)</span>" : "") + '</span><button id="s2Pin" class="' + (CS.pin ? "on" : "") + '" title="지금 내용으로 고정(스크롤해도 바뀌지 않음)">' + (CS.pin ? "📌 고정됨" : "📌 고정") + '</button><button id="s2Pick" title="다른 법령을 나란히 보기">바꾸기 ▾</button><button id="s2X" title="인용 칸 닫기">닫기</button>';
   let h = CS.top ? csCard(CS.top, "t", true) : "";
   if (!CS.list.length) h += '<div class="empty" style="padding:30px 10px">' + (a ? esc(a.label) + " 에는 다른 조문 인용이 없습니다." : "왼쪽에서 조문을 보면 그 조문이 인용하는 조문이 여기에 나옵니다.") + "</div>";
   CS.list.forEach((it, i) => (h += csCard(it, i, false)));
@@ -2034,7 +2053,7 @@ function paintSplit() {                                          // 오른쪽 �
   let h = "";
   d.items.forEach((it) => { h += it.k === "h" ? '<div class="head ' + headCls(it.t) + '">' + esc(it.t) + "</div>" : artHTML(d.arts[it.key], d.mst, { idp: "s2-", self }); });
   if ((d.annex || []).length) { h += '<div class="head">별표·서식 (' + d.annex.length + ")</div>"; d.annex.forEach((x, i) => { h += annexHTML(x, i, "s2ax-", d.mst, self); }); }
-  $("#s2h").innerHTML = splitBadge(d) + '<span class="nm" title="' + esc(d.name) + '">' + esc(d.name) + '</span><span class="sd" style="font-weight:400;color:var(--muted);font-size:.9em">오른쪽</span><button id="s2Pick" title="오른쪽에 다른 법령 고르기">바꾸기 ▾</button><button id="s2Swap" title="왼쪽과 오른쪽 바꾸기">⇄</button><button id="s2Main" title="이 법령을 왼쪽(본문)으로">◀ 본문으로</button><button id="s2X" title="나란히 보기 닫기">✕</button>';
+  $("#s2h").innerHTML = splitBadge(d) + '<span class="nm" title="' + esc(d.name) + '">' + esc(d.name) + '</span><span class="sd" style="font-weight:400;color:var(--muted);font-size:.9em">오른쪽</span><button id="s2Pick" title="오른쪽에 다른 법령 고르기">바꾸기 ▾</button><button id="s2Swap" title="왼쪽과 오른쪽 바꾸기">⇄</button><button id="s2Main" title="이 법령을 왼쪽(본문)으로">◀ 본문으로</button><button id="s2X" title="나란히 보기 닫기">닫기</button>';
   const b = $("#doc2Body"); b.innerHTML = h; bindCites(b); applyNotesSplit();
   $("#doc2").scrollTop = SPLIT.scroll || keep || 0; SPLIT.scroll = 0;
   $("#s2X").onclick = closeSplit;
@@ -2555,7 +2574,7 @@ $("#bTheme").onclick = (e) => {
 // ---- 본문|오른쪽 칸 폭 끌기 (가운데 경계선)
 (function () {
   const g = $("#sgrip"), root = document.documentElement.style; let on = false;
-  const apply = () => root.setProperty("--sf", String(LS.get("lv_sf", 0.5)));
+  const apply = () => root.setProperty("--sf", String(LS.get("lv_sf", 0.6)));
   apply();
   g.addEventListener("pointerdown", (e) => { on = true; g.classList.add("on"); g.setPointerCapture(e.pointerId); e.preventDefault(); });
   g.addEventListener("pointermove", (e) => {
@@ -2565,7 +2584,7 @@ $("#bTheme").onclick = (e) => {
   });
   const end = () => { on = false; g.classList.remove("on"); };
   g.addEventListener("pointerup", end); g.addEventListener("pointercancel", end);
-  g.addEventListener("dblclick", () => { LS.set("lv_sf", 0.5); apply(); });
+  g.addEventListener("dblclick", () => { LS.set("lv_sf", 0.6); apply(); });
 })();
 // ---- 미리보기 칸 높이 끌기
 (function () {
