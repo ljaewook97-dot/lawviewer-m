@@ -2276,6 +2276,27 @@ def _try_city_ordin(oc, city, getter):
     return out
 
 
+ORDIN_TOPICS = ("건축", "주차장", "도시재생", "경관", "개발행위", "도시공원", "도로", "산지", "하천", "건축위원회", "교통영향평가", "공동주택")
+_CITY_TOPIC = {}
+
+
+def _try_city_topic(oc, city, topic, getter):
+    """그 시·군·구의 '<주제> … 조례'(건축·주차장 등)를 찾아 내려받는다 -> 도시계획 조례와 같은 꼴 또는 None"""
+    k = (city, topic)
+    if k in _CITY_TOPIC:
+        return _CITY_TOPIC[k]
+    out = None
+    try:
+        f = find_ordin(oc, "%s %s 조례" % (city, topic), getter, exact=False)
+        out = {"mst": "o" + f["mst"], "rawmst": f["mst"], "name": f["name"], "date": f["date"], "ordin": True,
+               "law": load_ordin(oc, f["mst"], f["name"], getter)}
+    except Exception:  # noqa: BLE001
+        out = None
+    if out:
+        _CITY_TOPIC[k] = out
+    return out
+
+
 def _adm_pool(oc, toks, bases, getter, body_limit=4):
     """키워드 검색에 함께 훑을 행정규칙 후보 -> [{'mst':'a<id>','rawmst','name','date'}]
     ① 그 법 계열의 대표 지침(ADM_EXTRA, 예: 지구단위계획수립지침) ② 법제처 행정규칙 본문검색에서 키워드가 든 현행 행정규칙 상위."""
@@ -2339,6 +2360,7 @@ def keyword_search(oc, q, scope=None, getter=None, limit=80, wide=True, city="")
     """키워드로 관련 조문 찾기 -> {'hits': [...], 'searched': [법령 이름…], 'note': 안내 글, ...}
     wide=True 이면 기본 범위 밖에서도 그 키워드가 들어 있는 법령(법제처 법령명·본문검색 상위)을 함께 찾아 합친다(hit['ext']=True)."""
     from concurrent.futures import ThreadPoolExecutor
+    ThreeEx = ThreadPoolExecutor
     names, toks = split_query(q)
     explicit = names is not None
     if not toks:
@@ -2367,10 +2389,11 @@ def keyword_search(oc, q, scope=None, getter=None, limit=80, wide=True, city="")
     note = ""
     ext_names = []
     ord_msts = set()
+    city_miss = []
     if not explicit:                                           # 지자체 조례: 기본 자치단체(설정)와 검색어 속 시·군 이름
         cities = []
         for tk in toks:
-            if re.match(r"^[가-힣]{2,4}[시군]$", tk) and tk not in ("도시", "특별시", "광역시", "농촌", "시가", "지구", "구역") and tk not in cities:
+            if re.match(r"^[가-힣]{2,4}[시군구]$", tk) and tk not in ("도시", "특별시", "광역시", "농촌", "시가", "지구", "구역", "지역", "구역") and tk not in cities:
                 cities.append(tk)
         ctoks = []
         for cname in cities:
@@ -2379,6 +2402,17 @@ def keyword_search(oc, q, scope=None, getter=None, limit=80, wide=True, city="")
                 ctoks.append(cname)
                 laws.append(o)
                 ord_msts.add(o["mst"])
+            else:                                              # 못 찾았으면 말없이 넘기지 않고 까닭을 알려 준다
+                city_miss.append("%s 도시계획 조례(%s)" % (cname, (LAST_ORD_ERR[-1] if LAST_ORD_ERR else "도시계획 조례 없음")[:60]))
+            # 도시계획 조례 말고도 그 지자체의 건축·주차장 등 다른 조례를 함께 찾는다(검색어에 쓴 주제는 맨 앞)
+            topics = [t for t in ORDIN_TOPICS if any(t in x for x in toks)] + [t for t in ORDIN_TOPICS if not any(t in x for x in toks)]
+            with ThreeEx(max_workers=6) as ex2:
+                for t, o2 in zip(topics, ex2.map(lambda t: _try_city_topic(oc, cname, t, getter), topics)):
+                    if o2 and o2["mst"] not in ord_msts:
+                        if cname not in ctoks:
+                            ctoks.append(cname)
+                        laws.append(o2)
+                        ord_msts.add(o2["mst"])
         if ctoks:
             toks = [x for x in toks if x not in ctoks] or toks
         if city and city not in cities:
@@ -2451,6 +2485,8 @@ def keyword_search(oc, q, scope=None, getter=None, limit=80, wide=True, city="")
     adms = sorted({h["lawname"] for h in hits if h["adm"]})
     if adms:
         note = (note + " · " if note else "") + "행정규칙(지침) 포함(%s)" % ", ".join(adms[:3]) + (" 외" if len(adms) > 3 else "")
+    if city_miss:
+        note = (note + " · " if note else "") + "못 찾은 조례: " + ", ".join(city_miss)
     ords = sorted({h["lawname"] for h in hits if h["ord"]})
     if ords:
         note = (note + " · " if note else "") + "지자체 조례 포함(%s)" % ", ".join(ords)
