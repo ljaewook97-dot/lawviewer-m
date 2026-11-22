@@ -2018,7 +2018,11 @@ def ordin_text_search(oc, city, kws, getter=None, limit=8, whole=100):
         out.append({"score": 1, "li": 0, "mst": "o" + mst, "rawmst": mst, "lawname": nm, "key": "", "label": nm, "title": "", "n": 0, "b": 0,
                     "short": "자치법규 · " + org, "snippet": ("시행 %s.%s.%s · 본문에 '%s'" % (dt[:4], dt[4:6], dt[6:8], " ".join(kws))) if len(dt) == 8 else "본문에 '%s'" % " ".join(kws),
                     "kind": "ordin", "date": dt, "adm": False, "_rank": (2, 1, len(nm))})
-    out.sort(key=lambda h: (len(h["lawname"]), h["lawname"]))
+    def _pri(h):
+        nm = h["lawname"]
+        hit = [i for i, t in enumerate(("도시계획", "건축", "주차장", "경관", "개발행위", "도시재생", "도시공원", "도로", "산지", "하천", "교통영향", "공동주택", "도시재정비", "정비", "지구단위")) if t in nm]
+        return (0 if hit else 1, hit[0] if hit else 0, 1 if nm.endswith("규칙") else 0, len(nm), nm)       # 도시·건축 조례를 앞에, 시행규칙은 뒤로
+    out.sort(key=_pri)
     return out[:limit]
 
 

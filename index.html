@@ -105,6 +105,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .guide .mkpal{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:99px;background:var(--surf);border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.18);margin-bottom:8px}.guide .mkpal .d{width:16px;height:16px;border-radius:50%;display:inline-block}.guide .mkpal b{font-size:1.05em}.guide .sp1{width:1px;height:16px;background:var(--line);margin:0 3px}
 .guide mark.hy{background:rgba(255,214,0,.7);color:inherit;padding:0 1px}.guide mark.mm{background:rgba(70,160,255,.35);color:inherit;border-bottom:2px dotted #1565C0;padding:0 1px}.guide .rd{color:#D32F2F;font-weight:700}
 .guide .mkfav{display:flex;align-items:center;gap:8px;padding:6px 9px;margin:3px 0;border-radius:8px;background:var(--surf);border:1px solid var(--line)}.guide .mkfav span:first-child{flex:1}.guide .tag{padding:1px 8px;border-radius:99px;font-size:.85em;font-weight:700;color:#fff}.guide .tag.a{background:#d84315}.guide .tag.b{background:#1565C0}
+@media(max-width:760px){#bHelp .hl{display:none}}
 .guide h4{display:block;font-size:.95em;margin:0 0 4px}.guide ol,.guide ul{margin:4px 0 0;padding-left:1.25em;line-height:1.65;font-size:.92em}.guide li{margin:3px 0}.guide .eg{display:inline-block;margin-top:2px;padding:1px 7px;border-radius:6px;background:var(--surf2,rgba(0,0,0,.06));color:var(--acc-d);font-size:.92em}
 .kbr{display:flex;gap:10px;align-items:baseline;padding:4px 0;border-bottom:1px dashed var(--line);font-size:.9em}.kbr kbd{flex:none;min-width:9.5em;font-family:inherit;font-weight:700;color:var(--acc-d)}
 .tt .ttg.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.tt .col.ord .oa+.oa{margin-top:16px;padding-top:16px;border-top:1px dashed var(--line)}.tth .sm.on{background:var(--acc);color:#fff}
@@ -596,7 +597,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   <button class="ib dtonly" id="fMinus" title="글자 작게">A−</button><button class="ib dtonly" id="fPlus" title="글자 크게">A＋</button>
   <button class="ib dtonly" id="bTheme" title="색상 테마">◐ 테마</button>
   <button class="ib" id="bTT" style="display:none" title="3단 비교">3단</button>
-  <button class="ib" id="bHelp" title="처음 쓰는 분을 위한 사용법">? 사용법</button>
+  <button class="ib" id="bHelp" title="처음 쓰는 분을 위한 사용법">?<span class="hl"> 사용법</span></button>
   <button class="ib" id="bSet">⚙</button>
 </div>
 
@@ -647,6 +648,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
       <div><label>줄 간격</label><select id="lhs"><option value="">기본</option><option value="1.3">좁게</option><option value="1.5">약간 좁게</option><option value="1.7">넓게</option><option value="1.9">약간 넓게</option><option value="2">아주 넓게</option></select></div>
     </div>
     <button class="sm" id="kbOpen" type="button" style="margin:4px 0 8px">⌨ 단축키 안내 (?)</button> <button class="sm" id="helpOpen" type="button" style="margin:4px 0 8px">📖 사용법</button>
+    <div style="margin:2px 0 8px"><button class="sm" id="nExp" type="button">⬇ 표시(형광펜·메모) 내보내기</button> <button class="sm" id="nImp" type="button">⬆ 가져오기</button><input type="file" id="nFile" accept=".json,application/json" hidden></div>
     <label>글꼴</label>
     <select id="ffs"><option value="">고딕 (기본)</option><option value="m">명조·바탕 (서류 느낌)</option><option value="s">기기 기본 글꼴</option></select>
     <label>본문 폭 (PC 넓은 화면)</label>
@@ -721,7 +723,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
       <div class="mkart">② 시장은 제1항에 따른 <mark class="hy">순찰차 전용주차구획</mark>을 설치하고, <span class="rd">이용자 등이 알아보기 쉬운</span> 안내표지를 <mark class="mm">설치할 수 있다</mark>.<span class="note">▲ 글을 드래그하면 위 도구 막대가 뜹니다</span></div></div>
     <ul><li><b>색 동그라미</b> 5개=형광펜, <b>A</b> 4개=글자색, <b>✕</b>=지우기, <b>📝</b>=메모(적고 「저장」. 메모 달린 글을 다시 누르면 보고 고칩니다).</li>
     <li>왼쪽 <b>「표시」 탭</b>에 법령·조문별로 모이고, 누르면 그 자리로 이동, 「모아 복사」로 한꺼번에 복사합니다.</li>
-    <li>표시는 이 기기 브라우저에 저장됩니다. 사이트 데이터를 지우면 사라지니 중요한 것은 「모아 복사」로 보관하세요.</li></ul></section>
+    <li>표시는 이 기기 브라우저에 저장됩니다. ⚙ 의 「공유 주소」를 넣어 두면 다른 기기와 맞춰지고, 「표시 내보내기」로 파일 백업도 됩니다(사이트 데이터를 지우면 이 기기 것은 사라집니다).</li></ul></section>
 
   <section class="sg"><h4>⑥ 즐겨찾기와 개정 알림</h4>
     <div class="mk"><div class="mkfav"><span>★ 건축법</span><span class="tag a">개정</span></div><div class="mkfav"><span>★ 국토의 계획 및 이용에 관한 법률 시행령</span><span class="tag b">시행 예정</span></div></div>
@@ -757,7 +759,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.92";
+const VERSION = "10.94";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1478,9 +1480,25 @@ function kbOpen() { $("#kbL").innerHTML = KBS.map((x) => '<div class="kbr"><kbd>
 $("#kbNo").onclick = () => $("#ovKb").classList.remove("on");
 // ---- 처음 쓰는 분을 위한 사용법(처음 한 번 자동으로 열림)
 function guideOpen() { $("#ovGuide").classList.add("on"); const m = $("#ovGuide .modal"); if (m) m.scrollTop = 0; }
-function guideClose() { $("#ovGuide").classList.remove("on"); LS.set("lv_guide", 1); }
+function guideClose() { $("#ovGuide").classList.remove("on"); const first = !LS.get("lv_guide", 0); LS.set("lv_guide", 1); if (first && !OC) setTimeout(() => $("#bSet").click(), 200); }
 $("#bHelp").onclick = guideOpen; $("#guideNo").onclick = guideClose;
 $("#ovGuide").addEventListener("click", (e) => { if (e.target.id === "ovGuide") guideClose(); });
+$("#nExp").onclick = () => {
+  if (!NOTES.length) return toast("내보낼 표시가 없습니다", true);
+  const b = new Blob([JSON.stringify({ app: "lawviewer-notes", ts: Date.now(), notes: NOTES, del: NDEL }, null, 1)], { type: "application/json" }), a = document.createElement("a"), d = new Date(), p2 = (n) => String(n).padStart(2, "0");
+  a.href = URL.createObjectURL(b); a.download = "법령뷰어_표시_" + d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + ".json"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  toast("표시 " + NOTES.length + "개를 파일로 내보냈습니다");
+};
+$("#nImp").onclick = () => $("#nFile").click();
+$("#nFile").onchange = async (e) => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try {
+    const j = JSON.parse(await f.text()); if (!j || !Array.isArray(j.notes)) throw 0;
+    const before = NOTES.length, m = mergeNotes(NOTES, NDEL, j.notes.filter((n) => n && n.id && n.law && n.key != null), j.del);
+    NOTES = m.notes; NDEL = m.del; saveNotes(); if (cur.doc) applyNotes(); if (tab === "n") paintNotesList();
+    toast("표시를 가져왔습니다 (+" + (NOTES.length - before) + "개, 전체 " + NOTES.length + "개)");
+  } catch (er) { toast("표시 파일이 아닙니다", true); }
+};
 $("#helpOpen").onclick = () => { $("#ovSet").classList.remove("on"); guideOpen(); };
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("#ovGuide").classList.contains("on")) guideClose(); });
 if (!LS.get("lv_guide", 0)) setTimeout(guideOpen, 600);
@@ -3371,7 +3389,7 @@ async function checkUpdateNow() {
 }
 if (P.get("oc")) { OC = P.get("oc"); LS.set("lv_oc", OC); history.replaceState(null, "", location.pathname); }
 setTab(favs.length ? "f" : "r");          // 처음 열면 즐겨찾기부터
-if (!OC) { tabRestoring = false; setTimeout(() => $("#bSet").click(), 300); }
+if (!OC) { tabRestoring = false; if (LS.get("lv_guide", 0)) setTimeout(() => $("#bSet").click(), 300); }   // 처음이면 사용법을 먼저 보여 주고, 닫은 뒤에 설정을 연다
 else { setTimeout(startWorker, 400); setTimeout(restoreTabs, 700); setTimeout(async () => { await syncNow(false); syncNotes(false); }, 1500); }        // 엔진은 미리 내려받아 둔다
 </script>
 </body>
