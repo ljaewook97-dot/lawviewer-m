@@ -485,6 +485,15 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 #s2tabs button{border:1px solid var(--line);border-bottom:0;border-radius:7px 7px 0 0;padding:4px 12px;font-size:.84em;font-weight:700;color:var(--sub);background:var(--surf)}
 #s2tabs button.on{background:var(--acc-soft);color:var(--acc-d);border-color:color-mix(in srgb,var(--acc) 40%,var(--line))}
 #doc2.tabs #s2h{top:var(--s2th,33px)}
+/* 오른쪽 칸 탭·머리줄을 같은 테마색으로: 켜진 탭 = 테마색 꽉 채움, 머리줄 = 옅은 테마색, 둘 사이를 테마색 선으로 이음 */
+#s2tabs{background:var(--surf);border-bottom:2px solid var(--acc);padding:6px 6px 0;margin:0 -2px;gap:4px}
+#s2tabs button{border:1px solid color-mix(in srgb,var(--acc) 35%,var(--line));border-bottom:0;border-radius:8px 8px 0 0;padding:5px 14px;background:color-mix(in srgb,var(--acc) 7%,var(--surf));color:var(--acc-d);font-weight:700;opacity:.85}
+#s2tabs button:hover{opacity:1;background:var(--acc-soft)}
+#s2tabs button.on{background:var(--acc);color:var(--acc-t);border-color:var(--acc);opacity:1}
+#doc2 .s2h{background:var(--acc-soft);border-bottom:1px solid color-mix(in srgb,var(--acc) 30%,var(--line));padding:7px 8px;margin:0 -2px 6px;color:var(--ink)}
+#doc2 .s2h .nm b{color:var(--acc-d)}#doc2 .s2h .nm .ct{background:var(--acc);color:var(--acc-t)}
+#doc2 .s2h button{border-color:color-mix(in srgb,var(--acc) 40%,var(--line));color:var(--acc-d);background:var(--surf)}
+#doc2 .s2h button:hover,#doc2 .s2h button.on{background:var(--acc);color:var(--acc-t);border-color:var(--acc)}
 #doc2.hist #s2h,#doc2.hist #doc2Body{display:none}
 #s2hist{display:none}#doc2.hist #s2hist{display:block}
 #s2hist .modal{position:static!important;left:auto!important;right:auto!important;top:auto!important;transform:none!important;width:auto!important;max-height:none!important;box-shadow:none!important;border:0!important;background:transparent!important;padding:8px 0 40px!important;overflow:visible!important;display:flex;flex-direction:column}
@@ -761,7 +770,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.95";
+const VERSION = "10.96";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
