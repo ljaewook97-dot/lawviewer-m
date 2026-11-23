@@ -386,6 +386,8 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #doc2 .s2h{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:6px;padding:5px 2px;margin:0 -2px 4px;background:color-mix(in srgb,var(--surf) 94%,gray);border-bottom:1px solid var(--line);font-size:.85em;font-weight:700}
   #doc2 .s2h .lk{font-style:normal;color:#fff;border-radius:4px;padding:0 5px;font-size:.85em}
   #doc2 .s2h .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #doc2 .s2h .nm b{color:var(--acc-d)}#doc2 .s2h .nm .ct{display:inline-block;margin-left:4px;padding:0 7px;border-radius:99px;background:var(--acc-soft);color:var(--acc-d);font-size:.9em}
+  #doc2 .s2h .nm small{display:block;margin-top:1px;font-weight:400;color:var(--sub);font-size:.86em;white-space:normal;line-height:1.35}
   #doc2 .s2h button{border:1px solid var(--line);border-radius:5px;padding:1px 8px;font-size:.92em;font-weight:400;color:var(--sub);background:var(--surf)}
   #doc2 .s2h button:hover{background:var(--acc-soft)}
   #doc2 .csc{background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:9px 14px 12px;margin:13px 0;transition:box-shadow .15s,border-color .15s}
@@ -620,7 +622,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="sgrip" title="끌어서 왼쪽·오른쪽 칸 폭 조절 (더블클릭: 기본 비율)"></div><div id="ctx"></div><div id="dz"><div data-z="L">◀ 왼쪽(본문)에 열기</div><div data-z="R">오른쪽에 나란히 ▶</div></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
 <div class="view" id="doc"><div class="s2h" id="s1h"></div><div id="sumBox" class="sumbox"></div><div id="stk" class="stk" style="display:none"></div><div class="body" id="docBody"></div></div>
 <div class="view tt" id="tt"></div>
-<div id="doc2"><div id="s2tabs"><button data-t="cite" class="on">🔗 인용 조문</button><button data-t="hist">🕘 재개정 연혁</button></div><div class="s2h" id="s2h"></div><div class="body" id="doc2Body"></div><div class="body" id="s2hist"><div class="empty" id="s2hEmpty" style="padding:30px 10px">본문의 '&lt;개정 …&gt;' 날짜(법령)나 조문 오른쪽 🕘 단추(행정규칙)를 누르면 여기에 그 개정 때 바뀐 내용과 재개정 사유가 나옵니다.</div></div></div>
+<div id="doc2"><div id="s2tabs"><button data-t="cite" class="on" title="왼쪽에서 보고 있는 조문이 본문에서 가리킨(인용한) 다른 조문을 보여 줍니다">🔗 이 조문이 인용한 조문</button><button data-t="hist" title="개정 날짜를 누르면 이곳에 개정 전·후 비교와 개정 이유가 나옵니다">🕘 개정 전·후 비교</button></div><div class="s2h" id="s2h"></div><div class="body" id="doc2Body"></div><div class="body" id="s2hist"><div class="empty" id="s2hEmpty" style="padding:30px 10px">본문의 '&lt;개정 …&gt;' 날짜(법령)나 조문 오른쪽 🕘 단추(행정규칙)를 누르면 여기에 그 개정 때 바뀐 내용과 재개정 사유가 나옵니다.</div></div></div>
 
 <div id="pbox"><div class="sheet" id="sheet"></div><div class="sheet" id="sheet2"></div></div>
 <div id="side"></div>
@@ -748,7 +750,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   <div class="cmpl" id="cmpL"></div>
   <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" style="flex:1" id="cmpOpen">새 시행본 열기</button><button class="btn g" id="cmpDockBtn" style="display:none">창으로 띄우기</button><button class="btn g" id="cmpNo">닫기</button></div>
 </div></div>
-<div id="cmpDz">여기에 놓으면 오른쪽 칸의 '재개정 연혁' 탭에 들어갑니다</div>
+<div id="cmpDz">여기에 놓으면 오른쪽 칸의 '개정 전·후 비교' 탭에 들어갑니다</div>
 <div class="over" id="ovRep"><div class="modal">
   <h3>이상한 줄 신고 목록</h3>
   <div class="muted" style="font-size:.82em;line-height:1.5;margin-bottom:6px">본문에서 줄을 드래그해 ⚑를 누르면 여기에 쌓입니다. 「전체 복사」로 복사해 Claude에게 붙여넣으면 어느 줄이 문제인지 바로 알 수 있습니다.</div>
@@ -759,7 +761,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.94";
+const VERSION = "10.95";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -2067,9 +2069,9 @@ const jl = (n, b) => "제" + n + "조" + (b ? "의" + b : "");
 function csPaint() {
   if (!SPLIT || SPLIT.mode !== "cite") return;
   const a = cur.doc && cur.doc.arts[CS.key];
-  $("#s2h").innerHTML = '<span class="nm">🔗 인용 따라보기 · ' + (a ? esc(a.label) : "—") + (CS.list.length ? ' <span class="muted" style="font-weight:400">(' + CS.list.length + "곳)</span>" : "") + '</span><button id="s2Pin" class="' + (CS.pin ? "on" : "") + '" title="지금 내용으로 고정(스크롤해도 바뀌지 않음)">' + (CS.pin ? "📌 고정됨" : "📌 고정") + '</button><button id="s2Pick" title="다른 법령을 나란히 보기">바꾸기 ▾</button><button id="s2X" title="인용 칸 닫기">닫기</button>';
+  $("#s2h").innerHTML = '<span class="nm"><b>' + (a ? esc(a.label) : "—") + '</b>에서 인용한 조문' + (CS.list.length ? ' <span class="ct">' + CS.list.length + "곳</span>" : "") + '<small>왼쪽 조문 본문에서 「제○조」「법 제○조」로 가리킨 조문입니다. 왼쪽을 넘기면 따라 바뀝니다.</small></span><button id="s2Pin" class="' + (CS.pin ? "on" : "") + '" title="지금 내용으로 고정(왼쪽을 넘겨도 바뀌지 않음)">' + (CS.pin ? "📌 고정됨" : "📌 고정") + '</button><button id="s2Pick" title="다른 법령을 오른쪽에 나란히 보기">다른 법령 ▾</button><button id="s2X" title="인용 칸 닫기">닫기</button>';
   let h = CS.top ? csCard(CS.top, "t", true) : "";
-  if (!CS.list.length) h += '<div class="empty" style="padding:30px 10px">' + (a ? esc(a.label) + " 에는 다른 조문 인용이 없습니다." : "왼쪽에서 조문을 보면 그 조문이 인용하는 조문이 여기에 나옵니다.") + "</div>";
+  if (!CS.list.length) h += '<div class="empty" style="padding:30px 10px">' + (a ? esc(a.label) + " 에는 다른 조문 인용이 없습니다." : "왼쪽에서 조문을 보면, 그 조문이 인용한 조문이 여기에 나옵니다.") + "</div>";
   CS.list.forEach((it, i) => (h += csCard(it, i, false)));
   const b = $("#doc2Body"), keep = $("#doc2").scrollTop; b.innerHTML = h; bindCites(b); applyNotesSplit(); $("#doc2").scrollTop = keep;
   b.querySelectorAll(".csh[data-k]").forEach((x) => (x.onclick = () => openByName(x.dataset.n, x.dataset.k)));
@@ -2186,7 +2188,7 @@ function paintSplit() {                                          // 오른쪽 �
 function pickSplit(r) {
   const items = ltabs.map((t, i) => [(SPLIT && SPLIT.mode !== "cite" && SPLIT.d === t.d ? "✓ " : "   ") + (t.d === cur.doc ? "(지금 본문) " : "") + t.d.name, () => openSplit(i)]);
   if (!items.length) return toast("먼저 법령을 둘 이상 여세요", true);
-  showMenu(r.left, r.bottom + 2, [["오른쪽 칸", null, "mh"], [(SPLIT && SPLIT.mode === "cite" ? "✓ " : "   ") + "🔗 인용 따라보기 (지금 조문이 인용하는 조문)", openCiteCol], ["다른 법령 나란히 보기", null, "mh"]].concat(items, SPLIT ? [["오른쪽 칸 닫기", closeSplit, "dz"]] : []));
+  showMenu(r.left, r.bottom + 2, [["오른쪽 칸", null, "mh"], [(SPLIT && SPLIT.mode === "cite" ? "✓ " : "   ") + "🔗 이 조문이 인용한 조문 (인용 칸)", openCiteCol], ["다른 법령 나란히 보기", null, "mh"]].concat(items, SPLIT ? [["오른쪽 칸 닫기", closeSplit, "dz"]] : []));
 }
 function applyNotesSplit() {
   const root = $("#doc2Body"); if (!SPLIT || !root) return;
