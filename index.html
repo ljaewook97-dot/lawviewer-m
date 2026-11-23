@@ -40,7 +40,7 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .hdr .t{flex:1;font-weight:800;color:var(--acc-d);font-size:1.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
 .ib{min-width:40px;height:40px;border-radius:10px;font-size:1.1em;font-weight:700;color:var(--sub)}
 .ib:active,.ib:hover{background:var(--soft)}
-.view{display:none;position:fixed;inset:0;padding-top:calc(env(safe-area-inset-top) + 52px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.view{display:none;position:fixed;inset:0;padding-top:calc(env(safe-area-inset-top) + 52px);overflow-y:auto;overflow-x:hidden;background:var(--bg);-webkit-overflow-scrolling:touch}
 .view.on{display:block}
 .pad{padding:12px}
 .sbox{display:flex;gap:6px;margin-bottom:8px;position:relative}
@@ -492,6 +492,10 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 #s2tabs button.on{background:var(--acc);color:var(--acc-t);border-color:var(--acc);opacity:1}
 #doc2 .s2h{background:var(--acc-soft);border-bottom:1px solid color-mix(in srgb,var(--acc) 30%,var(--line));padding:7px 8px;margin:0 -2px 6px;color:var(--ink)}
 #doc2 .s2h .nm b{color:var(--acc-d)}#doc2 .s2h .nm .ct{background:var(--acc);color:var(--acc-t)}
+#doc2 .csh .via{display:inline-block;margin-right:4px;padding:0 7px;border-radius:99px;background:var(--acc-soft);color:var(--acc-d);font-size:.86em;font-weight:700;white-space:nowrap}
+/* 어두운 테마: 켜진 탭을 밝은 색으로 채우지 않고 옅게 + 위쪽 굵은 테마색 선 */
+:root[data-theme=dark] #s2tabs button.on,:root[data-theme=graphite] #s2tabs button.on,:root[data-theme=nord] #s2tabs button.on{background:var(--acc-soft);color:var(--acc-d);border-color:var(--acc);box-shadow:inset 0 3px 0 var(--acc)}
+:root[data-theme=dark] #doc2 .s2h .nm .ct,:root[data-theme=graphite] #doc2 .s2h .nm .ct,:root[data-theme=nord] #doc2 .s2h .nm .ct{background:var(--acc-soft);color:var(--acc-d);border:1px solid var(--acc)}
 #doc2 .s2h button{border-color:color-mix(in srgb,var(--acc) 40%,var(--line));color:var(--acc-d);background:var(--surf)}
 #doc2 .s2h button:hover,#doc2 .s2h button.on{background:var(--acc);color:var(--acc-t);border-color:var(--acc)}
 #doc2.hist #s2h,#doc2.hist #doc2Body{display:none}
@@ -557,6 +561,8 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   #ltabs .lt{box-shadow:inset 0 3px 0 var(--tc)}
   #ltabs .lt span{max-width:15em}
   #dbar .tb.ic{padding:0 7px;min-width:26px;font-size:.95em}
+  #dbar .tb .tl{font-size:.88em}
+  @media(max-width:1250px){#dbar .tb .tl{display:none}}
   #dbar .tb.pri{font-weight:700}
 }
 /* ===== v10.71 */
@@ -625,8 +631,8 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   <button class="tb" id="fPrev" title="이전 (Shift+Enter)">▲</button><button class="tb" id="fNext" title="다음 (Enter)">▼</button>
   <button class="tb ic" id="fClr" title="찾기 강조 지우기">✕</button><span id="fCnt" class="muted"></span><input id="gk" class="fq2" placeholder="조문 번호 (예: 52의2)" autocomplete="off" title="Ctrl+G · 조문 번호를 치고 Enter">
   <span class="sp"></span>
-  <button class="tb pri" id="dbTT">3단 비교</button><button class="tb pri" id="dbFav">☆ 즐겨찾기</button><span class="dsep"></span><button class="tb ic" id="dbCopy" title="조문 복사">⧉</button><button class="tb ic" id="dbCite" title="인용 복사 — 「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">❝</button><button class="tb ic" id="dbWeb" title="법제처 화면에서 열기">↗</button>
-  <button class="tb pri" id="dbSplit" title="오른쪽 칸: 지금 보는 조문이 인용하는 조문을 따라 보여 줍니다(오른쪽 칸 '바꾸기 ▾'에서 다른 법령 나란히 보기도 가능)">⫴ 인용 칸</button><button class="tb" id="bR" title="오른쪽 정리 접기/펴기 (F8)">정리 ▶</button>
+  <button class="tb pri" id="dbTT">3단 비교</button><button class="tb pri" id="dbFav">☆ 즐겨찾기</button><span class="dsep"></span><button class="tb ic" id="dbCopy" title="조문 복사">⧉<span class="tl"> 복사</span></button><button class="tb ic" id="dbCite" title="인용 복사 — 「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">❝<span class="tl"> 인용복사</span></button><button class="tb ic" id="dbWeb" title="법제처 화면에서 열기">↗<span class="tl"> 법제처</span></button>
+  <button class="tb pri" id="dbSplit" title="오른쪽 칸: 지금 보는 조문이 인용하는 조문을 따라 보여 줍니다(오른쪽 칸 '바꾸기 ▾'에서 다른 법령 나란히 보기도 가능)">⫴ 인용 칸</button><button class="tb" id="bR" title="오른쪽 「인용 정리」 칸 접기/펴기 (F8) — 눌러 둔 조문이 인용한 조문·위임 조문을 모아 보여 줍니다">인용 정리 ▶</button>
 </div>
 <div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="sgrip" title="끌어서 왼쪽·오른쪽 칸 폭 조절 (더블클릭: 기본 비율)"></div><div id="ctx"></div><div id="dz"><div data-z="L">◀ 왼쪽(본문)에 열기</div><div data-z="R">오른쪽에 나란히 ▶</div></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
 <div class="view" id="doc"><div class="s2h" id="s1h"></div><div id="sumBox" class="sumbox"></div><div id="stk" class="stk" style="display:none"></div><div class="body" id="docBody"></div></div>
@@ -770,7 +776,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.96";
+const VERSION = "10.98";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -2072,7 +2078,7 @@ function csCard(it, i, pinned) {
   if (!r || !r.art) return '<div class="csc" data-ci="' + i + '"><div class="csh">' + esc(tl) + ' <span class="muted">— 찾지 못했습니다</span></div></div>';
   const d0 = { kind: "law", name: r.lawname };
   const tcol = { "k-adm": "#7B1FA2", "k-ord": "#00838F", "k-rule": "#EF6C00", "k-dec": "#2E7D32", "k-law": "#1565C0" }[tabCls(d0)] || "#1565C0";
-  return '<div class="csc' + (pinned ? " top" : "") + '" style="border-left:5px solid ' + tcol + '" data-ci="' + i + '"><div class="csh" data-n="' + esc(r.lawname) + '" data-k="' + r.art.key + '" title="본문 탭으로 열기">' + (pinned ? "📍 누른 인용 · " : "") + (t.via ? '<span class="muted">' + esc(t.via) + "으로 위임 · </span>" : "") + splitBadge(d0) + '<span class="cn">' + esc(r.lawname.replace(/\s*(시행령|시행규칙)$/, "")) + "</span> " + esc(r.art.label + " " + (r.art.title || "")) + " ↗</div>" + artHTML(r.art, r.mst, { idp: "cs" + i + "-", self: r.lawname, hl: r.hl || [] }) + "</div>";
+  return '<div class="csc' + (pinned ? " top" : "") + '" style="border-left:5px solid ' + tcol + '" data-ci="' + i + '"><div class="csh" data-n="' + esc(r.lawname) + '" data-k="' + r.art.key + '" title="본문 탭으로 열기">' + (pinned ? "📍 누른 인용 · " : "") + (t.via ? '<span class="via" title="왼쪽 조문이 「대통령령(총리령)으로 정한다」고 한 부분을, 실제로 정해 둔 ' + esc(t.via) + ' 조문입니다">↳ 위임받은 ' + esc(t.via) + " 조문</span> " : "") + splitBadge(d0) + '<span class="cn">' + esc(r.lawname.replace(/\s*(시행령|시행규칙)$/, "")) + "</span> " + esc(r.art.label + " " + (r.art.title || "")) + " ↗</div>" + artHTML(r.art, r.mst, { idp: "cs" + i + "-", self: r.lawname, hl: r.hl || [] }) + "</div>";
 }
 const jl = (n, b) => "제" + n + "조" + (b ? "의" + b : "");
 function csPaint() {
@@ -2734,7 +2740,7 @@ $("#bTheme").onclick = (e) => {
 })();
 
 // ---------------------------------------------------------------- 칸 접기·단축키 (PC)
-function setPane(side, hide) { document.body.classList.toggle(side === "l" ? "hl" : "hr", hide); LS.set("lv_hide" + side, hide ? 1 : 0); $(side === "l" ? "#bL" : "#bR").textContent = side === "l" ? (hide ? "목록 ▶" : "◀ 목록") : (hide ? "◀ 정리" : "정리 ▶"); }
+function setPane(side, hide) { document.body.classList.toggle(side === "l" ? "hl" : "hr", hide); LS.set("lv_hide" + side, hide ? 1 : 0); $(side === "l" ? "#bL" : "#bR").textContent = side === "l" ? (hide ? "목록 ▶" : "◀ 목록") : (hide ? "◀ 인용 정리" : "인용 정리 ▶"); }
 $("#bL").onclick = () => setPane("l", !document.body.classList.contains("hl"));
 $("#bR").onclick = () => setPane("r", !document.body.classList.contains("hr"));
 paintSide();
