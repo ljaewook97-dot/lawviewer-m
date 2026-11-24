@@ -613,6 +613,14 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 .ocity .ocin{flex:1;min-width:0;height:30px;border:1px solid var(--line);border-radius:8px;background:var(--surf);color:var(--text);padding:0 10px;font:inherit;font-size:.86em}
 .ocity .ocin:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 18%,transparent)}
 .ocity .ocgo{height:30px;padding:0 12px;border:0;border-radius:8px;background:var(--acc);color:var(--acc-t);font:inherit;font-size:.84em;font-weight:600;cursor:pointer}
+#ovHist .modal{max-width:760px;margin:0 auto}
+.hrow{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px;background:var(--surf)}
+.hrow .hh{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.9em}
+.hrow .hh b{color:var(--acc-d)}.hrow .hh span{color:var(--sub)}
+.hrow .hk{background:var(--acc-soft);color:var(--acc-d)!important;border-radius:8px;padding:0 7px;font-size:.88em}
+.hrow .hb{margin-left:auto;border:1px solid var(--line);border-radius:6px;background:none;color:var(--acc-d);font:inherit;font-size:.86em;padding:1px 8px;cursor:pointer}
+.hrow .hr2{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:.88em;line-height:1.6;max-height:320px;overflow:auto}
+.hrow .hr2 .rh{font-weight:700;margin-top:6px;color:var(--acc-d)}
 </style>
 </head>
 <body>
@@ -643,7 +651,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   <button class="tb" id="fPrev" title="이전 (Shift+Enter)">▲</button><button class="tb" id="fNext" title="다음 (Enter)">▼</button>
   <button class="tb ic" id="fClr" title="찾기 강조 지우기">✕</button><span id="fCnt" class="muted"></span><input id="gk" class="fq2" placeholder="조문 번호 (예: 52의2)" autocomplete="off" title="Ctrl+G · 조문 번호를 치고 Enter">
   <span class="sp"></span>
-  <button class="tb pri" id="dbTT">3단 비교</button><button class="tb pri" id="dbFav">☆ 즐겨찾기</button><span class="dsep"></span><button class="tb ic" id="dbCopy" title="조문 복사">⧉<span class="tl"> 복사</span></button><button class="tb ic" id="dbCite" title="인용 복사 — 「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">❝<span class="tl"> 인용복사</span></button><button class="tb ic" id="dbWeb" title="법제처 화면에서 열기">↗<span class="tl"> 법제처</span></button>
+  <button class="tb pri" id="dbTT">3단 비교</button><button class="tb pri" id="dbFav">☆ 즐겨찾기</button><span class="dsep"></span><button class="tb ic" id="dbCopy" title="조문 복사">⧉<span class="tl"> 복사</span></button><button class="tb ic" id="dbCite" title="인용 복사 — 「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">❝<span class="tl"> 인용복사</span></button><button class="tb ic" id="dbWeb" title="법제처 화면에서 열기">↗<span class="tl"> 법제처</span></button><button class="tb ic" id="dbHist" title="이 법령 전체의 제정·개정 이력과 개정 사유(제·개정 이유)">📜<span class="tl"> 개정이력</span></button>
   <button class="tb pri" id="dbSplit" title="오른쪽 칸: 지금 보는 조문이 인용하는 조문을 따라 보여 줍니다(오른쪽 칸 '바꾸기 ▾'에서 다른 법령 나란히 보기도 가능)">⫴ 인용 칸</button><button class="tb" id="bR" title="오른쪽 「인용 정리」 칸 접기/펴기 (F8) — 눌러 둔 조문이 인용한 조문·위임 조문을 모아 보여 줍니다">인용 정리 ▶</button>
 </div>
 <div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="sgrip" title="끌어서 왼쪽·오른쪽 칸 폭 조절 (더블클릭: 기본 비율)"></div><div id="ctx"></div><div id="dz"><div data-z="L">◀ 왼쪽(본문)에 열기</div><div data-z="R">오른쪽에 나란히 ▶</div></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
@@ -721,6 +729,12 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   <div class="chl" id="chL"></div>
   <div style="display:flex;gap:8px;margin-top:10px"><button class="btn g" id="chNo" style="flex:1">닫기</button></div>
 </div></div>
+<div class="over" id="ovHist"><div class="modal hist">
+  <h3 id="hhTitle">제·개정 이력</h3>
+  <div class="muted" id="hSum" style="font-size:.85em;line-height:1.5;margin-bottom:8px"></div>
+  <div id="hList"></div>
+  <div class="mfoot"><button class="btn g" style="flex:1" id="hNo">닫기 (Esc)</button></div>
+</div></div>
 <div class="over" id="ovGuide"><div class="modal guide">
   <h3>법령 뷰어 사용법</h3>
   <div class="muted" style="font-size:.85em;line-height:1.55;margin-bottom:4px">법제처(국가법령정보센터) 자료를 조문 단위로 편하게 읽는 뷰어입니다. 그림은 화면 모양을 이해하기 쉽게 그린 예시입니다.</div>
@@ -788,7 +802,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.100";
+const VERSION = "10.101";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -2655,6 +2669,31 @@ $("#dbCite").onclick = () => {
 $("#dbWeb").onclick = async () => {
   const d = cur.doc; if (!d) return toast("먼저 법령을 여세요", true);
   try { const u = await call("web_url", [d.kind, d.name, d.arts[sideKey] ? sideKey : ""], ""); window.open(u, "_blank", "noopener"); } catch (e) { toast("법제처 주소를 만들지 못했습니다", true); }
+};
+// ---- 법령 전체의 제정·개정 이력 + 개정 사유
+const HREA = {};
+function histClose() { $("#ovHist").classList.remove("on"); }
+$("#hNo").onclick = histClose;
+$("#ovHist").addEventListener("click", (e) => { if (e.target.id === "ovHist") histClose(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("#ovHist").classList.contains("on")) histClose(); });
+const reasonBody = (t) => !t ? '<div class="muted">이 시행본은 제·개정 이유가 조회되지 않았습니다.</div>' : String(t).split("\n").map((x) => /^\s*[◇◆■□▣]/.test(x) ? '<div class="rh">' + esc(x.trim()) + "</div>" : "<div>" + (esc(x) || "&nbsp;") + "</div>").join("");
+async function histReason(row, box) {
+  const m = row.dataset.m;
+  if (!(m in HREA)) { box.innerHTML = '<div class="muted">불러오는 중…</div>'; try { const r = await callQuiet("ver_reason", [OC, row.dataset.k, m, row.dataset.n, row.dataset.d]); HREA[m] = r.reason || ""; } catch (e) { box.innerHTML = '<div class="muted">사유를 가져오지 못했습니다. 잠시 뒤 다시 눌러 주세요.</div>'; return; } }
+  box.innerHTML = reasonBody(HREA[m]);
+}
+$("#dbHist").onclick = async () => {
+  const d = cur.doc; if (!d) return toast("먼저 법령을 여세요", true);
+  if (d.kind !== "law" && d.kind !== "adm") return toast("자치법규(조례)는 제·개정 이력 조회를 아직 지원하지 않습니다", true);
+  $("#hhTitle").textContent = d.name + " · 제·개정 이력"; $("#hSum").textContent = "불러오는 중…"; $("#hList").innerHTML = ""; $("#ovHist").classList.add("on");
+  let r; try { r = await call("law_hist", [OC, d.kind, d.name], ""); } catch (e) { $("#hSum").textContent = "이력을 가져오지 못했습니다. 인터넷 연결이나 인증키를 확인해 주세요."; return; }
+  if (!r || r.err || !r.rows || !r.rows.length) { $("#hSum").textContent = (r && r.err) || "이력이 없습니다."; return; }
+  const rows = r.rows, first = rows[rows.length - 1], last = rows[0];
+  $("#hSum").innerHTML = "최초 " + esc(first.kind || "제정") + " 공포 <b>" + dfmt(first.pub) + "</b> · 지금까지 <b>" + rows.length + "개</b> 시행본(개정 " + Math.max(0, rows.length - 1) + "회) · 가장 최근 공포 <b>" + dfmt(last.pub) + "</b>(시행 " + dfmt(last.date) + ")<br>각 줄의 <b>사유 보기</b>를 누르면 그때의 제·개정 이유를 보여 줍니다.";
+  const today = todayD();
+  $("#hList").innerHTML = rows.map((x, i) => '<div class="hrow" data-m="' + esc(x.mst) + '" data-k="' + esc(d.kind) + '" data-n="' + esc(d.name) + '" data-d="' + esc(x.date) + '"><div class="hh"><b>' + dfmt(x.pub) + ' 공포</b><span>시행 ' + dfmt(x.date) + (digs(x.date) > today ? " (시행 예정)" : "") + '</span><span class="hk">' + esc(x.kind || "") + '</span><button class="hb" type="button">사유 보기 ▾</button></div><div class="hr2" style="display:none"></div></div>').join("");
+  $("#hList").querySelectorAll(".hrow").forEach((row) => { const b = row.querySelector(".hb"), box = row.querySelector(".hr2"); b.onclick = () => { const open = box.style.display === "none"; box.style.display = open ? "" : "none"; b.textContent = open ? "사유 닫기 ▴" : "사유 보기 ▾"; if (open) histReason(row, box); }; });
+  const f = $("#hList .hrow .hb"); if (f) f.click();                 // 가장 최근 개정의 사유는 바로 펼친다
 };
 $("#dbSplit").onclick = (e) => { if (SPLIT) { LS.set("lv_citeoff", true); return closeSplit(); } if (!cur.doc) return toast("먼저 법령을 여세요", true); openCiteCol(); };
 $("#dbTT").onclick = () => { if (!cur.doc) return toast("먼저 법령을 여세요", true); $("#bTT").click(); };

@@ -778,6 +778,22 @@ def compare_ver(oc, kind, name, old_mst, old_date, new_mst, new_date, key=""):
             "old_date": old_date, "new_date": new_date, "reason": B.get("reason", "")}
 
 
+def law_hist(oc, kind, name):
+    """법령 전체의 제·개정 이력 -> [{mst, date(시행일), pub(공포일), kind(제정·일부개정·타법개정…)}] 최신 순"""
+    v = _vers_cached(oc, kind if kind in ("adm",) else "law", name)
+    if not v:
+        return {"err": "이 법령의 제·개정 이력을 가져오지 못했습니다"}
+    return {"rows": sorted(v, key=lambda x: (x["pub"] or x["date"], x["mst"]), reverse=True)}
+
+
+def ver_reason(oc, kind, rawmst, name, date=""):
+    """한 시행본의 제·개정 이유(전체 법령 분석 없이 이유만)"""
+    if kind in ("law", "") or kind is None:
+        d = L._get("lawService.do", {"OC": oc, "target": "law", "type": "JSON", "MST": rawmst}, getter)
+        return {"reason": L.extract_reason(d)}
+    return {"reason": _load_ver(oc, kind, rawmst, name, date).get("reason", "")}
+
+
 def chain(oc, mst, key):
     """조문 하나가 어디서 구체화되는지 한눈에: 이 조문 -> (시행령 -> 시행규칙) 위임 조문 + 관련 지침·고시"""
     law, a = _cur_art(mst, key)
@@ -847,7 +863,7 @@ def net_preload(items):
     return len(items or {})
 
 
-FUNCS = {"net_export": net_export, "net_preload": net_preload, "art_hist": art_hist, "upcoming": upcoming, "tt_ord": tt_ord, "cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "compare_ver": compare_ver, "chain": chain, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
+FUNCS = {"law_hist": law_hist, "ver_reason": ver_reason, "net_export": net_export, "net_preload": net_preload, "art_hist": art_hist, "upcoming": upcoming, "tt_ord": tt_ord, "cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "compare_ver": compare_ver, "chain": chain, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
          "tt_open": tt_open, "fav_rel": fav_rel, "tt_row": tt_row, "set_api_base": set_api_base}
 
 
