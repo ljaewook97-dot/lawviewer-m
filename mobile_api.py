@@ -334,6 +334,8 @@ def suggest(oc, q):
 
 
 def open_doc(oc, kind, rawmst, name, date=""):
+    if kind == "expc":
+        return _interp_doc(oc, rawmst)
     if kind == "ordin":
         law = L.load_ordin(oc, rawmst, name, getter)
         pre = "o"
@@ -840,6 +842,67 @@ def interp_get(oc, rid):
     return {"title": str(x.get("안건명") or ""), "no": str(x.get("안건번호") or ""), "date": _digits(x.get("해석일자")),
             "asker": str(x.get("질의기관명") or ""), "replier": str(x.get("해석기관명") or ""),
             "question": _expc_text(x.get("질의요지")), "answer": _expc_text(x.get("회답")), "reason": _expc_text(x.get("이유"))}
+
+
+def _interp_level(t):
+    if re.match(r"^\s*[①-⑳]", t):
+        return 0
+    if re.match(r"^\s*\d{1,2}\.\s", t):
+        return 1
+    if re.match(r"^\s*[가나다라마바사아자차카타파하]\.\s", t):
+        return 2
+    if re.match(r"^\s*(?:\d{1,2}|[가나다라마바사아자차카타파하])\)\s*", t):
+        return 3
+    return 0
+
+
+def _interp_doc(oc, rid):
+    """법령해석례 한 건을 법령 본문과 같은 모양(제목 띠 + 문단)으로 -> 본문 칸에 탭으로 열린다"""
+    x = interp_get(oc, rid)
+    if x.get("err"):
+        raise L.LawError(x["err"])
+    title = x["title"]
+    m = re.match(r"^(.{1,25}?)\s+-\s+(.+)$", title)
+    main = m.group(2) if m else title
+    main = re.sub(r"\s*[(（][^()（）]*관련[^()（）]*[)）]\s*$", "", main).strip()
+    name = ("해석례 %s %s" % (x["no"], main))[:90]
+    dt = x["date"]
+    dd = "%s.%s.%s" % (dt[:4], dt[4:6], dt[6:]) if len(dt) == 8 else dt
+
+    def lines(text):
+        out = []
+        for ln in str(text or "").split("\n"):
+            ln = ln.strip()
+            if not ln:
+                continue
+            out.append((_interp_level(ln), ln))
+        return out
+    secs = [("i", "해석례 개요", [(0, "안건명  " + title), (0, "안건번호  %s" % x["no"]), (0, "질의기관  %s  ·  회신기관  %s" % (x["asker"], x["replier"])), (0, "회신일자  %s" % dd)]),
+            ("q", "질의요지", lines(x["question"])), ("a", "회답", lines(x["answer"])), ("r", "이유", lines(x["reason"]))]
+    mst = "e" + str(rid)
+    arts, order, items = {}, [], []
+    for k, head, ls in secs:
+        if not ls:
+            continue
+        arts[k] = {"key": k, "n": 0, "b": 0, "label": head, "title": "", "lines": ls, "in_keys": [], "out_int": []}
+        order.append(k)
+        items += [{"kind": "head", "text": head}, {"kind": "art", "key": k}]
+    law = {"name": name, "mst": mst, "kind": "expc", "refname": name, "date": dt, "arts": arts, "order": order, "items": items, "annex": []}
+    L._LAW_CACHE[mst] = law
+    doc_arts = {}
+    for k in order:
+        a = arts[k]
+        jl = []
+        for lv, t in a["lines"]:
+            try:
+                sp = [z for z in _spans(t, "", None, lv) if z[2]]                    # 이름 없는 '법 제2조' 는 어느 법인지 몰라 뺀다
+            except Exception:  # noqa: BLE001
+                sp = []
+            jl.append([lv, t, sp])
+        doc_arts[k] = {"key": k, "n": 0, "b": 0, "label": a["label"], "title": "", "lines": jl, "inn": []}
+    return {"name": name, "kind": "expc", "mst": mst, "date": dt, "refname": name, "adm_base": None,
+            "items": [{"k": "h", "t": it["text"]} if it["kind"] == "head" else {"k": "a", "key": it["key"]} for it in items],
+            "arts": doc_arts, "annex": []}
 
 
 def law_hist(oc, kind, name):

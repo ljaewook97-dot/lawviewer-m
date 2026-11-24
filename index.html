@@ -420,7 +420,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #ltabs .lt:hover{background:var(--line)}
   #ltabs .lt.lz span{opacity:.6}
   #ltabs .lt.k-tt{--tc:var(--acc)}
-  #ltabs .lt.k-dec{--tc:#2E7D32}#ltabs .lt.k-rule{--tc:#EF6C00}#ltabs .lt.k-adm{--tc:#7B1FA2}#ltabs .lt.k-ord{--tc:#00838F}
+  #ltabs .lt.k-int{--tc:#AD1457}#ltabs .lt.k-dec{--tc:#2E7D32}#ltabs .lt.k-rule{--tc:#EF6C00}#ltabs .lt.k-adm{--tc:#7B1FA2}#ltabs .lt.k-ord{--tc:#00838F}
   #ltabs .lt.sm{--tc:var(--acc);background:var(--acc-soft,var(--soft));color:var(--acc-d);font-weight:700}
   #ltabs .lt.on,#ltabs .lt.sm.on{background:var(--surf);color:var(--acc-d);font-weight:700;border-color:var(--tc);border-width:2px 2px 0}
   #ltabs .lt b{font-weight:400;opacity:.6;padding:1px 5px;border-radius:5px}
@@ -638,6 +638,8 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 #intBox .rh{margin-top:12px;padding:2px 8px;border-left:4px solid var(--acc);background:var(--acc-soft);border-radius:0 6px 6px 0}
 #intBox .irs>summary{cursor:pointer;margin-top:12px;color:var(--acc-d);font-weight:700;list-style:none}
 #intBox .irs>summary::before{content:"▸ "}#intBox .irs[open]>summary::before{content:"▾ "}
+#intBox .hrow.ihit{cursor:pointer}#intBox .hrow.ihit:hover{background:var(--acc-soft)}
+#intBox .hrow.ihit.on{border-color:var(--acc);box-shadow:inset 4px 0 0 var(--acc)}
 </style>
 </head>
 <body>
@@ -831,7 +833,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.106";
+const VERSION = "10.107";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1180,7 +1182,7 @@ function noteRecent(d, kind, rawmst) {
 function paintRecent(L) {
   if (!RECENT.length) { L.innerHTML = '<div class="empty">법령·행정규칙·자치법규 이름을 치면<br>목록이 나옵니다.<br><button class="btn g" type="button" onclick="guideOpen()" style="margin-top:12px">처음이신가요? 사용법 보기</button></div>'; return; }
   const ago = (t) => { const m = Math.round((Date.now() - t) / 60000); return m < 60 ? (m < 1 ? "방금" : m + "분 전") : m < 1440 ? Math.round(m / 60) + "시간 전" : Math.round(m / 1440) + "일 전"; };
-  L.innerHTML = '<div class="rch"><span>최근 연 법령</span><button id="rcClr">지우기</button></div>' + RECENT.map((x, i) => '<div class="card rc" data-r="' + i + '" title="' + esc(x.n) + " · " + ago(x.t) + '"><div class="m"><div class="nm">' + (x.k === "law" ? favBadge(x.n, "law") : '<span class="tag fb ' + x.k + '">' + (x.k === "adm" ? "행정" : "자치") + "</span>") + '<span class="h">' + esc(x.k === "law" ? String(x.n).replace(/\s*(시행령|시행규칙)$/, "") : x.n) + '</span>' + upTag({ kind: x.k, lawname: x.n }) + '</div></div></div>').join("");
+  L.innerHTML = '<div class="rch"><span>최근 연 법령</span><button id="rcClr">지우기</button></div>' + RECENT.map((x, i) => '<div class="card rc" data-r="' + i + '" title="' + esc(x.n) + " · " + ago(x.t) + '"><div class="m"><div class="nm">' + (x.k === "law" ? favBadge(x.n, "law") : '<span class="tag fb ' + x.k + '">' + (x.k === "adm" ? "행정" : x.k === "expc" ? "해석" : "자치") + "</span>") + '<span class="h">' + esc(x.k === "law" ? String(x.n).replace(/\s*(시행령|시행규칙)$/, "") : x.n) + '</span>' + upTag({ kind: x.k, lawname: x.n }) + '</div></div></div>').join("");
   L.querySelectorAll(".rc").forEach((c) => (c.onclick = () => { const x = RECENT[+c.dataset.r]; openDoc(x.k, x.m, x.n, x.d); }));
   $("#rcClr").onclick = () => { RECENT = []; LS.set("lv_recent", RECENT); paintRecent(L); };
 }
@@ -1980,11 +1982,11 @@ async function loadLTab(i, msg) {                                 // 아직 안 
   showDoc(t.d, kind, raw, "", true);
   restoreScroll(t);
 }
-const tabCls = (d) => d.kind === "adm" ? "k-adm" : d.kind === "ordin" ? "k-ord" : /시행규칙$/.test(d.name) ? "k-rule" : /시행령$/.test(d.name) ? "k-dec" : "k-law";
+const tabCls = (d) => d.kind === "expc" ? "k-int" : d.kind === "adm" ? "k-adm" : d.kind === "ordin" ? "k-ord" : /시행규칙$/.test(d.name) ? "k-rule" : /시행령$/.test(d.name) ? "k-dec" : "k-law";
 const TABABB = { "국토의 계획 및 이용에 관한 법률": "국토계획법", "도시 및 주거환경정비법": "도시정비법", "도시공원 및 녹지 등에 관한 법률": "도시공원법", "산업입지 및 개발에 관한 법률": "산업입지법", "개발제한구역의 지정 및 관리에 관한 특별조치법": "개발제한구역법", "도시재정비 촉진을 위한 특별법": "도시재정비법", "건축물의 분양에 관한 법률": "건축물분양법", "택지개발촉진법": "택지개발법", "수도권정비계획법": "수도권정비법", "공공주택 특별법": "공공주택법", "노후계획도시 정비 및 지원에 관한 특별법": "노후계획도시법", "도시 및 주거환경정비법 시행령": "도시정비법 시행령" };
 const midCut = (t, n) => { t = String(t); return t.length <= n ? t : t.slice(0, Math.ceil(n * 0.6)) + "…" + t.slice(t.length - Math.floor(n * 0.4)); };
 const tabShort = (nm) => { nm = String(nm); const m = /^(.*?)\s*(시행령|시행규칙)$/.exec(nm); const base = m ? m[1] : nm; return (TABABB[base] || base) + (m ? " " + m[2] : ""); };
-const tabKL = (d) => ({ "k-adm": "행정", "k-ord": "자치", "k-rule": "칙", "k-dec": "령", "k-law": "법" })[tabCls(d)];
+const tabKL = (d) => ({ "k-int": "해석", "k-adm": "행정", "k-ord": "자치", "k-rule": "칙", "k-dec": "령", "k-law": "법" })[tabCls(d)];
 const ltName = (n) => String(n).replace(/\s*시행령$/, "(령)").replace(/\s*시행규칙$/, "(칙)");
 function paintLTabs() {
   saveTabs();
@@ -2022,7 +2024,7 @@ function closeLTab(i) {
   if (tab === "t") paintToc();
 }
 const headCls = (t) => /^제\s*\d+\s*편/.test(t) ? "hp" : /^제\s*\d+\s*장/.test(t) ? "hj" : "hs";
-const splitBadge = (d) => '<i class="lk" style="background:' + ({ "k-adm": "#7B1FA2", "k-ord": "#00838F", "k-rule": "#EF6C00", "k-dec": "#2E7D32", "k-law": "#1565C0" })[tabCls(d)] + '">' + tabKL(d) + "</i>";
+const splitBadge = (d) => '<i class="lk" style="background:' + ({ "k-int": "#AD1457", "k-adm": "#7B1FA2", "k-ord": "#00838F", "k-rule": "#EF6C00", "k-dec": "#2E7D32", "k-law": "#1565C0" })[tabCls(d)] + '">' + tabKL(d) + "</i>";
 async function openSplit(i) {                                    // 열어 둔 탭 i 를 오른쪽 칸에
   const t = ltabs[i]; if (!t) return;
   if (t.d.stub) {
@@ -2107,6 +2109,7 @@ async function csLoadDeleg(t) {                                   // 위임 표�
 }
 async function csBuild(key, force) {
   if (!SPLIT || SPLIT.mode !== "cite" || !cur.doc) return;
+  if (cur.doc.kind === "expc") { CS.key = key; CS.tok++; CS.list = []; csPaint(); return; }      // 해석례 본문에는 인용 칸 계산을 하지 않는다(안의 「법」 제○조는 눌러서 봄)
   if (!force && key === CS.key) return;
   CS.key = key; const tok = ++CS.tok;
   if (CS.top && CS.top.src !== key) CS.top = null;               // 누른 인용(📍)은 그 인용을 누른 조문을 보는 동안만
@@ -2343,7 +2346,7 @@ $("#bSwap").onclick = (e) => {                                   // 모바일: �
   const r = e.currentTarget.getBoundingClientRect(), now = cur.doc;
   const list = RECENT.filter((x) => !(now && x.k === now.kind && String(x.m) === String(now.rawmst))).slice(0, 9);
   if (!list.length) return toast("최근 연 다른 법령이 없습니다");
-  const tag = (x) => (x.k === "adm" ? "행정" : x.k === "ordin" ? "자치" : /시행규칙$/.test(x.n) ? "칙" : /시행령$/.test(x.n) ? "령" : "법");
+  const tag = (x) => (x.k === "adm" ? "행정" : x.k === "expc" ? "해석" : x.k === "ordin" ? "자치" : /시행규칙$/.test(x.n) ? "칙" : /시행령$/.test(x.n) ? "령" : "법");
   showMenu(r.right - 220, r.bottom + 4, [["최근 연 법령", null, "mh"]].concat(list.map((x) => ["[" + tag(x) + "] " + x.n, () => openDoc(x.k, x.m, x.n, x.d)])));
 };
 function goKey(key) {
@@ -2724,15 +2727,9 @@ async function intRun(more) {
   let r; try { r = await callQuiet("interp_search", [OC, INT.q, INT.page, INT.scope]); } catch (e) { if (tok === INT.tok) $("#iSum").textContent = "조회하지 못했습니다. 인터넷 연결이나 인증키를 확인해 주세요."; return; }
   if (tok !== INT.tok) return;
   INT.total = r.total; INT.n += r.rows.length;
-  $("#iSum").innerHTML = r.total ? "‘" + esc(INT.q) + "’ 관련 해석례 <b>" + r.total + "건</b> (최근 회신 순) · 제목을 누르면 내용이 펼쳐집니다." + "<br>💡 내용에서 낱말을 두 번 누르거나 드래그하면 그 낱말로 다시 검색합니다." + (INT.scope ? " 본문에 그 낱말이 들어 있는 해석례를 찾으므로 다른 조문 이야기가 섞일 수 있습니다." : "") : "찾은 해석례가 없습니다. 법령명만 넣거나 ‘안건명에서만 찾기’를 바꿔 보세요.";
-  $("#iList").insertAdjacentHTML("beforeend", r.rows.map((x) => '<div class="hrow" data-id="' + esc(x.id) + '"><div class="hh"><b>' + esc(dfmt(x.date)) + '</b><span class="hk">' + esc(x.replier || "") + '</span><span>' + esc(x.no) + '</span></div><div style="margin-top:4px;font-weight:600;line-height:1.45;cursor:pointer" class="it">' + intTitle(x.title) + '</div><div class="hr2" style="display:none"></div></div>').join(""));
-  $("#iList").querySelectorAll(".hrow:not([data-w])").forEach((row) => { row.dataset.w = 1; const box = row.querySelector(".hr2"); row.querySelector(".it").onclick = async () => {
-    const open = box.style.display === "none"; box.style.display = open ? "" : "none"; if (!open || box.dataset.l) return;
-    box.innerHTML = '<div class="muted">불러오는 중…</div>';
-    try { const d = await callQuiet("interp_get", [OC, row.dataset.id]); if (d.err) { box.innerHTML = '<div class="muted">' + esc(d.err) + "</div>"; return; }
-      const rs = String(d.reason || "").length > 500;
-      box.innerHTML = '<div class="muted" style="margin-bottom:6px">질의: ' + esc(d.asker) + " · 회신: " + esc(d.replier) + " · " + esc(d.no) + "</div>" + intSec("질의요지", d.question) + intSec("회답", d.answer) + (d.reason ? (rs ? '<details class="irs"><summary>이유 보기 (길어서 접어 두었습니다)</summary>' + intSec("이유", d.reason) + "</details>" : intSec("이유", d.reason)) : ""); box.dataset.l = 1;
-    } catch (e) { box.innerHTML = '<div class="muted">내용을 가져오지 못했습니다. 다시 눌러 주세요.</div>'; } }; });
+  $("#iSum").innerHTML = r.total ? "‘" + esc(INT.q) + "’ 관련 해석례 <b>" + r.total + "건</b> (최근 회신 순) · 제목을 누르면 왼쪽 본문에 열립니다." + "<br>💡 본문에서 낱말을 두 번 누르거나 드래그하면 그 낱말로 해석례를 다시 검색합니다." + (INT.scope ? " 본문에 그 낱말이 들어 있는 해석례를 찾으므로 다른 조문 이야기가 섞일 수 있습니다." : "") : "찾은 해석례가 없습니다. 법령명만 넣거나 ‘안건명에서만 찾기’를 바꿔 보세요.";
+  $("#iList").insertAdjacentHTML("beforeend", r.rows.map((x) => '<div class="hrow ihit" data-id="' + esc(x.id) + '" data-t="' + esc(x.title) + '"><div class="hh"><b>' + esc(dfmt(x.date)) + '</b><span class="hk">' + esc(x.replier || "") + '</span><span>' + esc(x.no) + '</span></div><div style="margin-top:4px;font-weight:600;line-height:1.45;cursor:pointer" class="it">' + intTitle(x.title) + "</div></div>").join(""));
+  $("#iList").querySelectorAll(".hrow:not([data-w])").forEach((row) => { row.dataset.w = 1; row.onclick = () => { $("#iList").querySelectorAll(".hrow.on").forEach((z) => z.classList.remove("on")); row.classList.add("on"); intOpenDoc(row.dataset.id); }; });
   if (INT.n < r.total) $("#iMore").style.display = "";
 }
 // 해석례 내용에서 낱말을 고르면(두 번 누르기·드래그) 그 낱말로 다시 검색하는 칩
@@ -2743,7 +2740,7 @@ async function intRun(more) {
     const sel = window.getSelection(); if (!sel || sel.isCollapsed || !sel.rangeCount) return hide();
     const t = sel.toString().replace(/\s+/g, " ").trim();
     const node = sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
-    if (!node || !node.closest || !node.closest("#intBox .hr2") || t.length < 2 || t.length > 40) return hide();
+    if (!node || !node.closest || !(node.closest("#intBox .hr2") || (cur.doc && cur.doc.kind === "expc" && node.closest("#docBody"))) || t.length < 2 || t.length > 40) return hide();
     const r = sel.getRangeAt(0).getBoundingClientRect(); chip.dataset.t = t; chip.textContent = "🔍 ‘" + (t.length > 18 ? t.slice(0, 18) + "…" : t) + "’ 해석례 검색";
     chip.style.display = "block"; chip.style.top = Math.min(innerHeight - 44, r.bottom + 8) + "px"; chip.style.left = Math.max(8, Math.min(innerWidth - 230, r.left)) + "px";
   };
@@ -2752,18 +2749,28 @@ async function intRun(more) {
   document.addEventListener("keyup", (e) => { if (e.key === "Escape") hide(); });
   $("#intModal").addEventListener("scroll", hide, { passive: true }); $("#doc2").addEventListener("scroll", hide, { passive: true });
   chip.onmousedown = (e) => e.preventDefault();
-  chip.onclick = () => { const t = chip.dataset.t; if (!t) return; $("#iQ").value = t; hide(); window.getSelection().removeAllRanges(); intRun(false); const m = $("#intBox").parentNode; if (m && m.scrollTo) m.scrollTop = 0; };
+  chip.onclick = () => { const t = chip.dataset.t; if (!t) return; hide(); window.getSelection().removeAllRanges(); intShow(t); const m = $("#intBox").parentNode; if (m && m.scrollTo) m.scrollTop = 0; };
 })();
+async function intOpenDoc(id) {
+  if (needOC()) return;
+  if ($("#ovInt").classList.contains("on")) intClose();                 // 폰: 창을 닫고 본문으로
+  skel(true); let d;
+  try { d = await call("open_doc", [OC, "expc", id, "", ""], "해석례 받는 중…"); } catch (e) { skel(false); return toast("해석례를 가져오지 못했습니다", true); }
+  skel(false); showDoc(d, "expc", id, "");
+}
 $("#iGo").onclick = () => intRun(false);
 $("#iMore").onclick = () => intRun(true);
 $("#iQ").onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); intRun(false); } };
+function intShow(q) {                                          // PC: 오른쪽 칸 '해석례' 탭 / 폰·나란히 보기 중: 창
+  $("#iQ").value = q;
+  if (isDT() && (!SPLIT || SPLIT.mode === "cite")) { if (!SPLIT) openCiteCol(); s2Tab("int"); }
+  else { intToModal(); $("#ovInt").classList.add("on"); }
+  intRun(false);
+}
 $("#dbInt").onclick = () => {
   const d = cur.doc; if (!d) return toast("먼저 법령을 여세요", true);
   const a = sideKey && d.arts[sideKey] ? d.arts[sideKey] : null;
-  $("#iQ").value = d.name + (a && d.kind !== "ordin" ? " " + a.label : "");
-  if (isDT() && (!SPLIT || SPLIT.mode === "cite")) { if (!SPLIT) openCiteCol(); s2Tab("int"); }       // PC: 오른쪽 칸의 '해석례' 탭에서 본문과 나란히 본다
-  else { intToModal(); $("#ovInt").classList.add("on"); }                                        // 폰·다른 법령 나란히 보기 중: 창으로
-  intRun(false);
+  intShow(d.kind === "expc" ? ($("#iQ").value || "") : d.name + (a && d.kind !== "ordin" ? " " + a.label : ""));
 };
 // ---- 법령 전체의 제정·개정 이력 + 개정 사유
 const HREA = {};
