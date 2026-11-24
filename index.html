@@ -621,11 +621,15 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 .hrow .hb{margin-left:auto;border:1px solid var(--line);border-radius:6px;background:none;color:var(--acc-d);font:inherit;font-size:.86em;padding:1px 8px;cursor:pointer}
 .hrow .hr2{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:.88em;line-height:1.6;max-height:320px;overflow:auto}
 .hrow .hr2 .rh{font-weight:700;margin-top:6px;color:var(--acc-d)}
-#ovInt .ocity{display:flex;gap:6px;align-items:center;margin:2px 0 8px}
-#ovInt label{display:inline-flex;align-items:center;gap:4px;margin-right:12px}
-#ovInt input[type=radio]{width:auto;height:auto;margin:0;padding:0;display:inline-block}
+#intBox .ocity{display:flex;gap:6px;align-items:center;margin:2px 0 8px}
+#intBox label{display:inline-flex;align-items:center;gap:4px;margin-right:12px}
+#intBox input[type=radio]{width:auto;height:auto;margin:0;padding:0;display:inline-block}
 #iChip{display:none;position:fixed;z-index:60;border:0;border-radius:18px;background:var(--acc);color:var(--acc-t);font:inherit;font-size:.86em;font-weight:700;padding:7px 14px;box-shadow:0 4px 14px rgba(0,0,0,.28);cursor:pointer}
-#ovInt .hr2{user-select:text;-webkit-user-select:text}
+#intBox .hr2{user-select:text;-webkit-user-select:text}
+#doc2.int #s2h,#doc2.int #doc2Body,#doc2.int #s2hist{display:none}
+#s2int{display:none;padding:8px 6px 40px}#doc2.int #s2int{display:block}
+#s2int h3{display:none}
+#intBox .ocgo{flex:none}
 </style>
 </head>
 <body>
@@ -662,7 +666,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="sgrip" title="끌어서 왼쪽·오른쪽 칸 폭 조절 (더블클릭: 기본 비율)"></div><div id="ctx"></div><div id="dz"><div data-z="L">◀ 왼쪽(본문)에 열기</div><div data-z="R">오른쪽에 나란히 ▶</div></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
 <div class="view" id="doc"><div class="s2h" id="s1h"></div><div id="sumBox" class="sumbox"></div><div id="stk" class="stk" style="display:none"></div><div class="body" id="docBody"></div></div>
 <div class="view tt" id="tt"></div>
-<div id="doc2"><div id="s2tabs"><button data-t="cite" class="on" title="왼쪽에서 보고 있는 조문이 본문에서 가리킨(인용한) 다른 조문을 보여 줍니다">🔗 이 조문이 인용한 조문</button><button data-t="hist" title="개정 날짜를 누르면 이곳에 개정 전·후 비교와 개정 이유가 나옵니다">🕘 개정 전·후 비교</button></div><div class="s2h" id="s2h"></div><div class="body" id="doc2Body"></div><div class="body" id="s2hist"><div class="empty" id="s2hEmpty" style="padding:30px 10px">본문의 '&lt;개정 …&gt;' 날짜(법령)나 조문 오른쪽 🕘 단추(행정규칙)를 누르면 여기에 그 개정 때 바뀐 내용과 재개정 사유가 나옵니다.</div></div></div>
+<div id="doc2"><div id="s2tabs"><button data-t="cite" class="on" title="왼쪽에서 보고 있는 조문이 본문에서 가리킨(인용한) 다른 조문을 보여 줍니다">🔗 인용한 조문</button><button data-t="int" title="지금 보는 법령·조문의 법령해석례(유권해석)를 이곳에서 찾아봅니다">⚖ 해석례</button><button data-t="hist" title="개정 날짜를 누르면 이곳에 개정 전·후 비교와 개정 이유가 나옵니다">🕘 개정 전·후</button></div><div class="s2h" id="s2h"></div><div class="body" id="doc2Body"></div><div class="body" id="s2int"></div><div class="body" id="s2hist"><div class="empty" id="s2hEmpty" style="padding:30px 10px">본문의 '&lt;개정 …&gt;' 날짜(법령)나 조문 오른쪽 🕘 단추(행정규칙)를 누르면 여기에 그 개정 때 바뀐 내용과 재개정 사유가 나옵니다.</div></div></div>
 
 <div id="pbox"><div class="sheet" id="sheet"></div><div class="sheet" id="sheet2"></div></div>
 <div id="side"></div>
@@ -734,7 +738,8 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   <div class="chl" id="chL"></div>
   <div style="display:flex;gap:8px;margin-top:10px"><button class="btn g" id="chNo" style="flex:1">닫기</button></div>
 </div></div>
-<div class="over" id="ovInt"><div class="modal hist">
+<div class="over" id="ovInt"><div class="modal hist" id="intModal">
+  <div id="intBox">
   <h3>법령해석례 (유권해석)</h3>
   <div class="muted" style="font-size:.85em;line-height:1.5;margin-bottom:6px">법제처 등이 법령을 어떻게 해석하는지 회신한 사례입니다. 법령명과 조문 번호로 찾습니다.</div>
   <div class="ocity"><input id="iQ" class="ocin" placeholder="예) 건축법 제46조" spellcheck="false"><button class="ocgo" id="iGo" type="button">찾기</button></div>
@@ -742,7 +747,8 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   <label class="muted" style="font-size:.85em"><input type="radio" name="iScope" value="0"> 안건명에서만 찾기</label>
   <div class="muted" id="iSum" style="font-size:.85em;margin:8px 0"></div>
   <div id="iList"></div><button class="btn g" id="iMore" style="display:none;width:100%;margin-top:6px">더 보기</button>
-  <div class="mfoot"><button class="btn g" style="flex:1" id="iNo">닫기 (Esc)</button></div>
+  </div>
+  <div class="mfoot" id="intFoot"><button class="btn g" style="flex:1" id="iNo">닫기 (Esc)</button></div>
 </div></div>
 <div class="over" id="ovHist"><div class="modal hist">
   <h3 id="hhTitle">제·개정 이력</h3>
@@ -817,7 +823,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.104";
+const VERSION = "10.105";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1474,11 +1480,13 @@ function cmpPlace() {
 function s2Tabs() {                                                  // 오른쪽 칸 위쪽 탭: 인용 조문 / 재개정 연혁 (인용 칸일 때만)
   const on = !!(SPLIT && SPLIT.mode === "cite"), d2 = $("#doc2");
   $("#s2tabs").style.display = on ? "flex" : "none"; d2.classList.toggle("tabs", on);
-  if (!on) d2.classList.remove("hist");
-  const hist = d2.classList.contains("hist");
-  $("#s2tabs").querySelectorAll("button").forEach((b) => b.classList.toggle("on", (b.dataset.t === "hist") === hist));
+  if (!on) { d2.classList.remove("hist"); d2.classList.remove("int"); intToModal(); }
+  const cu = d2.classList.contains("hist") ? "hist" : d2.classList.contains("int") ? "int" : "cite";
+  $("#s2tabs").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.t === cu));
 }
-function s2Tab(t) { $("#doc2").classList.toggle("hist", t === "hist"); s2Tabs(); $("#doc2").scrollTop = 0; }
+function s2Tab(t) { const d2 = $("#doc2"); d2.classList.toggle("hist", t === "hist"); d2.classList.toggle("int", t === "int"); if (t === "int") intToPane(); s2Tabs(); d2.scrollTop = 0; }
+function intToPane() { const b = $("#intBox"), h = $("#s2int"); if (b.parentNode !== h) h.appendChild(b); }
+function intToModal() { const b = $("#intBox"), m = $("#intModal"); if (b && m && b.parentNode !== m) m.insertBefore(b, $("#intFoot")); }
 $("#s2tabs").onclick = (e) => { const b = e.target.closest("button"); if (b) s2Tab(b.dataset.t); };
 function cmpToWindow() {
   const m = $("#cmpModal"), ov = $("#ovCmp"); if (m.parentNode === ov) return;
@@ -2720,16 +2728,16 @@ async function intRun(more) {
     const sel = window.getSelection(); if (!sel || sel.isCollapsed || !sel.rangeCount) return hide();
     const t = sel.toString().replace(/\s+/g, " ").trim();
     const node = sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
-    if (!node || !node.closest || !node.closest("#ovInt .hr2") || t.length < 2 || t.length > 40) return hide();
+    if (!node || !node.closest || !node.closest("#intBox .hr2") || t.length < 2 || t.length > 40) return hide();
     const r = sel.getRangeAt(0).getBoundingClientRect(); chip.dataset.t = t; chip.textContent = "🔍 ‘" + (t.length > 18 ? t.slice(0, 18) + "…" : t) + "’ 해석례 검색";
     chip.style.display = "block"; chip.style.top = Math.min(innerHeight - 44, r.bottom + 8) + "px"; chip.style.left = Math.max(8, Math.min(innerWidth - 230, r.left)) + "px";
   };
   document.addEventListener("mouseup", () => setTimeout(show, 30));
   document.addEventListener("touchend", () => setTimeout(show, 300));
   document.addEventListener("keyup", (e) => { if (e.key === "Escape") hide(); });
-  $("#ovInt .modal").addEventListener("scroll", hide, { passive: true });
+  $("#intModal").addEventListener("scroll", hide, { passive: true }); $("#doc2").addEventListener("scroll", hide, { passive: true });
   chip.onmousedown = (e) => e.preventDefault();
-  chip.onclick = () => { const t = chip.dataset.t; if (!t) return; $("#iQ").value = t; hide(); window.getSelection().removeAllRanges(); intRun(false); const m = $("#ovInt .modal"); if (m) m.scrollTop = 0; };
+  chip.onclick = () => { const t = chip.dataset.t; if (!t) return; $("#iQ").value = t; hide(); window.getSelection().removeAllRanges(); intRun(false); const m = $("#intBox").parentNode; if (m && m.scrollTo) m.scrollTop = 0; };
 })();
 $("#iGo").onclick = () => intRun(false);
 $("#iMore").onclick = () => intRun(true);
@@ -2737,7 +2745,10 @@ $("#iQ").onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); intRu
 $("#dbInt").onclick = () => {
   const d = cur.doc; if (!d) return toast("먼저 법령을 여세요", true);
   const a = sideKey && d.arts[sideKey] ? d.arts[sideKey] : null;
-  $("#iQ").value = d.name + (a && d.kind !== "ordin" ? " " + a.label : ""); $("#ovInt").classList.add("on"); intRun(false);
+  $("#iQ").value = d.name + (a && d.kind !== "ordin" ? " " + a.label : "");
+  if (isDT() && (!SPLIT || SPLIT.mode === "cite")) { if (!SPLIT) openCiteCol(); s2Tab("int"); }       // PC: 오른쪽 칸의 '해석례' 탭에서 본문과 나란히 본다
+  else { intToModal(); $("#ovInt").classList.add("on"); }                                        // 폰·다른 법령 나란히 보기 중: 창으로
+  intRun(false);
 };
 // ---- 법령 전체의 제정·개정 이력 + 개정 사유
 const HREA = {};
