@@ -621,6 +621,9 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 .hrow .hb{margin-left:auto;border:1px solid var(--line);border-radius:6px;background:none;color:var(--acc-d);font:inherit;font-size:.86em;padding:1px 8px;cursor:pointer}
 .hrow .hr2{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:.88em;line-height:1.6;max-height:320px;overflow:auto}
 .hrow .hr2 .rh{font-weight:700;margin-top:6px;color:var(--acc-d)}
+#ovInt .ocity{display:flex;gap:6px;align-items:center;margin:2px 0 8px}
+#ovInt label{display:inline-flex;align-items:center;gap:4px;margin-right:12px}
+#ovInt input[type=radio]{width:auto;height:auto;margin:0;padding:0;display:inline-block}
 </style>
 </head>
 <body>
@@ -651,7 +654,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   <button class="tb" id="fPrev" title="이전 (Shift+Enter)">▲</button><button class="tb" id="fNext" title="다음 (Enter)">▼</button>
   <button class="tb ic" id="fClr" title="찾기 강조 지우기">✕</button><span id="fCnt" class="muted"></span><input id="gk" class="fq2" placeholder="조문 번호 (예: 52의2)" autocomplete="off" title="Ctrl+G · 조문 번호를 치고 Enter">
   <span class="sp"></span>
-  <button class="tb pri" id="dbTT">3단 비교</button><button class="tb pri" id="dbFav">☆ 즐겨찾기</button><span class="dsep"></span><button class="tb ic" id="dbCopy" title="조문 복사">⧉<span class="tl"> 복사</span></button><button class="tb ic" id="dbCite" title="인용 복사 — 「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">❝<span class="tl"> 인용복사</span></button><button class="tb ic" id="dbWeb" title="법제처 화면에서 열기">↗<span class="tl"> 법제처</span></button><button class="tb ic" id="dbHist" title="이 법령 전체의 제정·개정 이력과 개정 사유(제·개정 이유)">📜<span class="tl"> 개정이력</span></button>
+  <button class="tb pri" id="dbTT">3단 비교</button><button class="tb pri" id="dbFav">☆ 즐겨찾기</button><span class="dsep"></span><button class="tb ic" id="dbCopy" title="조문 복사">⧉<span class="tl"> 복사</span></button><button class="tb ic" id="dbCite" title="인용 복사 — 「법령명」 제N조제N항 형식으로 복사 (본문에서 항을 드래그해 두면 항까지 붙습니다)">❝<span class="tl"> 인용복사</span></button><button class="tb ic" id="dbWeb" title="법제처 화면에서 열기">↗<span class="tl"> 법제처</span></button><button class="tb ic" id="dbInt" title="법령해석례(법제처 등 유권해석) 찾아보기 — 지금 보는 법령·조문 기준">⚖<span class="tl"> 해석례</span></button><button class="tb ic" id="dbHist" title="이 법령 전체의 제정·개정 이력과 개정 사유(제·개정 이유)">📜<span class="tl"> 개정이력</span></button>
   <button class="tb pri" id="dbSplit" title="오른쪽 칸: 지금 보는 조문이 인용하는 조문을 따라 보여 줍니다(오른쪽 칸 '바꾸기 ▾'에서 다른 법령 나란히 보기도 가능)">⫴ 인용 칸</button><button class="tb" id="bR" title="오른쪽 「인용 정리」 칸 접기/펴기 (F8) — 눌러 둔 조문이 인용한 조문·위임 조문을 모아 보여 줍니다">인용 정리 ▶</button>
 </div>
 <div id="dropHint">여기에 놓으면 본문 탭으로 엽니다</div><div id="pgrip"></div><div id="gripL" class="gv"></div><div id="gripR" class="gv"></div><div id="sgrip" title="끌어서 왼쪽·오른쪽 칸 폭 조절 (더블클릭: 기본 비율)"></div><div id="ctx"></div><div id="dz"><div data-z="L">◀ 왼쪽(본문)에 열기</div><div data-z="R">오른쪽에 나란히 ▶</div></div><div id="dtEmpty">왼쪽에서 법령 이름을 검색해 여세요.<br>여러 법령을 열어 두고 위 탭으로 오갈 수 있습니다.<br>본문의 파란 글씨(인용)를 누르면 오른쪽에 그 조문이 열립니다.</div>
@@ -729,6 +732,16 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   <div class="chl" id="chL"></div>
   <div style="display:flex;gap:8px;margin-top:10px"><button class="btn g" id="chNo" style="flex:1">닫기</button></div>
 </div></div>
+<div class="over" id="ovInt"><div class="modal hist">
+  <h3>법령해석례 (유권해석)</h3>
+  <div class="muted" style="font-size:.85em;line-height:1.5;margin-bottom:6px">법제처 등이 법령을 어떻게 해석하는지 회신한 사례입니다. 법령명과 조문 번호로 찾습니다.</div>
+  <div class="ocity"><input id="iQ" class="ocin" placeholder="예) 건축법 제46조" spellcheck="false"><button class="ocgo" id="iGo" type="button">찾기</button></div>
+  <label class="muted" style="font-size:.85em"><input type="radio" name="iScope" value="1" checked> 본문에서 찾기</label>
+  <label class="muted" style="font-size:.85em"><input type="radio" name="iScope" value="0"> 안건명에서만 찾기</label>
+  <div class="muted" id="iSum" style="font-size:.85em;margin:8px 0"></div>
+  <div id="iList"></div><button class="btn g" id="iMore" style="display:none;width:100%;margin-top:6px">더 보기</button>
+  <div class="mfoot"><button class="btn g" style="flex:1" id="iNo">닫기 (Esc)</button></div>
+</div></div>
 <div class="over" id="ovHist"><div class="modal hist">
   <h3 id="hhTitle">제·개정 이력</h3>
   <div class="muted" id="hSum" style="font-size:.85em;line-height:1.5;margin-bottom:8px"></div>
@@ -802,7 +815,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.102";
+const VERSION = "10.103";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -2669,6 +2682,41 @@ $("#dbCite").onclick = () => {
 $("#dbWeb").onclick = async () => {
   const d = cur.doc; if (!d) return toast("먼저 법령을 여세요", true);
   try { const u = await call("web_url", [d.kind, d.name, d.arts[sideKey] ? sideKey : ""], ""); window.open(u, "_blank", "noopener"); } catch (e) { toast("법제처 주소를 만들지 못했습니다", true); }
+};
+// ---- 법령해석례(유권해석) 찾아보기
+let INT = { q: "", scope: 1, page: 1, total: 0, n: 0, tok: 0 };
+function intClose() { $("#ovInt").classList.remove("on"); }
+$("#iNo").onclick = intClose;
+$("#ovInt").addEventListener("click", (e) => { if (e.target.id === "ovInt") intClose(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("#ovInt").classList.contains("on")) intClose(); });
+const intDt = (d) => dfmt(d).replace(/^\?$/, "");
+async function intRun(more) {
+  const tok = ++INT.tok;
+  if (!more) { INT.q = $("#iQ").value.trim(); INT.scope = +(document.querySelector('input[name="iScope"]:checked') || {}).value; INT.page = 1; INT.n = 0; $("#iList").innerHTML = ""; }
+  else INT.page++;
+  if (!INT.q) return ($("#iSum").textContent = "찾을 법령명이나 조문을 입력하세요.");
+  $("#iSum").textContent = "찾는 중…"; $("#iMore").style.display = "none";
+  let r; try { r = await callQuiet("interp_search", [OC, INT.q, INT.page, INT.scope]); } catch (e) { if (tok === INT.tok) $("#iSum").textContent = "조회하지 못했습니다. 인터넷 연결이나 인증키를 확인해 주세요."; return; }
+  if (tok !== INT.tok) return;
+  INT.total = r.total; INT.n += r.rows.length;
+  $("#iSum").innerHTML = r.total ? "‘" + esc(INT.q) + "’ 관련 해석례 <b>" + r.total + "건</b> (최근 회신 순) · 제목을 누르면 내용이 펼쳐집니다." + (INT.scope ? "<br>본문에 그 낱말이 들어 있는 해석례를 찾으므로, 다른 조문 이야기가 섞일 수 있습니다." : "") : "찾은 해석례가 없습니다. 법령명만 넣거나 ‘안건명에서만 찾기’를 바꿔 보세요.";
+  $("#iList").insertAdjacentHTML("beforeend", r.rows.map((x) => '<div class="hrow" data-id="' + esc(x.id) + '"><div class="hh"><b>' + esc(dfmt(x.date)) + '</b><span class="hk">' + esc(x.replier || "") + '</span><span>' + esc(x.no) + '</span></div><div style="margin-top:4px;font-weight:600;line-height:1.45;cursor:pointer" class="it">' + esc(x.title) + '</div><div class="hr2" style="display:none"></div></div>').join(""));
+  $("#iList").querySelectorAll(".hrow:not([data-w])").forEach((row) => { row.dataset.w = 1; const box = row.querySelector(".hr2"); row.querySelector(".it").onclick = async () => {
+    const open = box.style.display === "none"; box.style.display = open ? "" : "none"; if (!open || box.dataset.l) return;
+    box.innerHTML = '<div class="muted">불러오는 중…</div>';
+    try { const d = await callQuiet("interp_get", [OC, row.dataset.id]); if (d.err) { box.innerHTML = '<div class="muted">' + esc(d.err) + "</div>"; return; }
+      const sec = (h, t) => t ? '<div class="rh">' + h + "</div>" + String(t).split("\n").map((l) => "<div>" + esc(l) + "</div>").join("") : "";
+      box.innerHTML = '<div class="muted" style="margin-bottom:4px">질의: ' + esc(d.asker) + " · 회신: " + esc(d.replier) + " · " + esc(d.no) + "</div>" + sec("질의요지", d.question) + sec("회답", d.answer) + sec("이유", d.reason); box.dataset.l = 1;
+    } catch (e) { box.innerHTML = '<div class="muted">내용을 가져오지 못했습니다. 다시 눌러 주세요.</div>'; } }; });
+  if (INT.n < r.total) $("#iMore").style.display = "";
+}
+$("#iGo").onclick = () => intRun(false);
+$("#iMore").onclick = () => intRun(true);
+$("#iQ").onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); intRun(false); } };
+$("#dbInt").onclick = () => {
+  const d = cur.doc; if (!d) return toast("먼저 법령을 여세요", true);
+  const a = sideKey && d.arts[sideKey] ? d.arts[sideKey] : null;
+  $("#iQ").value = d.name + (a && d.kind !== "ordin" ? " " + a.label : ""); $("#ovInt").classList.add("on"); intRun(false);
 };
 // ---- 법령 전체의 제정·개정 이력 + 개정 사유
 const HREA = {};

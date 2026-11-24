@@ -800,6 +800,42 @@ def _ordin_versions(oc, name, pages=4):
     return out
 
 
+def _expc_text(t):
+    """법령해석례 글은 줄바꿈 없이 이어져 온다 — '가. 나.' 항목 앞에서만 줄을 나눈다"""
+    t = str(t or "").strip()
+    return re.sub(r"(?<=[.다요함음])\s*(?=[가-하]\.\s*(?:질의|이 |이사|해당|위))", "\n", t)
+
+
+def interp_search(oc, q, page=1, body=1):
+    """법령해석례(법제처 등 유권해석) 검색 -> {total, page, rows:[{id, title, no, date, asker, replier}]}  최근 회신 순"""
+    d = L._get("lawSearch.do", {"OC": oc, "target": "expc", "type": "JSON", "query": q, "search": "2" if body else "1",
+                                "display": 20, "page": int(page or 1), "sort": "ddes"}, getter)
+    x = d.get("Expc") if isinstance(d, dict) else None
+    x = x or {}
+    rows = x.get("expc") or []
+    if isinstance(rows, dict):
+        rows = [rows]
+    out = [{"id": str(r.get("법령해석례일련번호") or ""), "title": str(r.get("안건명") or ""), "no": str(r.get("안건번호") or ""),
+            "date": _digits(r.get("회신일자")), "asker": str(r.get("질의기관명") or ""), "replier": str(r.get("회신기관명") or "")}
+           for r in rows if r.get("법령해석례일련번호")]
+    try:
+        total = int(str(x.get("totalCnt") or "0"))
+    except ValueError:
+        total = len(out)
+    return {"total": total, "page": int(page or 1), "rows": out}
+
+
+def interp_get(oc, rid):
+    """법령해석례 한 건의 본문 -> {title, no, date, asker, replier, question, answer, reason}"""
+    d = L._get("lawService.do", {"OC": oc, "target": "expc", "type": "JSON", "ID": rid}, getter)
+    x = (d.get("ExpcService") if isinstance(d, dict) else None) or {}
+    if not x:
+        return {"err": "해석례 본문을 가져오지 못했습니다"}
+    return {"title": str(x.get("안건명") or ""), "no": str(x.get("안건번호") or ""), "date": _digits(x.get("해석일자")),
+            "asker": str(x.get("질의기관명") or ""), "replier": str(x.get("해석기관명") or ""),
+            "question": _expc_text(x.get("질의요지")), "answer": _expc_text(x.get("회답")), "reason": _expc_text(x.get("이유"))}
+
+
 def law_hist(oc, kind, name):
     """법령 전체의 제·개정 이력 -> [{mst, date(시행일), pub(공포일), kind(제정·일부개정·타법개정…)}] 최신 순"""
     if kind == "ordin":
@@ -891,7 +927,7 @@ def net_preload(items):
     return len(items or {})
 
 
-FUNCS = {"law_hist": law_hist, "ver_reason": ver_reason, "net_export": net_export, "net_preload": net_preload, "art_hist": art_hist, "upcoming": upcoming, "tt_ord": tt_ord, "cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "compare_ver": compare_ver, "chain": chain, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
+FUNCS = {"interp_search": interp_search, "interp_get": interp_get, "law_hist": law_hist, "ver_reason": ver_reason, "net_export": net_export, "net_preload": net_preload, "art_hist": art_hist, "upcoming": upcoming, "tt_ord": tt_ord, "cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "compare_ver": compare_ver, "chain": chain, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
          "tt_open": tt_open, "fav_rel": fav_rel, "tt_row": tt_row, "set_api_base": set_api_base}
 
 
