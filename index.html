@@ -111,12 +111,12 @@ button{font:inherit;color:inherit;border:0;background:none;padding:0}
 .tt .ttg.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.tt .col.ord .oa+.oa{margin-top:16px;padding-top:16px;border-top:1px dashed var(--line)}.tth .sm.on{background:var(--acc);color:#fff}
 #docBody .art{content-visibility:auto;contain-intrinsic-size:auto 460px}   /* 화면 밖 조문은 계산을 건너뛴다(긴 법령이 빨리 열림). 높이는 아래 cvSize 가 미리 어림해 둔다 */b.al,.ln.l0>b:first-child{font-weight:800;color:var(--acc-d);font-size:1.06em}
 .art.cur{background:color-mix(in srgb,var(--text) 4%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--acc) 28%,var(--line));border-radius:6px;border-bottom-color:transparent}
-.ln{line-height:var(--lh,1.75);margin:0;padding-top:1px;padding-bottom:1px;word-break:keep-all;overflow-wrap:anywhere;--gd:color-mix(in srgb,var(--muted) 38%,transparent);background-repeat:no-repeat;background-size:1px 100%}
+.ln{line-height:var(--lh,1.75);margin:0;padding-top:1px;padding-bottom:1px;word-break:keep-all;overflow-wrap:anywhere;--gd:color-mix(in srgb,var(--muted) 38%,transparent);--g1:color-mix(in srgb,#0E9F6E 55%,transparent);--g2:color-mix(in srgb,#2F7DE1 55%,transparent);--g3:color-mix(in srgb,#E08A1E 60%,transparent);--g4:color-mix(in srgb,#9C5BD6 55%,transparent);background-repeat:no-repeat;background-size:1px 100%}
 .ln.l1{padding-left:1.1em}.ln.l2{padding-left:2.2em}.ln.l3{padding-left:3.3em}.ln.l4{padding-left:4.4em}
-.ln.l1{background-image:linear-gradient(var(--gd),var(--gd));background-position:.45em 0}
-.ln.l2{background-image:linear-gradient(var(--gd),var(--gd)),linear-gradient(var(--gd),var(--gd));background-position:.45em 0,1.55em 0}
-.ln.l3{background-image:linear-gradient(var(--gd),var(--gd)),linear-gradient(var(--gd),var(--gd)),linear-gradient(var(--gd),var(--gd));background-position:.45em 0,1.55em 0,2.65em 0}
-.ln.l4{background-image:linear-gradient(var(--gd),var(--gd)),linear-gradient(var(--gd),var(--gd)),linear-gradient(var(--gd),var(--gd)),linear-gradient(var(--gd),var(--gd));background-position:.45em 0,1.55em 0,2.65em 0,3.75em 0}
+.ln.l1{background-image:linear-gradient(var(--g1),var(--g1));background-position:.45em 0}
+.ln.l2{background-image:linear-gradient(var(--g1),var(--g1)),linear-gradient(var(--g2),var(--g2));background-position:.45em 0,1.55em 0}
+.ln.l3{background-image:linear-gradient(var(--g1),var(--g1)),linear-gradient(var(--g2),var(--g2)),linear-gradient(var(--g3),var(--g3));background-position:.45em 0,1.55em 0,2.65em 0}
+.ln.l4{background-image:linear-gradient(var(--g1),var(--g1)),linear-gradient(var(--g2),var(--g2)),linear-gradient(var(--g3),var(--g3)),linear-gradient(var(--g4),var(--g4));background-position:.45em 0,1.55em 0,2.65em 0,3.75em 0}
 .ln.hl{background-color:color-mix(in srgb,var(--text) 7%,transparent);border-radius:4px;box-shadow:inset 3px 0 0 color-mix(in srgb,var(--acc) 40%,var(--line))}
 .ln:has(>.mk){display:flex;align-items:flex-start}.ln>.mk{flex:none;white-space:pre}.ln>.mt{flex:1;min-width:0}.ln.l0>.mk{font-weight:800;color:var(--acc-d)}
 .ln b{font-weight:700}
@@ -335,7 +335,8 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #gripL{left:calc(var(--lw) - 4px)}
   #gripR{right:calc(var(--rw) - 4px)}
   body.hl #gripL,body.hr #gripR{display:none}
-  #ctx{position:fixed;z-index:80;min-width:150px;background:var(--surf);border:1px solid var(--line);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.25);padding:3px 0}
+  #viewPop{display:none;position:fixed;z-index:81;width:300px;background:var(--surf);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.28);padding:10px 12px}#viewPop.on{display:block}#viewPop .vr{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:.88em}#viewPop .vr>span{flex:none;width:4.6em;color:var(--sub)}#viewPop input[type=range]{flex:1;min-width:0;accent-color:var(--acc)}#viewPop b{flex:none;width:4.2em;text-align:right;font-variant-numeric:tabular-nums}#viewPop label{flex:1;display:flex;gap:5px;align-items:center}
+#ctx{position:fixed;z-index:80;min-width:150px;background:var(--surf);border:1px solid var(--line);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.25);padding:3px 0}
   #ctx.on{display:block}
   #ctx div{padding:5px 14px;font-size:.88em;cursor:pointer}
   #ctx div:hover{background:var(--acc-soft)}
@@ -420,6 +421,9 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #ltabs .lt:hover{background:var(--line)}
   #ltabs .lt.lz span{opacity:.6}
   #ltabs .lt.k-tt{--tc:var(--acc)}
+  #ltabs .lg,#ltabs .lgt{--tc:#1565C0;flex:none;display:flex;align-items:center;gap:3px;margin:6px 2px 0;height:calc(100% - 6px);box-sizing:border-box;padding:0 8px;font-size:.78em;font-weight:800;cursor:pointer;color:var(--tc);border-radius:5px 5px 0 0;background:color-mix(in srgb,var(--tc) 12%,transparent);user-select:none;white-space:nowrap}
+  #ltabs .lg b{font-weight:800;opacity:.75}#ltabs .lg.sh{opacity:.7}#ltabs .lgt{--tc:var(--muted);padding:0 7px;font-size:.95em}#ltabs .lgt.on{--tc:var(--acc);background:var(--acc-soft)}
+  #ltabs .lg.k-int{--tc:#AD1457}#ltabs .lg.k-dec{--tc:#2E7D32}#ltabs .lg.k-rule{--tc:#EF6C00}#ltabs .lg.k-adm{--tc:#7B1FA2}#ltabs .lg.k-ord{--tc:#00838F}
   #ltabs .lt.k-int{--tc:#AD1457}#ltabs .lt.k-dec{--tc:#2E7D32}#ltabs .lt.k-rule{--tc:#EF6C00}#ltabs .lt.k-adm{--tc:#7B1FA2}#ltabs .lt.k-ord{--tc:#00838F}
   #ltabs .lt.sm{--tc:var(--acc);background:var(--acc-soft,var(--soft));color:var(--acc-d);font-weight:700}
   #ltabs .lt.on,#ltabs .lt.sm.on{background:var(--surf);color:var(--acc-d);font-weight:700;border-color:var(--tc);border-width:2px 2px 0}
@@ -534,6 +538,8 @@ a.c.dg{color:color-mix(in srgb,var(--acc-d) 70%,var(--surf))}a.c.dg:hover{color:
 b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 .ln.l0:first-child{margin-bottom:4px}
 .ln.l1>.mk,.ln.l2>.mk,.ln.l3>.mk{color:var(--acc-d);font-weight:700;padding-right:.15em}
+.hcmp{border:1px solid var(--acc);background:var(--acc-soft);border-radius:10px;padding:9px 11px;margin:0 0 10px;font-size:.9em;line-height:1.5}.hcmp .hrw{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}.hcmp label{display:flex;align-items:center;gap:5px;flex:1 1 220px;min-width:0}.hcmp select{flex:1;min-width:0;font:inherit;font-size:.92em;padding:3px;border:1px solid var(--line);border-radius:6px;background:var(--surf);color:var(--text)}.hcmp .hfut{display:inline-block;margin-left:4px;padding:0 8px;border-radius:10px;background:var(--acc);color:var(--acc-t);font-size:.85em;font-weight:700}
+.ln.l1>.mk{color:color-mix(in srgb,#0E9F6E 75%,var(--text))}.ln.l2>.mk{color:color-mix(in srgb,#2F7DE1 75%,var(--text))}.ln.l3>.mk{color:color-mix(in srgb,#E08A1E 80%,var(--text))}
 .am{opacity:.95;color:var(--sub);font-size:.76em}
 .am .rvd{position:relative;color:var(--acc-d);font-weight:600;text-decoration:underline;text-decoration-style:solid;text-decoration-color:color-mix(in srgb,var(--acc) 45%,transparent)}
 .am .rvd:hover{background:var(--acc-soft);border-radius:3px}
@@ -665,6 +671,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   <button class="ib" id="bFav" style="display:none">☆</button>
   <button class="ib dtonly" id="bHist" title="이전에 보던 조문으로 (Alt+Shift+←, 앞으로는 Alt+Shift+→)  · 탭 이동은 Alt+←/→ 또는 Alt+휠">◀ 뒤로</button>
   <button class="ib dtonly" id="fMinus" title="글자 작게">A−</button><button class="ib dtonly" id="fPlus" title="글자 크게">A＋</button>
+  <button class="ib dtonly" id="bView" title="글자 크기·줄 간격·본문 폭을 바로 조절">Aa 보기</button>
   <button class="ib dtonly" id="bTheme" title="색상 테마">◐ 테마</button>
   <button class="ib" id="bTT" style="display:none" title="3단 비교">3단</button>
   <button class="ib" id="bHelp" title="처음 쓰는 분을 위한 사용법">?<span class="hl"> 사용법</span></button>
@@ -847,7 +854,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.114";
+const VERSION = "10.115";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1394,17 +1401,22 @@ const cmpFullBtn = (h) => h.indexOf('class="fm"') >= 0 ? '<span class="go" data-
 let CMPF = null;
 async function openCmp(f) {                                   // 개정 배지: 담아 둔 시행본 ↔ 새 시행본 신구 비교
   const r = f && revNew(f); if (!r || needOC()) return;
+  return openCmpWith(f, r);
+}
+async function openCmpWith(f, r) {                              // 두 시행본(f=옛, r=새)을 조문별로 비교
+  if (needOC()) return;
+  const fut = digs(r.date) > todayD();
   CMPF = { f, r }; AH = null; $("#cmpNav").style.display = "none"; $("#cmpOpen").style.display = "";
   const c = await call("compare_ver", [OC, f.kind, f.lawname, f.rawmst, f.date || "", r.rawmst, r.date || "", f.key || ""], f.lawname + " 신구 비교 중…");
   $("#cmpT").textContent = f.lawname + " 신구 비교";
-  $("#cmpS").textContent = "이전 " + dfmt(f.date) + " → 현재 " + dfmt(r.date) + " · 바뀐 조문 " + c.total + "개" + (c.same ? " (그대로 " + c.same + "개)" : "") + (c.truncated ? " · 앞의 300개만 표시" : "");
+  $("#cmpS").textContent = "이전 " + dfmt(f.date) + " → " + (fut ? "개정 예정 " : "현재 ") + dfmt(r.date) + (f.key ? " · 이 조문만" : "") + " · 바뀐 조문 " + c.total + "개" + (c.same ? " (그대로 " + c.same + "개)" : "") + (c.truncated ? " · 앞의 300개만 표시" : "");
   $("#cmpL").innerHTML = reasonHTML(c.reason) + (c.changes.length ? c.changes.map((x, i) => {
     const cl = x.st === "신설" ? "n" : x.st === "삭제" ? "d" : "";
     const ho = x.old.length ? cmpSeg2(x.old) : "", hn = x.new.length ? cmpSeg2(x.new) : "";
     return '<div class="cmpa"><div class="ch"><span>' + esc(x.label) + (x.title ? " " + esc(x.title) : "") + '</span><span class="st ' + cl + '">' + x.st + "</span>" + cmpFullBtn(ho + hn) + (x.st !== "삭제" ? '<span class="go" data-cg="' + i + '">본문에서 보기</span>' : "") + "</div>" +
       (x.otitle ? '<div class="cs co"><b>제목</b><del>' + esc(x.otitle) + "</del></div>" : "") +
       (ho ? '<div class="cs co"><b>이전</b>' + ho + "</div>" : "") +
-      (hn ? '<div class="cs cn"><b>현재</b>' + hn + "</div>" : "") + "</div>";
+      (hn ? '<div class="cs cn"><b>' + (fut ? "예정" : "현재") + "</b>" + hn + "</div>" : "") + "</div>";
   }).join("") : '<div class="empty">조문 내용은 바뀐 곳이 없습니다.<br>(별표·부칙만 바뀌었을 수 있습니다)</div>');
   CMPF.ch = c.changes;
   $("#cmpL").scrollTop = 0; cmpShow();
@@ -1947,7 +1959,13 @@ function paintStk() {
   if (!cur.doc || !$("#doc").classList.contains("on") || $("#doc").scrollTop < 120) { el.style.display = "none"; stkKey = ""; return; }
   const k = curKey(), a = k && cur.doc.arts[k];
   if (!a) { el.style.display = "none"; return; }
-  if (k !== stkKey) { stkKey = k; el.textContent = a.label + " " + (a.title || ""); el.dataset.k = k; }
+  const sk = cur.doc.mst + "|" + k;
+  if (sk !== stkKey) {
+    stkKey = sk; let hd = "";                                   // 이 조문이 속한 장·절 제목을 앞에 붙인다
+    for (const it of cur.doc.items) { if (it.k === "h") hd = it.t; else if (it.key === k) break; }
+    hd = hd.replace(/\s*<[^>]*>\s*$/, "").trim();
+    el.textContent = (hd && hd !== "해석례 개요" ? midCut(hd, 26) + "  ›  " : "") + a.label + " " + (a.title || ""); el.dataset.k = k; el.title = hd;
+  }
   el.style.display = "";
 }
 $("#stk").onclick = () => { const k = $("#stk").dataset.k; if (k) goKey(k); };
@@ -2005,7 +2023,21 @@ const ltName = (n) => String(n).replace(/\s*시행령$/, "(령)").replace(/\s*�
 function paintLTabs() {
   saveTabs();
   const bar = $("#ltabs");
-  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + ltabs.map((t, i) => '<div class="lt ' + tabCls(t.d) + (t.d.stub ? " lz" : "") + (t.d === cur.doc && !SUMACT && cur.view !== "tt" ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><i class="lk">' + tabKL(t.d) + '</i><span>' + esc(midCut(tabShort(t.d.name), 17)) + '</span><b data-x="' + i + '">✕</b></div>').join("") + TTTABS.map((x, j) => '<div class="lt k-tt' + (cur.view === "tt" && j === TTCUR ? " on" : "") + '" data-tt="' + j + '" title="3단 비교 — ' + esc(x.base) + '"><i class="lk">3단</i><span>' + esc(x.base) + '</span><b data-xt="' + j + '">✕</b></div>').join("");
+  const tabH = (t, i) => '<div class="lt ' + tabCls(t.d) + (t.d.stub ? " lz" : "") + (t.d === cur.doc && !SUMACT && cur.view !== "tt" ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><i class="lk">' + tabKL(t.d) + '</i><span>' + esc(midCut(tabShort(t.d.name), 17)) + '</span><b data-x="' + i + '">✕</b></div>';
+  const GN = { "k-law": "법", "k-dec": "시행령", "k-rule": "시행규칙", "k-adm": "행정규칙", "k-ord": "조례", "k-int": "해석례" };
+  const grp = LS.get("lv_tgrp", "") === "1" && ltabs.length >= 2, gclosed = LS.get("lv_tgc", []) || [];
+  let tabsH;
+  if (grp) {                                                      // 종류별로 묶어 보기: 묶음 머리를 누르면 접힘(지금 보는 탭은 접혀도 남음)
+    tabsH = Object.keys(GN).map((g) => {
+      const its = ltabs.map((t, i) => [t, i]).filter(([t]) => tabCls(t.d) === g); if (!its.length) return "";
+      const shut = gclosed.includes(g), act = its.some(([t]) => t.d === cur.doc && !SUMACT && cur.view !== "tt");
+      return '<div class="lg ' + g + (shut ? " sh" : "") + '" data-lg="' + g + '" title="눌러서 ' + (shut ? "펼치기" : "접기") + '"><span class="ar">' + (shut ? "▸" : "▾") + "</span>" + GN[g] + ' <b>' + its.length + "</b></div>" + its.filter(([t]) => !shut || (t.d === cur.doc && !SUMACT && cur.view !== "tt")).map(([t, i]) => tabH(t, i)).join("");
+    }).join("");
+  } else tabsH = ltabs.map(tabH).join("");
+  const gtog = ltabs.length >= 4 || grp ? '<div class="lgt' + (grp ? " on" : "") + '" id="lgt" title="' + (grp ? "묶음 해제" : "탭을 법·시행령·조례·해석례별로 묶어 보기") + '">▦</div>' : "";
+  bar.innerHTML = gtog + (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + tabsH + TTTABS.map((x, j) => '<div class="lt k-tt' + (cur.view === "tt" && j === TTCUR ? " on" : "") + '" data-tt="' + j + '" title="3단 비교 — ' + esc(x.base) + '"><i class="lk">3단</i><span>' + esc(x.base) + '</span><b data-xt="' + j + '">✕</b></div>').join("");
+  const lgt = $("#lgt"); if (lgt) lgt.onclick = () => { LS.set("lv_tgrp", grp ? "" : "1"); paintLTabs(); };
+  bar.querySelectorAll(".lg[data-lg]").forEach((el) => (el.onclick = () => { const g = el.dataset.lg, c = (LS.get("lv_tgc", []) || []).slice(), k = c.indexOf(g); if (k >= 0) c.splice(k, 1); else c.push(g); LS.set("lv_tgc", c); paintLTabs(); }));
   bar.querySelectorAll(".lt[data-i]").forEach((el) => (el.oncontextmenu = (e) => {
     e.preventDefault(); const i = +el.dataset.i;
     showMenu(e.clientX, e.clientY, [["오른쪽에 나란히 보기", () => openSplit(i)], ["이 탭 닫기", () => closeLTab(i), "dz"]].concat(SPLIT ? [["나란히 보기 닫기", closeSplit]] : []));
@@ -2818,9 +2850,26 @@ $("#dbHist").onclick = async () => {
   const rows = r.rows, first = rows[rows.length - 1], last = rows[0];
   $("#hSum").innerHTML = "최초 " + esc(first.kind || "제정") + " 공포 <b>" + dfmt(first.pub) + "</b> · 지금까지 <b>" + rows.length + "개</b> 시행본(개정 " + Math.max(0, rows.length - 1) + "회) · 가장 최근 공포 <b>" + dfmt(last.pub) + "</b>(시행 " + dfmt(last.date) + ")<br>각 줄의 <b>사유 보기</b>를 누르면 그때의 제·개정 이유를 보여 줍니다.";
   const today = todayD();
-  $("#hList").innerHTML = rows.map((x, i) => '<div class="hrow" data-m="' + esc(x.mst) + '" data-k="' + esc(d.kind) + '" data-n="' + esc(d.name) + '" data-d="' + esc(x.date) + '"><div class="hh"><b>' + dfmt(x.pub) + ' 공포</b><span>시행 ' + dfmt(x.date) + (digs(x.date) > today ? " (시행 예정)" : "") + '</span><span class="hk">' + esc(x.kind || "") + '</span><button class="hb" type="button">사유 보기 ▾</button></div><div class="hr2" style="display:none"></div></div>').join("");
+  const hv = (x) => "시행 " + dfmt(x.date) + (digs(x.date) > today ? " (예정)" : "") + " · " + (x.kind || "") + " · 공포 " + dfmt(x.pub);
+  const byDate = rows.slice().sort((a, b) => digs(b.date).localeCompare(digs(a.date)));
+  const futs = byDate.filter((x) => digs(x.date) > today), nowI = byDate.findIndex((x) => digs(x.date) <= today);
+  const defB = futs.length ? futs[futs.length - 1] : byDate[0], defA = futs.length ? byDate[nowI] || byDate[futs.length] : byDate[1] || byDate[0];
+  const opts = (sel) => byDate.map((x, i) => '<option value="' + i + '"' + (x === sel ? " selected" : "") + ">" + esc(hv(x)) + "</option>").join("");
+  const hasCmp = d.kind === "law" || d.kind === "ordin" || d.kind === "adm";
+  const hcmp = hasCmp && byDate.length > 1 ? '<div class="hcmp"><b>🕓 시점 비교</b> — 두 시점의 조문을 나란히 비교합니다' + (futs.length ? ' <span class="hfut">시행 예정 개정이 있습니다</span>' : "") + '<div class="hrw"><label>이전<select id="hcA">' + opts(defA) + '</select></label><label>이후<select id="hcB">' + opts(defB) + "</select></label></div>" +
+    '<div class="hrw"><label class="muted"><input type="checkbox" id="hcOne"' + (sideKey && d.arts[sideKey] ? "" : " disabled") + "> 지금 보는 조문만" + (sideKey && d.arts[sideKey] ? " (" + esc(d.arts[sideKey].label) + ")" : "") + '</label><button class="btn" id="hcGo" type="button">비교하기</button></div></div>' : "";
+  $("#hList").innerHTML = hcmp + rows.map((x, i) => '<div class="hrow" data-m="' + esc(x.mst) + '" data-k="' + esc(d.kind) + '" data-n="' + esc(d.name) + '" data-d="' + esc(x.date) + '"><div class="hh"><b>' + dfmt(x.pub) + ' 공포</b><span>시행 ' + dfmt(x.date) + (digs(x.date) > today ? " (시행 예정)" : "") + '</span><span class="hk">' + esc(x.kind || "") + '</span><button class="hb" type="button">사유 보기 ▾</button></div><div class="hr2" style="display:none"></div></div>').join("");
+  const hcGo = $("#hcGo");
+  if (hcGo) hcGo.onclick = () => {
+    let A = byDate[+$("#hcA").value], B = byDate[+$("#hcB").value];
+    if (A === B) return toast("서로 다른 시점을 고르세요", true);
+    if (digs(A.date) > digs(B.date)) [A, B] = [B, A];
+    const one = $("#hcOne") && $("#hcOne").checked && sideKey ? sideKey : "";
+    $("#ovHist").classList.remove("on");
+    openCmpWith({ kind: d.kind, lawname: d.name, rawmst: A.mst, date: A.date, key: one }, { rawmst: B.mst, date: B.date });
+  };
   $("#hList").querySelectorAll(".hrow").forEach((row) => { const b = row.querySelector(".hb"), box = row.querySelector(".hr2"); b.onclick = () => { const open = box.style.display === "none"; box.style.display = open ? "" : "none"; b.textContent = open ? "사유 닫기 ▴" : "사유 보기 ▾"; if (open) histReason(row, box); }; });
-  const f = $("#hList .hrow .hb"); if (f) f.click();                 // 가장 최근 개정의 사유는 바로 펼친다
+  const f = $("#hList .hrow .hb"); if (f && !futs.length) f.click();                 // 가장 최근 개정의 사유는 바로 펼친다(시점 비교 막대가 있으면 그대로 둔다)
 };
 $("#dbSplit").onclick = (e) => { if (SPLIT) { LS.set("lv_citeoff", true); return closeSplit(); } if (!cur.doc) return toast("먼저 법령을 여세요", true); openCiteCol(); };
 $("#dbTT").onclick = () => { if (!cur.doc) return toast("먼저 법령을 여세요", true); $("#bTT").click(); };
@@ -2859,6 +2908,31 @@ $("#bHist").onclick = navBack;
 // ---- 글자 크기·테마 빠른 버튼
 function fsStep(d) { const k = "lv_fsd"; LS.set(k, Math.max(10, Math.min(20, LS.get(k, 12) + d))); applyPrefs(); }
 $("#fMinus").onclick = () => fsStep(-1); $("#fPlus").onclick = () => fsStep(1);
+(function () {                                                  // 보기 슬라이더 — 글자 크기·줄 간격·본문 폭을 끌면서 바로 본다
+  const pop = document.createElement("div"); pop.id = "viewPop";
+  pop.innerHTML = '<div class="vr"><span>글자 크기</span><input type="range" id="vFs" min="10" max="24" step="1"><b id="vFsV"></b></div>' +
+    '<div class="vr"><span>줄 간격</span><input type="range" id="vLh" min="1.2" max="2.4" step="0.05"><b id="vLhV"></b></div>' +
+    '<div class="vr"><span>본문 폭</span><input type="range" id="vBw" min="560" max="1500" step="20"><b id="vBwV"></b></div>' +
+    '<div class="vr"><label><input type="checkbox" id="vFull"> 폭 제한 없이 꽉 채움</label><button class="sm" id="vRst" type="button">기본값</button></div>';
+  document.body.appendChild(pop);
+  const ensure = (sel, v) => { if (!sel) return; if (![...sel.options].some((o) => o.value === String(v))) { const o = document.createElement("option"); o.value = String(v); o.textContent = String(v); sel.appendChild(o); } sel.value = String(v); };
+  const sync = () => {
+    const fs = +LS.get(FSK(), FSD()), lh = parseFloat(LS.get("lv_lh", "")) || 1.7, bw = LS.get("lv_bw", "900");
+    $("#vFs").value = fs; $("#vFsV").textContent = fs + "px"; $("#vLh").value = lh; $("#vLhV").textContent = lh.toFixed(2);
+    $("#vFull").checked = bw === ""; $("#vBw").disabled = bw === ""; $("#vBw").value = bw || 900; $("#vBwV").textContent = bw === "" ? "꽉 채움" : bw + "px";
+  };
+  const save = () => {
+    const fs = +$("#vFs").value, lh = (+$("#vLh").value).toFixed(2).replace(/0$/, ""), full = $("#vFull").checked, bw = full ? "" : String(+$("#vBw").value);
+    LS.set(FSK(), fs); LS.set("lv_lh", lh); LS.set("lv_bw", bw); LS.set("lv_den", "");
+    ensure($("#fsz"), fs); ensure($("#lhs"), lh); ensure($("#bws"), bw);            // 설정 창의 선택 상자와 값이 어긋나지 않게
+    applyPrefs(); sync(); try { if (cur.doc) cvSize($("#docBody"), cur.doc); } catch (e) {}
+  };
+  ["#vFs", "#vLh", "#vBw", "#vFull"].forEach((id) => $(id).addEventListener("input", save));
+  $("#vRst").onclick = () => { LS.set(FSK(), FSD()); LS.set("lv_lh", ""); LS.set("lv_bw", "900"); ensure($("#fsz"), FSD()); ensure($("#lhs"), ""); ensure($("#bws"), "900"); applyPrefs(); sync(); };
+  $("#bView").onclick = (e) => { e.stopPropagation(); if (pop.classList.toggle("on")) { sync(); const r = e.currentTarget.getBoundingClientRect(); pop.style.top = r.bottom + 4 + "px"; pop.style.left = Math.max(6, Math.min(r.left, innerWidth - pop.offsetWidth - 8)) + "px"; } };
+  document.addEventListener("pointerdown", (e) => { if (!e.target.closest("#viewPop,#bView")) pop.classList.remove("on"); });
+  $("#fMinus").addEventListener("click", () => pop.classList.contains("on") && sync()); $("#fPlus").addEventListener("click", () => pop.classList.contains("on") && sync());
+})();
 
 $("#bTheme").onclick = (e) => {
   const r = e.currentTarget.getBoundingClientRect(), now = LS.get("lv_theme", "");
@@ -3176,6 +3250,7 @@ document.addEventListener("contextmenu", (e) => {
   if (inDoc && d && d.kind !== "expc") {
     M.push([d.name, null, "mh"]);
     M.push(["📜 법령 전체 개정이력·사유", click("#dbHist")]);
+    M.push(["🕓 시점 비교 (현행 ↔ 개정 예정)", click("#dbHist")]);
     M.push(["⚖ 이 법령 해석례", click("#dbInt")]);
     M.push(["3단 비교", click("#dbTT")]);
     M.push(["법제처에서 열기", click("#dbWeb")]);
