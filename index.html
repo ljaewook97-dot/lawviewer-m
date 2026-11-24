@@ -209,7 +209,7 @@ a.c:hover{color:var(--link);border-bottom-color:var(--link);background:color-mix
 
 /* ===== PC 넓은 화면(1000px 이상): PC 프로그램 모양 — 왼쪽 목록 / 가운데 본문(위 탭, 아래 미리보기 두 칸) / 오른쪽 인용 정리 ===== */
 #gk{width:118px;margin-left:8px;border:1px solid var(--line);border-radius:5px;padding:3px 7px;font:inherit;font-size:.9em;background:var(--surf);color:var(--text)}
-.ltarr,#ltabs,#dbar,#dtEmpty,.dtonly,#side,#tT,#dropHint,#pgrip,#ctx,.gv{display:none}
+.ltarr,#ltIns,#ltabs,#dbar,#dtEmpty,.dtonly,#side,#tT,#dropHint,#pgrip,#ctx,.gv{display:none}
 #ctx.on{display:block;position:fixed;z-index:80;min-width:190px;background:var(--surf);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);padding:4px 0}
 #ctx div{padding:12px 18px;font-size:.95em}
 #ctx div.dz{color:var(--danger)}
@@ -425,14 +425,13 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   #ltabs .lt:hover{background:var(--line)}
   #ltabs .lt.lz span{opacity:.6}
   #ltabs .lt.k-tt{--tc:var(--acc)}
-  #ltabs .lg,#ltabs .lgt{--tc:#1565C0;flex:none;display:flex;align-items:center;gap:3px;margin:6px 2px 0;height:calc(100% - 6px);box-sizing:border-box;padding:0 8px;font-size:.78em;font-weight:800;cursor:pointer;color:var(--tc);border-radius:5px 5px 0 0;background:color-mix(in srgb,var(--tc) 12%,transparent);user-select:none;white-space:nowrap}
-  #ltabs .lg b{font-weight:800;opacity:.75}#ltabs .lg.sh{opacity:.7}#ltabs .lgt{--tc:var(--muted);padding:0 7px;font-size:.95em}#ltabs .lgt.on{--tc:var(--acc);background:var(--acc-soft)}
-  #ltabs .lg.k-int{--tc:#AD1457}#ltabs .lg.k-dec{--tc:#2E7D32}#ltabs .lg.k-rule{--tc:#EF6C00}#ltabs .lg.k-adm{--tc:#7B1FA2}#ltabs .lg.k-ord{--tc:#00838F}
   .ltarr{position:fixed;top:0;height:var(--hh);width:24px;z-index:23;display:none;align-items:center;justify-content:center;border:0;padding:0;font-size:1.5em;font-weight:800;line-height:1;color:var(--acc-d);cursor:pointer}
   .ltarr.on{display:flex}
   #ltL{background:linear-gradient(90deg,var(--bg) 55%,transparent)}#ltR{background:linear-gradient(270deg,var(--bg) 55%,transparent)}
   .ltarr:hover{color:var(--acc)}
-  #ltabs .lt.dro-l{box-shadow:inset 5px 0 0 var(--acc),inset 0 3px 0 var(--tc)}#ltabs .lt.dro-r{box-shadow:inset -5px 0 0 var(--acc),inset 0 3px 0 var(--tc)}
+  #ltabs .lt.drg{opacity:.35}
+  .dragghost.tg{opacity:.72}
+  #ltIns{position:fixed;z-index:72;width:4px;border-radius:2px;background:var(--acc);box-shadow:0 0 0 2px color-mix(in srgb,var(--acc) 28%,transparent),0 0 8px var(--acc);pointer-events:none;display:none}
   #ltabs .lt.k-int{--tc:#AD1457}#ltabs .lt.k-dec{--tc:#2E7D32}#ltabs .lt.k-rule{--tc:#EF6C00}#ltabs .lt.k-adm{--tc:#7B1FA2}#ltabs .lt.k-ord{--tc:#00838F}
   #ltabs .lt.sm{--tc:var(--acc);background:var(--acc-soft,var(--soft));color:var(--acc-d);font-weight:700}
   #ltabs .lt.on,#ltabs .lt.sm.on{background:var(--surf);color:var(--acc-d);font-weight:700;border-color:var(--tc);border-width:2px 2px 0}
@@ -700,7 +699,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   <div id="list"><div class="empty">법령·행정규칙·자치법규 이름을 치면<br>목록이 나옵니다.<br><span style="font-size:.85em">처음에는 ⚙ 에서 국가법령정보센터 인증키(OC)를 넣어 주세요.</span><br><button class="btn g" type="button" onclick="guideOpen()" style="margin-top:12px">처음이신가요? 사용법 보기</button></div></div>
 </div></div>
 
-<div id="ltabs"></div><button id="ltL" class="ltarr" title="탭 왼쪽으로" tabindex="-1">‹</button><button id="ltR" class="ltarr" title="탭 오른쪽으로" tabindex="-1">›</button>
+<div id="ltabs"></div><div id="ltIns"></div><button id="ltL" class="ltarr" title="탭 왼쪽으로" tabindex="-1">‹</button><button id="ltR" class="ltarr" title="탭 오른쪽으로" tabindex="-1">›</button>
 <div id="dbar">
   <button class="tb" id="bL" title="왼쪽 목록 접기/펴기 (F7)">◀ 목록</button>
   <span class="fbox"><span>🔍</span><input id="fq" placeholder="본문에서 찾기" autocomplete="off"></span>
@@ -870,7 +869,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.119";
+const VERSION = "10.120";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -2087,25 +2086,13 @@ function paintLTabs() {
   saveTabs();
   const bar = $("#ltabs");
   const tabH = (t, i) => '<div class="lt ' + tabCls(t.d) + (t.d.stub ? " lz" : "") + (t.d === cur.doc && !SUMACT && cur.view !== "tt" ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><i class="lk">' + tabKL(t.d) + '</i><span>' + esc(t.d === cur.doc && !SUMACT && cur.view !== "tt" ? midCut(tabShort(t.d.name), 38) : midCut(tabShort(t.d.name), 17)) + '</span><b data-x="' + i + '">✕</b></div>';
-  const GN = { "k-law": "법", "k-dec": "시행령", "k-rule": "시행규칙", "k-adm": "행정규칙", "k-ord": "조례", "k-int": "해석례" };
-  const grp = LS.get("lv_tgrp", "") === "1" && ltabs.length >= 2, gclosed = LS.get("lv_tgc", []) || [];
-  let tabsH;
-  if (grp) {                                                      // 종류별로 묶어 보기: 묶음 머리를 누르면 접힘(지금 보는 탭은 접혀도 남음)
-    tabsH = Object.keys(GN).map((g) => {
-      const its = ltabs.map((t, i) => [t, i]).filter(([t]) => tabCls(t.d) === g); if (!its.length) return "";
-      const shut = gclosed.includes(g), act = its.some(([t]) => t.d === cur.doc && !SUMACT && cur.view !== "tt");
-      return '<div class="lg ' + g + (shut ? " sh" : "") + '" data-lg="' + g + '" title="눌러서 ' + (shut ? "펼치기" : "접기") + '"><span class="ar">' + (shut ? "▸" : "▾") + "</span>" + GN[g] + ' <b>' + its.length + "</b></div>" + its.filter(([t]) => !shut || (t.d === cur.doc && !SUMACT && cur.view !== "tt")).map(([t, i]) => tabH(t, i)).join("");
-    }).join("");
-  } else tabsH = ltabs.map(tabH).join("");
-  const gtog = ltabs.length >= 4 || grp ? '<div class="lgt' + (grp ? " on" : "") + '" id="lgt" title="' + (grp ? "묶음 해제" : "탭을 법·시행령·조례·해석례별로 묶어 보기") + '">▦</div>' : "";
-  bar.innerHTML = gtog + (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + tabsH + TTTABS.map((x, j) => '<div class="lt k-tt' + (cur.view === "tt" && j === TTCUR ? " on" : "") + '" data-tt="' + j + '" title="3단 비교 — ' + esc(x.base) + '"><i class="lk">3단</i><span>' + esc(x.base) + '</span><b data-xt="' + j + '">✕</b></div>').join("");
+  const tabsH = ltabs.map(tabH).join("");
+  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + tabsH + TTTABS.map((x, j) => '<div class="lt k-tt' + (cur.view === "tt" && j === TTCUR ? " on" : "") + '" data-tt="' + j + '" title="3단 비교 — ' + esc(x.base) + '"><i class="lk">3단</i><span>' + esc(x.base) + '</span><b data-xt="' + j + '">✕</b></div>').join("");
   const arrows = () => { const L = $("#ltL"), R = $("#ltR"); if (!L) return; const r = bar.getBoundingClientRect(), ov = bar.scrollWidth > bar.clientWidth + 2;
     L.style.left = r.left + "px"; R.style.left = r.right - 24 + "px"; L.classList.toggle("on", ov && bar.scrollLeft > 2); R.classList.toggle("on", ov && bar.scrollLeft < bar.scrollWidth - bar.clientWidth - 2); };
   bar.__arr = arrows; setTimeout(arrows, 0);
   const onT = bar.querySelector(".lt.on");                          // 지금 보는 탭이 가려져 있으면 보이는 곳으로
   if (onT) { const l = onT.offsetLeft, r = l + onT.offsetWidth; if (l < bar.scrollLeft) bar.scrollLeft = Math.max(0, l - 8); else if (r > bar.scrollLeft + bar.clientWidth) bar.scrollLeft = r - bar.clientWidth + 8; }
-  const lgt = $("#lgt"); if (lgt) lgt.onclick = () => { LS.set("lv_tgrp", grp ? "" : "1"); paintLTabs(); };
-  bar.querySelectorAll(".lg[data-lg]").forEach((el) => (el.onclick = () => { const g = el.dataset.lg, c = (LS.get("lv_tgc", []) || []).slice(), k = c.indexOf(g); if (k >= 0) c.splice(k, 1); else c.push(g); LS.set("lv_tgc", c); paintLTabs(); }));
   bar.querySelectorAll(".lt[data-i]").forEach((el) => (el.oncontextmenu = (e) => {
     e.preventDefault(); const i = +el.dataset.i;
     showMenu(e.clientX, e.clientY, [["오른쪽에 나란히 보기", () => openSplit(i)], ["이 탭 닫기", () => closeLTab(i), "dz"]].concat(SPLIT ? [["나란히 보기 닫기", closeSplit]] : []));
@@ -2333,7 +2320,7 @@ async function dropRef(ref, side) {
       if (Math.hypot(e.clientX - dg.x, e.clientY - dg.y) < 10) return;
       dg.on = true; document.body.style.userSelect = "none"; try { getSelection().removeAllRanges(); } catch (er) {}
       document.querySelectorAll(".dragghost").forEach((x) => x.remove());
-      const g = document.createElement("div"); g.className = "dragghost"; g.textContent = dg.ref.name; document.body.appendChild(g); dg.g = g;
+      const g = document.createElement("div"); g.className = "dragghost"; g.textContent = dg.ref.name; if (dg.el && dg.el.classList.contains("lt")) { g.classList.add("tg"); dg.el.classList.add("drg"); } document.body.appendChild(g); dg.g = g;
       const r = dzRects(), z = $("#dz"); z.style.left = r.left + 8 + "px"; z.style.width = r.right - r.left - 16 + "px"; z.style.top = r.top + 8 + "px"; z.style.height = r.bottom - r.top - 16 + "px"; z.classList.add("on");
       dg.r = r;
     }
@@ -2341,11 +2328,17 @@ async function dropRef(ref, side) {
     dg.px = e.clientX;
     const bar = $("#ltabs"), bR = bar.getBoundingClientRect();
     dg.inBar = !!(dg.el && dg.el.classList.contains("lt") && dg.el.dataset.i !== undefined && e.clientY >= bR.top - 4 && e.clientY <= bR.bottom + 8 && e.clientX >= bR.left && e.clientX <= bR.right);
-    bar.querySelectorAll(".dro-l,.dro-r").forEach((x) => x.classList.remove("dro-l", "dro-r")); dg.reo = null;
+    dg.gap = -1; const ins = $("#ltIns"); ins.style.display = "none";
     $("#dz").classList.toggle("on", !dg.inBar);
     if (dg.inBar) {                                                  // 탭 줄 위에서 놓으면 순서 바꾸기(왼쪽·오른쪽 칸 열기 아님)
-      const t = document.elementFromPoint(e.clientX, Math.min(Math.max(e.clientY, bR.top + 3), bR.bottom - 3)), tt = t && t.closest && t.closest("#ltabs .lt[data-i]");
-      if (tt && tt !== dg.el) { const rc = tt.getBoundingClientRect(), after = e.clientX > rc.left + rc.width / 2; tt.classList.add(after ? "dro-r" : "dro-l"); dg.reo = { to: +tt.dataset.i, after }; }
+      const tabs = [...bar.querySelectorAll(".lt[data-i]")], from = +dg.el.dataset.i;             // 탭 사이사이(틈) 중 포인터에 가장 가까운 곳
+      if (tabs.length) {
+        const gx = [tabs[0].getBoundingClientRect().left].concat(tabs.map((x) => x.getBoundingClientRect().right));
+        let g = 0, bd = 1e9; gx.forEach((x, k) => { const d = Math.abs(x - e.clientX); if (d < bd) { bd = d; g = k; } });
+        if (g !== from && g !== from + 1) {                                  // 제자리가 아니면 놓일 자리를 세로 막대로 표시
+          dg.gap = g; ins.style.display = "block"; ins.style.left = gx[g] - (g === 0 ? 0 : 2) + "px"; ins.style.top = bR.top + 5 + "px"; ins.style.height = bR.height - 5 + "px";
+        }
+      }
       if (!tmr) tmr = setInterval(() => { if (!dg || !dg.inBar) return; const b2 = $("#ltabs").getBoundingClientRect(); if (dg.px < b2.left + 60) $("#ltabs").scrollLeft -= 14; else if (dg.px > b2.right - 60) $("#ltabs").scrollLeft += 14; }, 30);
       dg.side = ""; $("#dz").querySelectorAll("div").forEach((d) => d.classList.remove("ov")); return;
     }
@@ -2353,7 +2346,7 @@ async function dropRef(ref, side) {
     dg.side = inY && e.clientX >= r.left && e.clientX < r.mid ? "L" : inY && e.clientX >= r.mid && e.clientX <= r.right ? "R" : "";
     $("#dz").querySelectorAll("div").forEach((d) => d.classList.toggle("ov", d.dataset.z === dg.side));
   }, true);
-  const stop = (d) => { clearInterval(tmr); tmr = 0; document.querySelectorAll("#ltabs .dro-l,#ltabs .dro-r").forEach((x) => x.classList.remove("dro-l", "dro-r")); document.querySelectorAll(".dragghost").forEach((g) => g.remove()); $("#dz").classList.remove("on"); $("#dz").querySelectorAll(".ov").forEach((x) => x.classList.remove("ov")); document.body.style.userSelect = ""; };
+  const stop = (d) => { clearInterval(tmr); tmr = 0; document.querySelectorAll("#ltabs .lt.drg").forEach((x) => x.classList.remove("drg")); $("#ltIns").style.display = "none"; document.querySelectorAll(".dragghost").forEach((g) => g.remove()); $("#dz").classList.remove("on"); $("#dz").querySelectorAll(".ov").forEach((x) => x.classList.remove("ov")); document.body.style.userSelect = ""; };
   document.addEventListener("dragstart", (e) => { if (dg) e.preventDefault(); }, true);     // 끄는 동안 브라우저 자체 끌기(글자·링크)가 끼어들지 않게
   window.addEventListener("blur", () => { dg = null; stop(); });
   document.addEventListener("pointerup", (e) => {
@@ -2362,7 +2355,7 @@ async function dropRef(ref, side) {
     if (!was.on) return;
     if (was.el) { was.el.__dragged = Date.now(); }
     if (was.inBar) {                                                  // 탭 순서 바꾸기
-      if (was.reo) { const from = +was.el.dataset.i, to = was.reo.to, k = (to > from ? to - 1 : to) + (was.reo.after ? 1 : 0); if (k !== from) { const [t] = ltabs.splice(from, 1); ltabs.splice(k, 0, t); paintLTabs(); } }
+      if (was.gap >= 0) { const from = +was.el.dataset.i, g = was.gap, k = g > from ? g - 1 : g; if (k !== from) { const [t] = ltabs.splice(from, 1); ltabs.splice(k, 0, t); paintLTabs(); } }
       return;
     }
     if (was.side) dropRef(was.ref, was.side);
