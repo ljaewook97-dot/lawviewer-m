@@ -624,6 +624,8 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 #ovInt .ocity{display:flex;gap:6px;align-items:center;margin:2px 0 8px}
 #ovInt label{display:inline-flex;align-items:center;gap:4px;margin-right:12px}
 #ovInt input[type=radio]{width:auto;height:auto;margin:0;padding:0;display:inline-block}
+#iChip{display:none;position:fixed;z-index:60;border:0;border-radius:18px;background:var(--acc);color:var(--acc-t);font:inherit;font-size:.86em;font-weight:700;padding:7px 14px;box-shadow:0 4px 14px rgba(0,0,0,.28);cursor:pointer}
+#ovInt .hr2{user-select:text;-webkit-user-select:text}
 </style>
 </head>
 <body>
@@ -815,7 +817,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.103";
+const VERSION = "10.104";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -2706,10 +2708,29 @@ async function intRun(more) {
     box.innerHTML = '<div class="muted">불러오는 중…</div>';
     try { const d = await callQuiet("interp_get", [OC, row.dataset.id]); if (d.err) { box.innerHTML = '<div class="muted">' + esc(d.err) + "</div>"; return; }
       const sec = (h, t) => t ? '<div class="rh">' + h + "</div>" + String(t).split("\n").map((l) => "<div>" + esc(l) + "</div>").join("") : "";
-      box.innerHTML = '<div class="muted" style="margin-bottom:4px">질의: ' + esc(d.asker) + " · 회신: " + esc(d.replier) + " · " + esc(d.no) + "</div>" + sec("질의요지", d.question) + sec("회답", d.answer) + sec("이유", d.reason); box.dataset.l = 1;
+      box.innerHTML = '<div class="muted" style="margin-bottom:4px;font-size:.84em">💡 내용에서 낱말을 두 번 누르거나 드래그하면 그 낱말로 해석례를 다시 검색할 수 있습니다.</div><div class="muted" style="margin-bottom:4px">질의: ' + esc(d.asker) + " · 회신: " + esc(d.replier) + " · " + esc(d.no) + "</div>" + sec("질의요지", d.question) + sec("회답", d.answer) + sec("이유", d.reason); box.dataset.l = 1;
     } catch (e) { box.innerHTML = '<div class="muted">내용을 가져오지 못했습니다. 다시 눌러 주세요.</div>'; } }; });
   if (INT.n < r.total) $("#iMore").style.display = "";
 }
+// 해석례 내용에서 낱말을 고르면(두 번 누르기·드래그) 그 낱말로 다시 검색하는 칩
+(function () {
+  const chip = document.createElement("button"); chip.id = "iChip"; chip.type = "button"; document.body.appendChild(chip);
+  const hide = () => { chip.style.display = "none"; chip.dataset.t = ""; };
+  const show = () => {
+    const sel = window.getSelection(); if (!sel || sel.isCollapsed || !sel.rangeCount) return hide();
+    const t = sel.toString().replace(/\s+/g, " ").trim();
+    const node = sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
+    if (!node || !node.closest || !node.closest("#ovInt .hr2") || t.length < 2 || t.length > 40) return hide();
+    const r = sel.getRangeAt(0).getBoundingClientRect(); chip.dataset.t = t; chip.textContent = "🔍 ‘" + (t.length > 18 ? t.slice(0, 18) + "…" : t) + "’ 해석례 검색";
+    chip.style.display = "block"; chip.style.top = Math.min(innerHeight - 44, r.bottom + 8) + "px"; chip.style.left = Math.max(8, Math.min(innerWidth - 230, r.left)) + "px";
+  };
+  document.addEventListener("mouseup", () => setTimeout(show, 30));
+  document.addEventListener("touchend", () => setTimeout(show, 300));
+  document.addEventListener("keyup", (e) => { if (e.key === "Escape") hide(); });
+  $("#ovInt .modal").addEventListener("scroll", hide, { passive: true });
+  chip.onmousedown = (e) => e.preventDefault();
+  chip.onclick = () => { const t = chip.dataset.t; if (!t) return; $("#iQ").value = t; hide(); window.getSelection().removeAllRanges(); intRun(false); const m = $("#ovInt .modal"); if (m) m.scrollTop = 0; };
+})();
 $("#iGo").onclick = () => intRun(false);
 $("#iMore").onclick = () => intRun(true);
 $("#iQ").onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); intRun(false); } };
