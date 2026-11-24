@@ -847,7 +847,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.113";
+const VERSION = "10.114";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -3147,6 +3147,46 @@ $("#tt").addEventListener("click", (e) => {
     if (!isDT()) menu(e, nt);
   });
 })();
+// 어디서든 오른쪽 클릭 — 선택한 글자·조문·법령 어디를 눌렀는지에 따라 메뉴가 달라진다 (PC 마우스 전용; Shift+오른쪽 클릭은 브라우저 기본 메뉴)
+document.addEventListener("contextmenu", (e) => {
+  if (e.defaultPrevented || e.shiftKey || !matchMedia("(pointer:fine)").matches) return;
+  if (e.target.closest("input,textarea,select,#ctx,#npal,.over")) return;
+  const d = cur.doc, inDoc = !!(d && e.target.closest("#doc, #doc2"));
+  const sel = String(getSelection() || "").replace(/\s+/g, " ").trim(), sh = sel.length > 18 ? sel.slice(0, 18) + "…" : sel;
+  const art = e.target.closest("#docBody .art"), key = art && art.id.startsWith("a-") ? art.id.slice(2) : "";
+  const a = d && key ? d.arts[key] : null, M = [];
+  const click = (id) => () => { const b = $(id); if (b) b.click(); };
+  if (sel) {
+    M.push([sel.length > 26 ? "‘" + sel.slice(0, 26) + "…’" : "‘" + sel + "’", null, "mh"]);
+    M.push(["복사", () => copyText(sel, "복사했습니다")]);
+    if (inDoc && d) M.push(["출처 붙여 복사", () => copyText("「" + d.name + "」" + (a ? " " + a.label : "") + "\n" + sel, "출처와 함께 복사했습니다")]);
+    M.push(["⚖ 해석례에서 ‘" + sh + "’ 찾기", () => intShow(sel)]);
+    if (inDoc) M.push(["🔍 본문에서 ‘" + sh + "’ 찾기", () => { $("#fq").value = sel; findRun(key || undefined); }]);
+    M.push(["법령 검색 ‘" + sh + "’", () => { $("#q").value = sel; doSearch(); }]);
+  }
+  if (a) {
+    M.push([d.name + " " + a.label, null, "mh"]);
+    M.push(["이 조문 복사", () => { setCurArt(key); $("#dbCopy").click(); }]);
+    M.push(["인용 복사 (「법령명」 제N조)", () => { setCurArt(key); $("#dbCite").click(); }]);
+    M.push(["⚖ 이 조문 해석례 찾기", () => { setCurArt(key); intShow(d.name + (d.kind === "ordin" ? "" : " " + a.label)); }]);
+    const fv = art.querySelector(".fv"); if (fv) M.push([fv.classList.contains("on") ? "★ 즐겨찾기에서 빼기" : "☆ 이 조문 즐겨찾기", () => fv.click()]);
+    const ch = art.querySelector(".chb:not(.hsb)"); if (ch) M.push(["⛓ 위임 사슬 보기", () => ch.click()]);
+    const hs = art.querySelector(".hsb"); if (hs) M.push(["🕘 이 조문 개정 연혁", () => hs.click()]);
+  }
+  if (inDoc && d && d.kind !== "expc") {
+    M.push([d.name, null, "mh"]);
+    M.push(["📜 법령 전체 개정이력·사유", click("#dbHist")]);
+    M.push(["⚖ 이 법령 해석례", click("#dbInt")]);
+    M.push(["3단 비교", click("#dbTT")]);
+    M.push(["법제처에서 열기", click("#dbWeb")]);
+  } else if (inDoc && d) {
+    M.push(["해석례 " + (d.name || ""), null, "mh"]);
+    M.push(["법제처에서 열기", click("#dbWeb")]);
+  }
+  if (inDoc && d) M.push([favIdx(d.kind, d.rawmst, "") >= 0 ? "★ 법령 즐겨찾기에서 빼기" : "☆ 법령 즐겨찾기", click("#dbFav")]);
+  if (!M.length) return;
+  e.preventDefault(); showMenu(e.clientX, e.clientY, M);
+});
 async function jumpNote(n) {
   if (!(cur.doc && cur.doc.name === n.law && cur.doc.kind === n.kind)) await openDoc(n.kind, n.rawmst, n.law, n.date, n.key);
   else if (!isDT()) show("doc", cur.doc.name);
