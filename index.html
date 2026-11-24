@@ -802,7 +802,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.101";
+const VERSION = "10.102";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -2684,7 +2684,6 @@ async function histReason(row, box) {
 }
 $("#dbHist").onclick = async () => {
   const d = cur.doc; if (!d) return toast("먼저 법령을 여세요", true);
-  if (d.kind !== "law" && d.kind !== "adm") return toast("자치법규(조례)는 제·개정 이력 조회를 아직 지원하지 않습니다", true);
   $("#hhTitle").textContent = d.name + " · 제·개정 이력"; $("#hSum").textContent = "불러오는 중…"; $("#hList").innerHTML = ""; $("#ovHist").classList.add("on");
   let r; try { r = await call("law_hist", [OC, d.kind, d.name], ""); } catch (e) { $("#hSum").textContent = "이력을 가져오지 못했습니다. 인터넷 연결이나 인증키를 확인해 주세요."; return; }
   if (!r || r.err || !r.rows || !r.rows.length) { $("#hSum").textContent = (r && r.err) || "이력이 없습니다."; return; }

@@ -778,9 +778,34 @@ def compare_ver(oc, kind, name, old_mst, old_date, new_mst, new_date, key=""):
             "old_date": old_date, "new_date": new_date, "reason": B.get("reason", "")}
 
 
+def _ordin_versions(oc, name, pages=4):
+    """같은 조례의 연혁 목록(자치법규 목록 nw=2 가 연혁 전체) -> [{mst, date, pub, kind}]"""
+    nm = lambda x: re.sub(r"[\sㆍ·]", "", x or "")
+    out, seen = [], set()
+    for pg in range(1, pages + 1):
+        try:
+            d = L._get("lawSearch.do", {"OC": oc, "target": "ordin", "type": "JSON", "query": name, "nw": "2", "display": 100, "page": pg}, getter)
+        except Exception:  # noqa: BLE001
+            break
+        rows = []
+        L._dicts_with(d, "자치법규명", rows)
+        for r in rows:
+            mst = str(r.get("자치법규일련번호") or "")
+            if not mst or mst in seen or nm(r.get("자치법규명")) != nm(name):
+                continue
+            seen.add(mst)
+            out.append({"mst": mst, "date": _digits(r.get("시행일자")), "pub": _digits(r.get("공포일자")), "kind": str(r.get("제개정구분명") or "")})
+        if len(rows) < 100:
+            break
+    return out
+
+
 def law_hist(oc, kind, name):
     """법령 전체의 제·개정 이력 -> [{mst, date(시행일), pub(공포일), kind(제정·일부개정·타법개정…)}] 최신 순"""
-    v = _vers_cached(oc, kind if kind in ("adm",) else "law", name)
+    if kind == "ordin":
+        v = _ordin_versions(oc, name)
+    else:
+        v = _vers_cached(oc, kind if kind in ("adm",) else "law", name)
     if not v:
         return {"err": "이 법령의 제·개정 이력을 가져오지 못했습니다"}
     return {"rows": sorted(v, key=lambda x: (x["pub"] or x["date"], x["mst"]), reverse=True)}
@@ -790,6 +815,9 @@ def ver_reason(oc, kind, rawmst, name, date=""):
     """한 시행본의 제·개정 이유(전체 법령 분석 없이 이유만)"""
     if kind in ("law", "") or kind is None:
         d = L._get("lawService.do", {"OC": oc, "target": "law", "type": "JSON", "MST": rawmst}, getter)
+        return {"reason": L.extract_reason(d)}
+    if kind == "ordin":
+        d = L._get("lawService.do", {"OC": oc, "target": "ordin", "type": "JSON", "MST": rawmst}, getter)
         return {"reason": L.extract_reason(d)}
     return {"reason": _load_ver(oc, kind, rawmst, name, date).get("reason", "")}
 
