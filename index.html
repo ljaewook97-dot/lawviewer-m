@@ -643,7 +643,8 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 #docBody.expc .head{display:flex;align-items:center;gap:8px;margin:24px 0 8px;padding:9px 14px;border:0;border-radius:10px;background:var(--acc-soft);color:var(--acc-d);font-weight:800;font-size:1.02em}
 #docBody.expc .head::before{content:attr(data-ic)}
 #docBody.expc .art{border-bottom:0;padding:6px 4px 4px}
-#docBody.expc .ln{line-height:1.9}
+#docBody.expc .ln{line-height:1.9;margin:.55em 0;word-break:keep-all;overflow-wrap:anywhere}
+#docBody.expc .ln.fn{font-size:.86em;line-height:1.6;color:var(--sub);margin:2px 0 12px 1.2em;padding:2px 0 2px 10px;border-left:3px solid var(--line)}
 #docBody.expc .ln.l1{padding-left:.4em}#docBody.expc .ln.l2{padding-left:1.4em}#docBody.expc .ln.l3{padding-left:2.4em}
 #docBody.expc #a-i{padding:6px 2px 4px}
 #docBody.expc #a-i .ln.xt{font-size:1.18em;font-weight:800;line-height:1.55;margin-bottom:10px;color:var(--text)}
@@ -846,7 +847,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.109";
+const VERSION = "10.110";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -2322,6 +2323,7 @@ function expcPaint(b, d) {                                      // 법령해석�
   b.classList.toggle("expc", d.kind === "expc"); if (d.kind !== "expc") return;
   const IC = { "해석례 개요": "📋", "질의요지": "❓", "회답": "✅", "이유": "📖" };
   b.querySelectorAll(".head").forEach((h) => { const t = h.textContent.trim(); if (IC[t]) h.dataset.ic = IC[t]; });
+  b.querySelectorAll(".art:not(#a-i) .ln").forEach((ln) => { if (/^\s*\[주\d+\]/.test(ln.textContent)) ln.classList.add("fn"); });   // 각주 줄(글자는 그대로, 모양만)
   b.querySelectorAll("#a-i .ln").forEach((ln, i) => {
     const w = document.createTreeWalker(ln, NodeFilter.SHOW_TEXT); const tn = w.nextNode(); if (!tn) return;
     const m = /^(안건명|안건번호|질의기관|회신기관|회신일자)\s+/.exec(tn.nodeValue); if (!m) return;
