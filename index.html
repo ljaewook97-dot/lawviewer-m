@@ -640,6 +640,19 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 #intBox .irs>summary::before{content:"▸ "}#intBox .irs[open]>summary::before{content:"▾ "}
 #intBox .hrow.ihit{cursor:pointer}#intBox .hrow.ihit:hover{background:var(--acc-soft)}
 #intBox .hrow.ihit.on{border-color:var(--acc);box-shadow:inset 4px 0 0 var(--acc)}
+#docBody.expc .head{display:flex;align-items:center;gap:8px;margin:24px 0 8px;padding:9px 14px;border:0;border-radius:10px;background:var(--acc-soft);color:var(--acc-d);font-weight:800;font-size:1.02em}
+#docBody.expc .head::before{content:attr(data-ic)}
+#docBody.expc .art{border-bottom:0;padding:6px 4px 4px}
+#docBody.expc .ln{line-height:1.9}
+#docBody.expc .ln.l1{padding-left:.4em}#docBody.expc .ln.l2{padding-left:1.4em}#docBody.expc .ln.l3{padding-left:2.4em}
+#docBody.expc #a-i{padding:6px 2px 4px}
+#docBody.expc #a-i .ln.xt{font-size:1.18em;font-weight:800;line-height:1.55;margin-bottom:10px;color:var(--text)}
+#docBody.expc #a-i .ln.xt .ik{display:none}
+#docBody.expc #a-i .ln.xm{display:inline-block;margin:2px 8px 4px 0;padding:1px 12px;border:1px solid color-mix(in srgb,var(--acc) 30%,var(--line));border-radius:14px;font-size:.88em;line-height:1.7;background:var(--surf)}
+#docBody.expc #a-i .ln.xm .ik{color:var(--acc-d);margin-right:6px}
+#docBody.expc #a-a{border-left:6px solid var(--acc);border-radius:0 12px 12px 0;background:color-mix(in srgb,var(--acc) 8%,transparent);padding:12px 18px 12px 18px;font-size:1.04em}
+#docBody.expc #a-a .ln{font-weight:600}
+#docBody.expc #a-q .ln:first-child{font-weight:500}
 </style>
 </head>
 <body>
@@ -728,7 +741,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   <div class="mfoot"><button class="btn" style="flex:1" id="setOk">저장</button><button class="btn g" id="setNo">닫기 (Esc)</button></div>
 </div></div>
 
-<div id="npal"><button data-c="h1" class="hb" style="background:rgba(255,214,0,.75)" title="노랑 형광펜"></button><button data-c="h2" class="hb" style="background:rgba(76,200,110,.7)" title="초록 형광펜"></button><button data-c="h3" class="hb" style="background:rgba(255,105,140,.65)" title="분홍 형광펜"></button><button data-c="h4" class="hb" style="background:rgba(70,160,255,.65)" title="파랑 형광펜"></button><button data-c="h5" class="hb" style="background:rgba(255,150,40,.7)" title="주황 형광펜"></button><span class="sep"></span><button data-c="f1" style="color:#D32F2F" title="글자색 빨강">A</button><button data-c="f2" style="color:#1565C0" title="글자색 파랑">A</button><button data-c="f3" style="color:#2E7D32" title="글자색 초록">A</button><button data-c="f4" style="color:#7B1FA2" title="글자색 보라">A</button><span class="sep"></span><button data-c="x" title="선택한 곳의 표시 지우기">✕</button><span class="sep"></span><button data-c="m" title="메모 달기" style="font-size:.95em">📝</button><button data-c="r" title="이 줄이 이상하게 보임 — 신고" style="font-size:.85em">⚑</button></div>
+<div id="npal"><button data-c="q" id="npQ" hidden title="고른 낱말로 법령해석례를 다시 검색" style="width:auto;padding:0 8px">🔍 해석례 검색</button><span class="sep" id="npQs" hidden></span><button data-c="h1" class="hb" style="background:rgba(255,214,0,.75)" title="노랑 형광펜"></button><button data-c="h2" class="hb" style="background:rgba(76,200,110,.7)" title="초록 형광펜"></button><button data-c="h3" class="hb" style="background:rgba(255,105,140,.65)" title="분홍 형광펜"></button><button data-c="h4" class="hb" style="background:rgba(70,160,255,.65)" title="파랑 형광펜"></button><button data-c="h5" class="hb" style="background:rgba(255,150,40,.7)" title="주황 형광펜"></button><span class="sep"></span><button data-c="f1" style="color:#D32F2F" title="글자색 빨강">A</button><button data-c="f2" style="color:#1565C0" title="글자색 파랑">A</button><button data-c="f3" style="color:#2E7D32" title="글자색 초록">A</button><button data-c="f4" style="color:#7B1FA2" title="글자색 보라">A</button><span class="sep"></span><button data-c="x" title="선택한 곳의 표시 지우기">✕</button><span class="sep"></span><button data-c="m" title="메모 달기" style="font-size:.95em">📝</button><button data-c="r" title="이 줄이 이상하게 보임 — 신고" style="font-size:.85em">⚑</button></div>
 <div class="over" id="ovAud"><div class="modal">
   <h3>지침 본문 점검</h3>
   <div class="muted" style="font-size:.82em;line-height:1.5;margin-bottom:6px">점검할 지침 이름을 한 줄에 하나씩 적고 시작을 누르세요. 항·호·목이 한 줄로 붙어 보이는 곳을 찾아 줍니다.</div>
@@ -833,7 +846,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.107";
+const VERSION = "10.108";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -2306,6 +2319,17 @@ function restoreScroll(t) {
   const set = () => { const a = t.sa, el = a && cur.doc && document.getElementById("a-" + a.k); $("#doc").scrollTop = el ? Math.max(0, el.offsetTop + (a.o || 0)) : (t.scroll || 0); };
   set(); requestAnimationFrame(set); setTimeout(set, 80);
 }
+function expcPaint(b, d) {                                      // 법령해석례 본문: 개요 칩·소제목 아이콘·회답 강조(글자 위치는 그대로라 형광펜·메모가 맞는다)
+  b.classList.toggle("expc", d.kind === "expc"); if (d.kind !== "expc") return;
+  const IC = { "해석례 개요": "📋", "질의요지": "❓", "회답": "✅", "이유": "📖" };
+  b.querySelectorAll(".head").forEach((h) => { const t = h.textContent.trim(); if (IC[t]) h.dataset.ic = IC[t]; });
+  b.querySelectorAll("#a-i .ln").forEach((ln, i) => {
+    const w = document.createTreeWalker(ln, NodeFilter.SHOW_TEXT); const tn = w.nextNode(); if (!tn) return;
+    const m = /^(안건명|안건번호|질의기관|회신기관|회신일자)\s+/.exec(tn.nodeValue); if (!m) return;
+    const r = document.createRange(); r.setStart(tn, 0); r.setEnd(tn, m[0].length); const k = document.createElement("b"); k.className = "ik"; r.surroundContents(k);
+    ln.classList.add(i === 0 ? "xt" : "xm");
+  });
+}
 function showDoc(d, kind, rawmst, key, fromTab) {
   d.kind = kind; d.rawmst = rawmst; noteRecent(d, kind, rawmst); if (tab === "r" && !hits.length) paintHits();
   if (isDT() && !fromTab) {
@@ -2323,7 +2347,7 @@ function showDoc(d, kind, rawmst, key, fromTab) {
     h += '<div class="head">별표·서식 (' + d.annex.length + ")</div>";
     d.annex.forEach((x, i) => { h += annexHTML(x, i, "ax-", d.mst, d.kind === "adm" && d.adm_base ? d.adm_base : d.name); });
   }
-  const b = $("#docBody"); b.innerHTML = h;
+  const b = $("#docBody"); b.innerHTML = h; expcPaint(b, d);
   b.onclick = (e) => { if (!isDT() || e.target.closest("a,button")) return; const art = e.target.closest(".art"); if (art && art.id.startsWith("a-")) setCurArt(art.id.slice(2)); };
   bindCites(b); applyNotes(); paintSplit(); paintS1h();
   b.querySelectorAll(".fv").forEach((f) => (f.onclick = () => { toggleFav(d, f.dataset.fk); const on = favIdx(kind, rawmst, f.dataset.fk) >= 0; f.textContent = on ? "★" : "☆"; f.classList.toggle("on", on); }));
@@ -2740,7 +2764,7 @@ async function intRun(more) {
     const sel = window.getSelection(); if (!sel || sel.isCollapsed || !sel.rangeCount) return hide();
     const t = sel.toString().replace(/\s+/g, " ").trim();
     const node = sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
-    if (!node || !node.closest || !(node.closest("#intBox .hr2") || (cur.doc && cur.doc.kind === "expc" && node.closest("#docBody"))) || t.length < 2 || t.length > 40) return hide();
+    if (!node || !node.closest || !(node.closest("#intBox .hr2")) || t.length < 2 || t.length > 40) return hide();
     const r = sel.getRangeAt(0).getBoundingClientRect(); chip.dataset.t = t; chip.textContent = "🔍 ‘" + (t.length > 18 ? t.slice(0, 18) + "…" : t) + "’ 해석례 검색";
     chip.style.display = "block"; chip.style.top = Math.min(innerHeight - 44, r.bottom + 8) + "px"; chip.style.left = Math.max(8, Math.min(innerWidth - 230, r.left)) + "px";
   };
@@ -3003,6 +3027,7 @@ document.addEventListener("selectionchange", () => {
   palTm = setTimeout(() => {
     const pal = $("#npal"), parts = selParts();
     if (!parts.length) return pal.classList.remove("on");
+    const ex = !!(cur.doc && cur.doc.kind === "expc"); $("#npQ").hidden = !ex; $("#npQs").hidden = !ex;
     pal.classList.add("on");
     const w = pal.offsetWidth, hh = pal.offsetHeight;
     if (isDT()) {
@@ -3061,6 +3086,7 @@ $("#npal").addEventListener("pointerdown", (e) => e.preventDefault());
 $("#npal").addEventListener("mousedown", (e) => e.preventDefault());
 $("#npal").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-c]"); if (!b) return;
+  if (b.dataset.c === "q") { const t = getSelection().toString().replace(/\s+/g, " ").trim().slice(0, 40); getSelection().removeAllRanges(); $("#npal").classList.remove("on"); if (t.length >= 2) intShow(t); return; }
   const parts = selParts(); if (!parts.length) return;
   const d = parts[0].dc, c = b.dataset.c;
   if (c === "m") {                                        // 메모 달기: 드래그한 글(여러 줄이어도 한 묶음)에 메모를 적는다

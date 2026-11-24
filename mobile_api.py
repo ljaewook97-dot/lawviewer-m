@@ -877,7 +877,7 @@ def _interp_doc(oc, rid):
                 continue
             out.append((_interp_level(ln), ln))
         return out
-    secs = [("i", "해석례 개요", [(0, "안건명  " + title), (0, "안건번호  %s" % x["no"]), (0, "질의기관  %s  ·  회신기관  %s" % (x["asker"], x["replier"])), (0, "회신일자  %s" % dd)]),
+    secs = [("i", "해석례 개요", [(0, "안건명  " + title), (0, "안건번호  %s" % x["no"]), (0, "질의기관  %s" % x["asker"]), (0, "회신기관  %s" % x["replier"]), (0, "회신일자  %s" % dd)]),
             ("q", "질의요지", lines(x["question"])), ("a", "회답", lines(x["answer"])), ("r", "이유", lines(x["reason"]))]
     mst = "e" + str(rid)
     arts, order, items = {}, [], []
