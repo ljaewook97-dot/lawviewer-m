@@ -678,6 +678,60 @@ def art_hist(oc, kind, name, key, rev_date, mst="", dummy=""):
     return res
 
 
+def _tok_inline(a, b):
+    """두 글을 낱말 단위로 비교 -> 한 줄로 합친 조각 [종류('=','-','+'), 글] (지운 글은 '-', 새로 쓴 글은 '+')"""
+    import difflib
+    ta, tb = re.findall(r"\S+|\s+", a), re.findall(r"\S+|\s+", b)
+    out = []
+    for op, i1, i2, j1, j2 in difflib.SequenceMatcher(None, ta, tb, autojunk=False).get_opcodes():
+        if op == "equal":
+            out.append(["=", "".join(tb[j1:j2])])
+        else:
+            if i2 > i1:
+                out.append(["-", "".join(ta[i1:i2])])
+            if j2 > j1:
+                out.append(["+", "".join(tb[j1:j2])])
+    return out
+
+
+def art_all(oc, kind, name, key, start=0, n=6, prev=""):
+    """한 조문이 시행본마다 어떻게 달랐는지 -> 바뀐 시행본만 [{mst,date,pub,kind,st,inline}] (오래된 것부터 n개씩 확인).
+    시행본마다 그 조문 하나만 받는다(법령 전체를 받지 않는다). prev = 직전까지의 글(이어서 부를 때 넘김)"""
+    if kind != "law":
+        return {"err": "조문 전체 개정 보기는 법령(법·시행령·시행규칙)만 됩니다"}
+    try:
+        jo, ji = [int(x) for x in str(key).split(":")]
+    except Exception:  # noqa: BLE001
+        return {"err": "조문 번호를 읽지 못했습니다"}
+    vers = _vers_cached(oc, "law", name)
+    if not vers:
+        return {"err": "이 법령의 시행본 목록을 가져오지 못했습니다"}
+    start = int(start or 0)
+    rows, last, miss = [], prev or "", 0
+    for i in range(start, min(start + int(n or 6), len(vers))):
+        v = vers[i]
+        try:
+            txt, _ef = L.fetch_article(oc, v["mst"], jo, ji, getter)
+            cur = re.sub(r"\s+", " ", txt).strip()
+        except Exception as e:  # noqa: BLE001
+            if "없습니다" not in str(e):          # 연결 오류 등 — 조문이 없는 것으로 보지 않고 이 시행본은 건너뛴다
+                miss += 1
+                continue
+            cur = ""
+        if cur == last:
+            continue
+        base = {"mst": v["mst"], "date": v["date"], "pub": v["pub"], "kind": v["kind"]}
+        if not last:
+            rows.append(dict(base, st="신설" if i > 0 else "최초", inline=[["=", cur]]))
+        elif not cur:
+            rows.append(dict(base, st="삭제", inline=[["-", last]]))
+        else:
+            rows.append(dict(base, st="수정", inline=_tok_inline(last, cur)))
+        last = cur
+    nxt = start + int(n or 6)
+    return {"rows": rows, "next": nxt if nxt < len(vers) else None, "total": len(vers), "last": last, "miss": miss}
+
+
 def upcoming(oc, items):
     """즐겨찾기 법령 중 곧 시행될(시행일이 오늘 이후인) 시행본이 있는 것 -> {kind|name: {rawmst, date}}"""
     import datetime
@@ -1025,7 +1079,7 @@ def net_preload(items):
     return len(items or {})
 
 
-FUNCS = {"interp_search": interp_search, "interp_get": interp_get, "law_hist": law_hist, "ver_reason": ver_reason, "net_export": net_export, "net_preload": net_preload, "art_hist": art_hist, "upcoming": upcoming, "tt_ord": tt_ord, "cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "compare_ver": compare_ver, "chain": chain, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
+FUNCS = {"art_all": art_all, "interp_search": interp_search, "interp_get": interp_get, "law_hist": law_hist, "ver_reason": ver_reason, "net_export": net_export, "net_preload": net_preload, "art_hist": art_hist, "upcoming": upcoming, "tt_ord": tt_ord, "cite_titles": cite_titles, "web_url": web_url, "kw_search": kw_search, "open_cached": open_cached, "list_deleg": list_deleg, "list_adm": list_adm, "find_adm": find_adm, "rev_check": rev_check, "compare_ver": compare_ver, "chain": chain, "list_ordin": list_ordin,"search": search, "suggest": suggest, "open_doc": open_doc, "open_by_name": open_by_name, "open_cite": open_cite,
          "tt_open": tt_open, "fav_rel": fav_rel, "tt_row": tt_row, "set_api_base": set_api_base}
 
 

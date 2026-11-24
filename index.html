@@ -483,7 +483,8 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .accF{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}.accCf{flex-basis:100%;margin-top:6px;padding:8px 10px;border:1px solid #e5484d;border-radius:10px;font-size:.85em;line-height:1.5}.accCf div{display:flex;gap:6px;margin-top:6px}.accCf .btn{min-height:34px;padding:0 12px}
 #bSet.accDot{position:relative}#bSet.accDot::after{content:"";position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:#e53935;box-shadow:0 0 0 2px var(--acc)}
 #ovCmp .modal{display:flex;flex-direction:column;padding:14px}.cmpr{border:1px solid var(--line);border-radius:10px;padding:6px 10px;margin:0 0 8px;background:var(--acc-soft)}.cmpr summary{cursor:pointer;font-weight:700;font-size:.84em;color:var(--acc-d)}.cmpr .rt{font-size:.84em;line-height:1.65;margin-top:5px;white-space:normal;max-height:34vh;overflow:auto}
-#cmpNav{display:flex;gap:6px;align-items:center;margin-top:6px}#cmpNav .btn{flex:none;min-height:32px;padding:0 10px;font-size:.84em}#cmpNav .btn:disabled{opacity:.35}#cmpPos{flex:1;text-align:center;font-size:.78em}
+.cmpa .ch{flex-wrap:wrap}.cmpa .ch .st{white-space:nowrap;flex:none}.cmpa .ch .go{white-space:nowrap}
+#cmpNav{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}#cmpNav .btn{flex:none;min-height:32px;padding:0 10px;font-size:.84em}#cmpNav .btn:disabled{opacity:.35}#cmpPos{flex:1;text-align:center;font-size:.78em}
 @media (min-width:1000px){
 #s2tabs{position:sticky;top:0;z-index:4;display:none;gap:3px;padding:5px 0 0;margin:0 -2px;background:color-mix(in srgb,var(--surf) 94%,gray);border-bottom:1px solid var(--line)}
 #s2tabs button{border:1px solid var(--line);border-bottom:0;border-radius:7px 7px 0 0;padding:4px 12px;font-size:.84em;font-weight:700;color:var(--sub);background:var(--surf)}
@@ -839,7 +840,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div class="over" id="ovCmp"><div class="modal" id="cmpModal">
   <h3 id="cmpT">신구 비교</h3>
   <div class="muted" id="cmpS" style="font-size:.82em;line-height:1.5"></div>
-  <div id="cmpNav" style="display:none"><button class="btn g" id="cmpPrev">◀ 이전 개정</button><span id="cmpPos" class="muted"></span><button class="btn g" id="cmpNext">다음 개정 ▶</button></div>
+  <div id="cmpNav" style="display:none"><button class="btn g" id="cmpPrev">◀ 이전 개정</button><span id="cmpPos" class="muted"></span><button class="btn g" id="cmpNext">다음 개정 ▶</button><button class="btn" id="cmpAll" style="flex-basis:100%;margin-top:6px" title="이 조문이 바뀐 모든 개정을 한 화면에 목록으로">📚 이 조문 바뀐 개정 전부 한눈에</button></div>
   <div class="cmpl" id="cmpL"></div>
   <div style="display:flex;gap:8px;margin-top:10px"><button class="btn" style="flex:1" id="cmpOpen">새 시행본 열기</button><button class="btn g" id="cmpDockBtn" style="display:none">창으로 띄우기</button><button class="btn g" id="cmpNo">닫기</button></div>
 </div></div>
@@ -854,7 +855,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.115";
+const VERSION = "10.116";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1500,6 +1501,49 @@ async function ahStep(dir) {                                          // 이전(
   if (skipped) toast("이 조문이 바뀌지 않은 개정 " + skipped + "개는 건너뛰었습니다");
   ahRender(cx, last.pub || "", last);
 }
+// ---- 이 조문이 바뀐 모든 개정을 한 화면에 (눌러서 하나씩 넘기지 않고)
+const AALL = {}; let AALLCX = null;
+function aaPaint(cx, S) {
+  const a = cur.doc && cur.doc.name === cx.name && cur.doc.arts[cx.key];
+  const rows = S.rows.slice().reverse();                              // 최신 개정부터
+  $("#cmpT").textContent = cx.name + " " + (a ? a.label + (a.title ? " " + a.title : "") : "") + " · 전체 개정";
+  const ch = S.rows.filter((r) => r.st === "수정" || r.st === "삭제").length;
+  $("#cmpS").innerHTML = (S.done ? "시행본 " + S.total + "개를 모두 확인했습니다" : "시행본 " + S.pos + " / " + (S.total || "?") + " 확인 중… <button class='btn g' id='aaStop' style='padding:0 8px;min-height:0;font-size:.85em'>멈춤</button>") + " · 이 조문이 바뀐 개정 <b>" + ch + "번</b>" + (S.miss ? " · 못 받은 시행본 " + S.miss + "개" : "") + " <span class='muted'>(초록=새로 쓴 글, 빨강=지운 글)</span>";
+  const top = $("#cmpL").scrollTop;
+  $("#cmpL").innerHTML = rows.map((r, i) => {
+    const cl = r.st === "신설" || r.st === "최초" ? "n" : r.st === "삭제" ? "d" : "";
+    return '<div class="cmpa"><div class="ch"><span>' + dfmt(r.date) + ' 시행</span><span class="st ' + cl + '">' + esc(r.st) + '</span><span class="muted" style="font-size:.84em">공포 ' + dfmt(r.pub) + (r.kind ? " · " + esc(r.kind) : "") + '</span><span class="go" data-aa="' + esc(r.mst) + '">사유·전후 보기</span></div><div class="cs cn" style="white-space:pre-wrap">' + cmpSeg(r.inline) + "</div></div>";
+  }).join("") || '<div class="empty">확인한 시행본에서 이 조문이 바뀐 곳을 아직 찾지 못했습니다.</div>';
+  $("#cmpL").scrollTop = top;
+  const st = $("#aaStop"); if (st) st.onclick = () => { S.stop = true; };
+}
+async function openArtAll(cx) {
+  if (needOC() || !cx) return;
+  if (cx.kind !== "law") return toast("조문 전체 개정 보기는 법령(법·시행령·시행규칙)만 됩니다", true);
+  AH = null; CMPF = null; AALLCX = cx; $("#cmpNav").style.display = "none"; $("#cmpOpen").style.display = "none";
+  const ck = cx.name + "|" + cx.key;
+  const S = AALL[ck] || (AALL[ck] = { rows: [], pos: 0, total: 0, prev: "", done: false, run: false, stop: false, miss: 0 });
+  aaPaint(cx, S); cmpShow();
+  if (S.done || S.run) return;
+  S.run = true; S.stop = false;
+  try {
+    while (!S.stop) {
+      const r = await callQuiet("art_all", [OC, cx.kind, cx.name, cx.key, S.pos, 6, S.prev]);
+      if (!r || r.err) { toast((r && r.err) || "개정 목록을 받지 못했습니다 — 연결을 확인하세요", true); break; }
+      S.total = r.total; S.prev = r.last; S.miss += r.miss || 0; S.rows.push(...r.rows);
+      if (r.next == null) { S.pos = S.total; S.done = true; aaPaint(cx, S); break; }
+      S.pos = r.next; aaPaint(cx, S);
+    }
+  } finally { S.run = false; }
+  if (!S.done) aaPaint(cx, S);
+}
+$("#cmpAll").onclick = () => { if (AH) openArtAll(AH.cx); };
+$("#cmpL").addEventListener("click", async (e) => {
+  const g = e.target.closest("[data-aa]"); if (!g || !AALLCX) return;
+  const cx = AALLCX, r = await call("art_hist", [OC, cx.kind, cx.name, cx.key, "", g.dataset.aa], cx.name + " 개정 전후 비교 중…");
+  if (!r) return; if (r.err) return toast(r.err, true);
+  ahRender(cx, r.pub || "", r);
+});
 $("#cmpPrev").onclick = () => ahStep(-1);
 $("#cmpNext").onclick = () => ahStep(1);
 // 비교 창을 제목줄로 끌어 옆으로(어디로든) 옮김 — 넓은 화면에서는 뒤쪽 본문도 그대로 보고 누를 수 있음
@@ -3246,6 +3290,7 @@ document.addEventListener("contextmenu", (e) => {
     const fv = art.querySelector(".fv"); if (fv) M.push([fv.classList.contains("on") ? "★ 즐겨찾기에서 빼기" : "☆ 이 조문 즐겨찾기", () => fv.click()]);
     const ch = art.querySelector(".chb:not(.hsb)"); if (ch) M.push(["⛓ 위임 사슬 보기", () => ch.click()]);
     const hs = art.querySelector(".hsb"); if (hs) M.push(["🕘 이 조문 개정 연혁", () => hs.click()]);
+    if (d.kind === "law") M.push(["📚 이 조문 바뀐 개정 전부 한눈에", () => openArtAll({ kind: d.kind, name: d.name, key })]);
   }
   if (inDoc && d && d.kind !== "expc") {
     M.push([d.name, null, "mh"]);
