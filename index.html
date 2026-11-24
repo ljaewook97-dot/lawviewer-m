@@ -630,6 +630,14 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 #s2int{display:none;padding:8px 6px 40px}#doc2.int #s2int{display:block}
 #s2int h3{display:none}
 #intBox .ocgo{flex:none}
+#intBox .hr2{max-height:none;overflow:visible}
+#intBox .it{font-size:.98em}
+#intBox .iw{display:inline-block;font-size:.8em;font-weight:700;color:var(--acc-d);background:var(--acc-soft);border-radius:8px;padding:0 7px;margin-right:4px;vertical-align:1px}
+#intBox .ir{font-weight:400;font-size:.84em;color:var(--sub);margin-top:2px}
+#intBox .il{margin:3px 0;line-height:1.7}#intBox .il.l1{padding-left:.3em}#intBox .il.l2{padding-left:1.3em}#intBox .il.l3{padding-left:2.3em}
+#intBox .rh{margin-top:12px;padding:2px 8px;border-left:4px solid var(--acc);background:var(--acc-soft);border-radius:0 6px 6px 0}
+#intBox .irs>summary{cursor:pointer;margin-top:12px;color:var(--acc-d);font-weight:700;list-style:none}
+#intBox .irs>summary::before{content:"▸ "}#intBox .irs[open]>summary::before{content:"▾ "}
 </style>
 </head>
 <body>
@@ -823,7 +831,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.105";
+const VERSION = "10.106";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -2699,7 +2707,14 @@ function intClose() { $("#ovInt").classList.remove("on"); }
 $("#iNo").onclick = intClose;
 $("#ovInt").addEventListener("click", (e) => { if (e.target.id === "ovInt") intClose(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && $("#ovInt").classList.contains("on")) intClose(); });
-const intDt = (d) => dfmt(d).replace(/^\?$/, "");
+const intTitle = (t) => {
+  t = String(t || ""); let who = "", rest = t, ref = "";
+  const m = t.match(/^(.{1,25}?)\s+-\s+(.+)$/); if (m) { who = m[1]; rest = m[2]; }
+  const mm = rest.match(/^(.*?)\s*[(（]([^()（）]*관련[^()（）]*)[)）]\s*$/); if (mm) { rest = mm[1]; ref = mm[2]; }
+  return (who ? '<span class="iw">' + esc(who) + "</span> " : "") + esc(rest) + (ref ? '<div class="ir">' + esc(ref) + "</div>" : "");
+};
+const intLine = (l) => { const c = /^\s*[①-⑳]/.test(l) ? " l1" : /^\s*\d{1,2}\.\s/.test(l) ? " l2" : /^\s*[가나다라마바사아자차카타파하]\.\s/.test(l) ? " l3" : ""; return '<div class="il' + c + '">' + esc(l) + "</div>"; };
+const intSec = (h, t) => t ? '<div class="rh">' + h + "</div>" + String(t).split("\n").map(intLine).join("") : "";
 async function intRun(more) {
   const tok = ++INT.tok;
   if (!more) { INT.q = $("#iQ").value.trim(); INT.scope = +(document.querySelector('input[name="iScope"]:checked') || {}).value; INT.page = 1; INT.n = 0; $("#iList").innerHTML = ""; }
@@ -2709,14 +2724,14 @@ async function intRun(more) {
   let r; try { r = await callQuiet("interp_search", [OC, INT.q, INT.page, INT.scope]); } catch (e) { if (tok === INT.tok) $("#iSum").textContent = "조회하지 못했습니다. 인터넷 연결이나 인증키를 확인해 주세요."; return; }
   if (tok !== INT.tok) return;
   INT.total = r.total; INT.n += r.rows.length;
-  $("#iSum").innerHTML = r.total ? "‘" + esc(INT.q) + "’ 관련 해석례 <b>" + r.total + "건</b> (최근 회신 순) · 제목을 누르면 내용이 펼쳐집니다." + (INT.scope ? "<br>본문에 그 낱말이 들어 있는 해석례를 찾으므로, 다른 조문 이야기가 섞일 수 있습니다." : "") : "찾은 해석례가 없습니다. 법령명만 넣거나 ‘안건명에서만 찾기’를 바꿔 보세요.";
-  $("#iList").insertAdjacentHTML("beforeend", r.rows.map((x) => '<div class="hrow" data-id="' + esc(x.id) + '"><div class="hh"><b>' + esc(dfmt(x.date)) + '</b><span class="hk">' + esc(x.replier || "") + '</span><span>' + esc(x.no) + '</span></div><div style="margin-top:4px;font-weight:600;line-height:1.45;cursor:pointer" class="it">' + esc(x.title) + '</div><div class="hr2" style="display:none"></div></div>').join(""));
+  $("#iSum").innerHTML = r.total ? "‘" + esc(INT.q) + "’ 관련 해석례 <b>" + r.total + "건</b> (최근 회신 순) · 제목을 누르면 내용이 펼쳐집니다." + "<br>💡 내용에서 낱말을 두 번 누르거나 드래그하면 그 낱말로 다시 검색합니다." + (INT.scope ? " 본문에 그 낱말이 들어 있는 해석례를 찾으므로 다른 조문 이야기가 섞일 수 있습니다." : "") : "찾은 해석례가 없습니다. 법령명만 넣거나 ‘안건명에서만 찾기’를 바꿔 보세요.";
+  $("#iList").insertAdjacentHTML("beforeend", r.rows.map((x) => '<div class="hrow" data-id="' + esc(x.id) + '"><div class="hh"><b>' + esc(dfmt(x.date)) + '</b><span class="hk">' + esc(x.replier || "") + '</span><span>' + esc(x.no) + '</span></div><div style="margin-top:4px;font-weight:600;line-height:1.45;cursor:pointer" class="it">' + intTitle(x.title) + '</div><div class="hr2" style="display:none"></div></div>').join(""));
   $("#iList").querySelectorAll(".hrow:not([data-w])").forEach((row) => { row.dataset.w = 1; const box = row.querySelector(".hr2"); row.querySelector(".it").onclick = async () => {
     const open = box.style.display === "none"; box.style.display = open ? "" : "none"; if (!open || box.dataset.l) return;
     box.innerHTML = '<div class="muted">불러오는 중…</div>';
     try { const d = await callQuiet("interp_get", [OC, row.dataset.id]); if (d.err) { box.innerHTML = '<div class="muted">' + esc(d.err) + "</div>"; return; }
-      const sec = (h, t) => t ? '<div class="rh">' + h + "</div>" + String(t).split("\n").map((l) => "<div>" + esc(l) + "</div>").join("") : "";
-      box.innerHTML = '<div class="muted" style="margin-bottom:4px;font-size:.84em">💡 내용에서 낱말을 두 번 누르거나 드래그하면 그 낱말로 해석례를 다시 검색할 수 있습니다.</div><div class="muted" style="margin-bottom:4px">질의: ' + esc(d.asker) + " · 회신: " + esc(d.replier) + " · " + esc(d.no) + "</div>" + sec("질의요지", d.question) + sec("회답", d.answer) + sec("이유", d.reason); box.dataset.l = 1;
+      const rs = String(d.reason || "").length > 500;
+      box.innerHTML = '<div class="muted" style="margin-bottom:6px">질의: ' + esc(d.asker) + " · 회신: " + esc(d.replier) + " · " + esc(d.no) + "</div>" + intSec("질의요지", d.question) + intSec("회답", d.answer) + (d.reason ? (rs ? '<details class="irs"><summary>이유 보기 (길어서 접어 두었습니다)</summary>' + intSec("이유", d.reason) + "</details>" : intSec("이유", d.reason)) : ""); box.dataset.l = 1;
     } catch (e) { box.innerHTML = '<div class="muted">내용을 가져오지 못했습니다. 다시 눌러 주세요.</div>'; } }; });
   if (INT.n < r.total) $("#iMore").style.display = "";
 }
