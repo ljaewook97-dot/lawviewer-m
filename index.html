@@ -609,6 +609,10 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
   #ltabs .lt.on span,#ltabs .lt.sm.on span{max-width:none;overflow:visible}
   #ltabs .lt.on i.lk{background:var(--tc);color:#fff;border-color:var(--tc)}
 }
+.pane .ocity,[id^=pane] .ocity{display:flex;gap:6px;align-items:center;margin:2px 0 8px}
+.ocity .ocin{flex:1;min-width:0;height:30px;border:1px solid var(--line);border-radius:8px;background:var(--surf);color:var(--text);padding:0 10px;font:inherit;font-size:.86em}
+.ocity .ocin:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 18%,transparent)}
+.ocity .ocgo{height:30px;padding:0 12px;border:0;border-radius:8px;background:var(--acc);color:var(--acc-t);font:inherit;font-size:.84em;font-weight:600;cursor:pointer}
 </style>
 </head>
 <body>
@@ -784,7 +788,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.99";
+const VERSION = "10.100";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -2374,8 +2378,10 @@ function paintPane(n, r) {
   pn.S.textContent = r.summary || "";
   if (r.annex) { pn.C.innerHTML = annexHTML(r.annex, 0, pn.idp + "ax-", r.mst, r.lawname); bindCites(pn.C); }
   else if (r.list) {
-    pn.C.innerHTML = '<div class="ln l1 muted">' + esc(r.note || "") + "</div>" + r.list.map((x, i) => '<div class="ln l1"><a href="#" class="pl" data-i="' + i + '">' + esc(x.lawname) + (x.label ? " · " + esc(x.label) : "") + (x.title ? " " + esc(x.title) : "") + "</a></div>").join("");
+    let bar = ""; if (r.ordc) { cityDL(); bar = '<div class="ocity"><span class="muted" style="font-size:.85em">지자체</span><input class="ocin" list="cityList" value="' + esc(r.city || "") + '" placeholder="시·군·구 (예: 남양주시)" spellcheck="false"><button class="ocgo" type="button">찾기</button></div>'; }
+    pn.C.innerHTML = bar + '<div class="ln l1 muted">' + esc(r.note || "") + "</div>" + r.list.map((x, i) => '<div class="ln l1"><a href="#" class="pl" data-i="' + i + '">' + esc(x.lawname) + (x.label ? " · " + esc(x.label) : "") + (x.title ? " " + esc(x.title) : "") + "</a></div>").join("");
     pn.C.querySelectorAll("a.pl").forEach((a) => (a.onclick = (e) => { e.preventDefault(); paneOpenHit(n, r.list[+a.dataset.i]); }));
+    if (r.ordc) { const inp = pn.C.querySelector(".ocin"), go = () => { const v = inp.value.trim(); if (!v) return; LS.set("lv_ttcity", v); openList(r.ordc, n, v); }; pn.C.querySelector(".ocgo").onclick = go; inp.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); go(); } }; inp.onfocus = () => inp.select(); }
   }
   else if (!r.art) pn.C.innerHTML = '<div class="empty">이 법령에는 ' + esc(r.label) + " 이(가) 없습니다.</div>";
   else { pn.C.innerHTML = artHTML(r.art, r.mst, { hl: r.hl, idp: pn.idp, self: r.lawname }); bindCites(pn.C); }
@@ -2451,7 +2457,7 @@ async function paneOpenHit(n, x) {
   if (r) toPane(n, r); else toast("조문을 찾지 못했습니다", true);
 }
 function listPane(n, label, name, r, note) {
-  toPane(n, { lawname: name, mst: "", label, list: r.hits, note: note || (r.total + "건 · " + (r.note || "")), art: null });
+  toPane(n, { lawname: name, mst: "", label, list: r.hits, note: note || (r.total + "건 · " + (r.note || "")), art: null, ordc: r.ordc, city: r.city });
 }
 async function openNamed(c, n) {
   const r = await call("find_adm", [OC, c.to], c.to + " 찾는 중…");
@@ -2477,13 +2483,15 @@ async function openNamedCode(c, n) {
   const p = key && artPane(d, key);
   if (p) toPane(n, p); else toast("'" + d.name + "' 에서 " + code + " 을(를) 찾지 못했습니다", true);
 }
-async function openList(c, n) {
+async function openList(c, n, city) {
   const fn = c.kind === "d" ? "list_deleg" : c.kind === "o" ? "list_ordin" : "list_adm";
-  const args = c.kind === "d" ? [OC, c.ctx, c.akey, c.to] : c.kind === "o" ? [OC, c.ctx, c.akey, LS.get("lv_city", "고양시")] : [OC, c.ctx, c.akey, c.line || ""];
-  const r = await call(fn, args, c.kind === "d" ? c.to + " 에서 위임받은 조문을 찾는 중…" : c.kind === "o" ? "조례를 찾는 중…" : "지침·고시를 찾는 중…");
+  const cty = c.kind === "o" ? (city || ttCity()) : "";
+  const args = c.kind === "d" ? [OC, c.ctx, c.akey, c.to] : c.kind === "o" ? [OC, c.ctx, c.akey, cty] : [OC, c.ctx, c.akey, c.line || ""];
+  const r = await call(fn, args, c.kind === "d" ? c.to + " 에서 위임받은 조문을 찾는 중…" : c.kind === "o" ? cty + " 조례를 찾는 중…" : "지침·고시를 찾는 중…");
+  if (c.kind === "o") { r.ordc = c; r.city = cty; if (!r.hits.length) r.note = cty + " 조례에서 관련 조문을 찾지 못했습니다. 다른 지자체로 찾아 보세요."; return listPane(n, "조례", "관련 조문", r, r.note); }
   if (!r.hits.length) return toast("관련 조문을 찾지 못했습니다", true);
   if (r.hits.length === 1) return paneOpenHit(n, r.hits[0]);
-  listPane(n, c.kind === "d" ? c.to : c.kind === "o" ? "조례" : "지침·고시", "관련 조문", r);
+  listPane(n, c.kind === "d" ? c.to : "지침·고시", "관련 조문", r);
 }
 async function openCodePane(c, n, noPush) {
   let d = cur.doc;
