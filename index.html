@@ -846,7 +846,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.108";
+const VERSION = "10.109";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -2122,7 +2122,6 @@ async function csLoadDeleg(t) {                                   // 위임 표�
 }
 async function csBuild(key, force) {
   if (!SPLIT || SPLIT.mode !== "cite" || !cur.doc) return;
-  if (cur.doc.kind === "expc") { CS.key = key; CS.tok++; CS.list = []; csPaint(); return; }      // 해석례 본문에는 인용 칸 계산을 하지 않는다(안의 「법」 제○조는 눌러서 봄)
   if (!force && key === CS.key) return;
   CS.key = key; const tok = ++CS.tok;
   if (CS.top && CS.top.src !== key) CS.top = null;               // 누른 인용(📍)은 그 인용을 누른 조문을 보는 동안만
@@ -2781,6 +2780,7 @@ async function intOpenDoc(id) {
   skel(true); let d;
   try { d = await call("open_doc", [OC, "expc", id, "", ""], "해석례 받는 중…"); } catch (e) { skel(false); return toast("해석례를 가져오지 못했습니다", true); }
   skel(false); showDoc(d, "expc", id, "");
+  if (isDT() && SPLIT && SPLIT.mode === "cite") { s2Tab("cite"); csBuild(csReadKey(), true); }     // 열자마자 오른쪽에 인용한 조문이 뜬다(검색 결과는 '해석례' 탭에 그대로)
 }
 $("#iGo").onclick = () => intRun(false);
 $("#iMore").onclick = () => intRun(true);
