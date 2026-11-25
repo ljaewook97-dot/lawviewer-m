@@ -696,25 +696,42 @@ def _tok_inline(a, b):
 
 def art_all(oc, kind, name, key, start=0, n=6, prev=""):
     """한 조문이 시행본마다 어떻게 달랐는지 -> 바뀐 시행본만 [{mst,date,pub,kind,st,inline}] (오래된 것부터 n개씩 확인).
-    시행본마다 그 조문 하나만 받는다(법령 전체를 받지 않는다). prev = 직전까지의 글(이어서 부를 때 넘김)"""
-    if kind != "law":
-        return {"err": "조문 전체 개정 보기는 법령(법·시행령·시행규칙)만 됩니다"}
-    try:
-        jo, ji = [int(x) for x in str(key).split(":")]
-    except Exception:  # noqa: BLE001
-        return {"err": "조문 번호를 읽지 못했습니다"}
-    vers = _vers_cached(oc, "law", name)
+    법령은 시행본마다 그 조문 하나만 받고(전체를 받지 않는다), 행정규칙·조례는 작아서 시행본 전체를 받아 그 조문을 찾는다.
+    prev = 직전까지의 글(이어서 부를 때 넘김)"""
+    if kind not in ("law", "adm", "ordin"):
+        return {"err": "조문 전체 개정 보기는 법령·행정규칙·조례만 됩니다"}
+    if kind == "law":
+        try:
+            jo, ji = [int(x) for x in str(key).split(":")]
+        except Exception:  # noqa: BLE001
+            return {"err": "조문 번호를 읽지 못했습니다"}
+    if kind == "ordin":
+        import time
+        c = _VCACHE.get(("ordin", name))
+        if c and time.time() - c[0] < 600:
+            vers = c[1]
+        else:
+            vers = sorted(_ordin_versions(oc, name), key=lambda v: (v["date"] or v["pub"], v["mst"]))
+            if vers:
+                _VCACHE[("ordin", name)] = (time.time(), vers)
+    else:
+        vers = _vers_cached(oc, kind, name)
     if not vers:
-        return {"err": "이 법령의 시행본 목록을 가져오지 못했습니다"}
+        return {"err": "이 규정의 시행본 목록을 가져오지 못했습니다"}
     start = int(start or 0)
     rows, last, miss = [], prev or "", 0
     for i in range(start, min(start + int(n or 6), len(vers))):
         v = vers[i]
         try:
-            txt, _ef = L.fetch_article(oc, v["mst"], jo, ji, getter)
-            cur = re.sub(r"\s+", " ", txt).strip()
+            if kind == "law":
+                txt, _ef = L.fetch_article(oc, v["mst"], jo, ji, getter)
+                cur = re.sub(r"\s+", " ", txt).strip()
+            else:
+                lw = _load_ver(oc, kind, v["mst"], name, v["date"])
+                a = lw["arts"].get(key)
+                cur = re.sub(r"\s+", " ", " ".join(t for _, t in a["lines"])).strip() if a else ""
         except Exception as e:  # noqa: BLE001
-            if "없습니다" not in str(e):          # 연결 오류 등 — 조문이 없는 것으로 보지 않고 이 시행본은 건너뛴다
+            if kind != "law" or "없습니다" not in str(e):          # 연결 오류 등 — 조문이 없는 것으로 보지 않고 이 시행본은 건너뛴다
                 miss += 1
                 continue
             cur = ""
