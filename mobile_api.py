@@ -694,15 +694,27 @@ def _tok_inline(a, b):
     return out
 
 
-def art_all(oc, kind, name, key, start=0, n=6, prev=""):
+def _title_of(txt):
+    m = re.match(r"\s*제\d+조(?:의\d+)?\s*\(([^)]{1,60})\)", txt or "")
+    return m.group(1).strip() if m else ""
+
+
+def _sim(a, b):
+    import difflib
+    return difflib.SequenceMatcher(None, (a or "")[:400], (b or "")[:400]).ratio()
+
+
+def art_all(oc, kind, name, key, start=0, n=6, prev="", ck="", ct=""):
     """한 조문이 시행본마다 어떻게 달랐는지 -> 바뀐 시행본만 [{mst,date,pub,kind,st,inline}] (오래된 것부터 n개씩 확인).
     법령은 시행본마다 그 조문 하나만 받고(전체를 받지 않는다), 행정규칙·조례는 작아서 시행본 전체를 받아 그 조문을 찾는다.
+    조 번호가 중간에 바뀐 법령은 '직전 시행본의 그 조문과 제목·글이 같은 조문'을 따라간다(ck=지금 따라가는 조문, ct=그 제목 — 이어서 부를 때 넘김).
     prev = 직전까지의 글(이어서 부를 때 넘김)"""
     if kind not in ("law", "adm", "ordin"):
         return {"err": "조문 전체 개정 보기는 법령·행정규칙·조례만 됩니다"}
+    ck = ck or key
     if kind == "law":
         try:
-            jo, ji = [int(x) for x in str(key).split(":")]
+            jo, ji = [int(x) for x in str(ck).split(":")]
         except Exception:  # noqa: BLE001
             return {"err": "조문 번호를 읽지 못했습니다"}
     if kind == "ordin":
@@ -719,22 +731,63 @@ def art_all(oc, kind, name, key, start=0, n=6, prev=""):
     if not vers:
         return {"err": "이 규정의 시행본 목록을 가져오지 못했습니다"}
     start = int(start or 0)
-    rows, last, miss = [], prev or "", 0
+    rows, last, miss, moved = [], prev or "", 0, 0
     for i in range(start, min(start + int(n or 6), len(vers))):
         v = vers[i]
         try:
             if kind == "law":
-                txt, _ef = L.fetch_article(oc, v["mst"], jo, ji, getter)
-                cur = re.sub(r"\s+", " ", txt).strip()
+                try:
+                    txt, _ef = L.fetch_article(oc, v["mst"], jo, ji, getter)
+                    cur = re.sub(r"\s+", " ", txt).strip()
+                except Exception as e:  # noqa: BLE001
+                    if "없습니다" not in str(e):
+                        raise
+                    cur = ""
+                if last and (not cur or (_title_of(cur) != (ct or _title_of(last)) and _sim(cur, last) < 0.5)):
+                    best, bs = None, 0.0                              # 조 번호가 옮겨 갔을 수 있다 — 가까운 번호에서 같은 조문을 찾는다
+                    for dj in (1, -1, 2, -2, 3, -3, 4, -4, 5, -5):
+                        j2 = jo + dj
+                        if j2 < 1:
+                            continue
+                        try:
+                            t2, _e2 = L.fetch_article(oc, v["mst"], j2, 0, getter)
+                        except Exception:  # noqa: BLE001
+                            continue
+                        c2 = re.sub(r"\s+", " ", t2).strip()
+                        sc = _sim(c2, last) + (0.5 if _title_of(c2) and _title_of(c2) == (ct or _title_of(last)) else 0)
+                        if sc > bs:
+                            best, bs = (j2, c2), sc
+                        if sc >= 1.2:
+                            break
+                    if best and bs >= 0.9:
+                        jo, ji, cur = best[0], 0, best[1]
+                        ck = "%d:0" % jo
+                        moved += 1
+                if cur:
+                    ct = _title_of(cur) or ct
             else:
                 lw = _load_ver(oc, kind, v["mst"], name, v["date"])
-                a = lw["arts"].get(key)
+                arts = lw["arts"]
+                a = arts.get(ck)
                 cur = re.sub(r"\s+", " ", " ".join(t for _, t in a["lines"])).strip() if a else ""
+                if last and (not a or ((a.get("title") or "") != (ct or "") and _sim(cur, last) < 0.5)):
+                    best, bs = None, 0.0
+                    for k2, a2 in arts.items():
+                        if not a2.get("lines"):
+                            continue
+                        c2 = re.sub(r"\s+", " ", " ".join(t for _, t in a2["lines"])).strip()
+                        sc = _sim(c2, last) + (0.5 if ct and (a2.get("title") or "") == ct else 0)
+                        if sc > bs:
+                            best, bs = (k2, c2), sc
+                    if best and bs >= 0.9:
+                        ck, cur = best
+                        a = arts.get(ck)
+                        moved += 1
+                if a:
+                    ct = a.get("title") or ct
         except Exception as e:  # noqa: BLE001
-            if kind != "law" or "없습니다" not in str(e):          # 연결 오류 등 — 조문이 없는 것으로 보지 않고 이 시행본은 건너뛴다
-                miss += 1
-                continue
-            cur = ""
+            miss += 1                                                # 연결 오류 등 — 조문이 없는 것으로 보지 않고 이 시행본은 건너뛴다
+            continue
         if cur == last:
             continue
         base = {"mst": v["mst"], "date": v["date"], "pub": v["pub"], "kind": v["kind"]}
@@ -746,7 +799,7 @@ def art_all(oc, kind, name, key, start=0, n=6, prev=""):
             rows.append(dict(base, st="수정", inline=_tok_inline(last, cur)))
         last = cur
     nxt = start + int(n or 6)
-    return {"rows": rows, "next": nxt if nxt < len(vers) else None, "total": len(vers), "last": last, "miss": miss}
+    return {"rows": rows, "next": nxt if nxt < len(vers) else None, "total": len(vers), "last": last, "miss": miss, "ck": ck, "ct": ct, "moved": moved}
 
 
 def upcoming(oc, items):
@@ -873,7 +926,7 @@ def _ordin_versions(oc, name, pages=4):
     return out
 
 
-def _expc_split(t, quoted):
+def _expc_split(t, quoted, names=()):
     """quoted=True 는 이유 끝에 붙어 오는 '관계 법령' 인용 부분 — 문장 끝 나누기는 하지 않고 번호·항목·조 제목 앞에서만 줄을 나눈다"""
     G = r"[가-힣「」·]"
     if not quoted:
@@ -884,12 +937,15 @@ def _expc_split(t, quoted):
     t = re.sub(r"(?<=[.)\]」］])\s*(?=[가나다라마바사아자차카타파하]\.\s*[가-힣「(<\[“])", "\n", t)                    # 가. 나. …
     t = re.sub(r"(?<=[가-힣])(?=[가나라마바사]\.\s*[가-힣「(<])", "\n", t)                                 # 글자에 붙어 온 '…주택나. 연립…'
     if quoted:
+        for nm in names:                                                                          # '…노유자시설주택법제2조(정의)' — 앞 조문 끝에 붙은 법령 이름(글 안에 「…」로 나온 이름)을 알아보고 그 앞에서 나눈다
+            t = re.sub(r"(?<=[가-힣)\].])(?<!\n)(?=" + re.escape(nm) + r"(?: 시행령| 시행규칙)?제\d{1,3}조(?:의\d+)?\()", "\n", t)
         t = re.sub(r"(?<=[가-힣)])\s*(?=[가나다라마바사아자차카타파하]\.\s*「)", "\n", t)                        # '…단독주택나. 「건축법…'
         t = re.sub(r"(\(생\s{0,3}략\))(?=[가-힣②-⑳①\[])", r"\1\n", t)                                  # '(생  략)주택법 시행령…'
         t = re.sub(r"(?<=[.])(?=[가-힣 「」·]{2,40}?(?:법률|법|령|규칙|조례)제\d{1,3}조(?:의\d+)?\()", "\n", t)      # '…말한다.주택법 시행령제10조(…)'
-        t = re.sub(r"(?<=[가-힣)])(?=제\d{1,3}조(?:의\d+)?\([^)]{1,25}\))(?<=[법령칙규례략)])", "\n", t)     # '…법제2조(정의)'
+        t = re.sub(r"(?<=[가-힣)])(?=제\d{1,3}조(?:의\d+)?\([^)]{1,25}\))(?<=[법률령칙규례략)])", "\n", t)     # '…법제2조(정의)'
         t = re.sub(r"(?<=[가-힣)])\s*(?=[가나다라마바사아자차카타파하]\.\s*\(생)", "\n", t)                         # '…지역다. (생  략)'
         t = re.sub(r"(?<=[다.)])(?=\[별표\s*\d+(?:의\d+)?\])", "\n", t)
+        t = re.sub(r"(?<=[.다)])\s*(?=\d{1,2}\.\s*·\s*\d{1,2}\.)", "\n", t)                                   # '…같다.1.·2. (생  략)'
     t = re.sub(r"([∼~])\s*\n\s*(?=[①-⑳])", r"\1 ", t)                                         # '② ∼ ⑥' 범위 표기는 붙여 둔다
     return t
 
@@ -897,15 +953,20 @@ def _expc_split(t, quoted):
 def _expc_text(t):
     """법령해석례 글은 줄바꿈 없이 이어져 온다 — 이유 본문은 문장마다·각주는 따로 줄을 나누고, 끝에 붙어 오는 법령 인용(…법률제36조(…) 처럼 법령명+조 제목이 붙어 시작)은 번호·항목 앞에서만 나눈다"""
     t = str(t or "").strip()
-    m = re.search(r"[가-힣」]{1,}(?:법률|법|령|규칙|조례)제\d{1,3}조(?:의\d+)?\([^)]{1,30}\)", t)
+    m = re.search(r"[가-힣」][가-힣 」·]{0,40}?(?:법률|법|령|규칙|조례)(?: 시행령| 시행규칙)?제\d{1,3}조(?:의\d+)?\([^)]{1,30}\)", t)
     cut = None
     if m:
         pre = list(re.finditer(r"[다음임함요]\.", t[:m.start()]))
         cut = pre[-1].end() if pre else 0
         if cut < len(t) * 0.25 and pre:        # 본문이 너무 짧게 잘리면(우연히 맞은 경우) 나누지 않는다
             cut = None
+    names = set()
+    for n0 in re.findall(r"「([^」]{2,40})」", t):
+        n0 = n0.strip()
+        names.add(re.sub(r"\s*(시행령|시행규칙)$", "", n0))
+    names = sorted((x for x in names if len(x) >= 3 and x.endswith(("법", "법률", "령", "규칙", "조례"))), key=len, reverse=True)
     if cut:
-        t = _expc_split(t[:cut], False) + "\n" + _expc_split(t[cut:], True)
+        t = _expc_split(t[:cut], False) + "\n" + _expc_split(t[cut:], True, names)
     else:
         t = _expc_split(t, False)
     t = re.sub(r"<\s*관[계련]\s*법령\s*>", lambda m: "\n" + m.group(0) + "\n", t)

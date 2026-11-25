@@ -377,7 +377,8 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
   body.split #s1h{display:flex;position:sticky;top:0;z-index:5;align-items:center;gap:6px;padding:5px 2px;margin:0 -2px 4px;background:color-mix(in srgb,var(--surf) 94%,gray);border-bottom:1px solid var(--line);font-size:.85em;font-weight:700}
   body.split #s1h .lk{font-style:normal;color:#fff;border-radius:4px;padding:0 5px;font-size:.85em}
   body.split #s1h .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  body.split #s1h .sd{font-weight:400;color:var(--muted);font-size:.9em}
+  body.split #s1h .sd{font-weight:600;color:var(--acc-d);font-size:.9em;flex:0 1 auto;max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+  body.split #s1h .sd:empty{display:none}
   body.split #stk{display:none!important}
   #dz{display:none;position:fixed;z-index:70;pointer-events:none;gap:8px}
   #dz.on{display:flex}
@@ -870,7 +871,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.121";
+const VERSION = "10.122";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1036,7 +1037,9 @@ function paintS1h() {                                            // 나란히 �
   const el = $("#s1h"); if (!el) return;
   if (!SPLIT || !cur.doc) { el.innerHTML = ""; return; }
   el.innerHTML = splitBadge(cur.doc) + '<span class="nm" title="' + esc(cur.doc.name) + '">' + esc(cur.doc.name) + '</span><span class="sd">왼쪽 · 본문</span>';
+  setTimeout(() => { if (typeof paintS1cur === "function") paintS1cur(); }, 0);
 }
+$("#s1h").addEventListener("click", (e) => { const sd = e.target.closest(".sd"); if (sd && sd.dataset.k) goKey(sd.dataset.k); });
 const cur = { view: "home", doc: null };
 let SPLIT = null;                                                // 오른쪽에 나란히 보는 법령 {d, scroll}
 $("#bBack").onclick = () => {
@@ -1161,7 +1164,7 @@ function sumHTML(page) {                                         // 검색 결�
 }
 let wheelTs = 0, wheelMvTs = 0, wheelDir = 0, LTPEND = -1, LTPT = 0;
 function tabStep(dir) {                                          // 본문 탭을 하나 옆으로(검색 요약 탭 포함). 받는 중인 탭이 있으면 그 탭을 기준으로 센다
-  const items = (SUMTAB ? [{ s: 1 }] : []).concat(ltabs.map((t, i) => ({ i })), TTTABS.map((x, j) => ({ tt: j })));
+  const items = tabOrder().map((o) => o === SUMTAB ? { s: 1 } : TTTABS.includes(o) ? { tt: TTTABS.indexOf(o) } : { i: ltabs.indexOf(o) });
   if (items.length < 2) return;
   let k;
   if (LTPEND >= 0 && Date.now() - LTPT < 15000 && LTPEND < ltabs.length) k = items.findIndex((x) => x.i === LTPEND);
@@ -1523,7 +1526,7 @@ function aaPaint(cx, S) {
   const rows = S.rows.slice().reverse();                              // 최신 개정부터
   $("#cmpT").textContent = cx.name + " " + (a ? a.label + (a.title ? " " + a.title : "") : "") + " · 전체 개정";
   const ch = S.rows.filter((r) => r.st === "수정" || r.st === "삭제").length;
-  $("#cmpS").innerHTML = (S.done ? "시행본 " + S.total + "개를 모두 확인했습니다" : "시행본 " + S.pos + " / " + (S.total || "?") + " 확인 중… <button class='btn g' id='aaStop' style='padding:0 8px;min-height:0;font-size:.85em'>멈춤</button>") + " · 이 조문이 바뀐 개정 <b>" + ch + "번</b>" + (S.miss ? " · 못 받은 시행본 " + S.miss + "개" : "") + " <span class='muted'>(초록=새로 쓴 글, 빨강=지운 글)</span>";
+  $("#cmpS").innerHTML = (S.done ? "시행본 " + S.total + "개를 모두 확인했습니다" : "시행본 " + S.pos + " / " + (S.total || "?") + " 확인 중… <button class='btn g' id='aaStop' style='padding:0 8px;min-height:0;font-size:.85em'>멈춤</button>") + " · 이 조문이 바뀐 개정 <b>" + ch + "번</b>" + (S.mv ? " · 조 번호가 바뀐 것을 따라가며 확인했습니다" : "") + (S.miss ? " · 못 받은 시행본 " + S.miss + "개" : "") + " <span class='muted'>(초록=새로 쓴 글, 빨강=지운 글)</span>";
   const top = $("#cmpL").scrollTop;
   $("#cmpL").innerHTML = rows.map((r, i) => {
     const cl = r.st === "신설" || r.st === "최초" ? "n" : r.st === "삭제" ? "d" : "";
@@ -1537,15 +1540,15 @@ async function openArtAll(cx) {
   if (cx.kind !== "law" && cx.kind !== "adm" && cx.kind !== "ordin") return toast("조문 전체 개정 보기는 법령·행정규칙·조례만 됩니다", true);
   AH = null; CMPF = null; AALLCX = cx; $("#cmpNav").style.display = "none"; $("#cmpOpen").style.display = "none";
   const ck = cx.name + "|" + cx.key;
-  const S = AALL[ck] || (AALL[ck] = { rows: [], pos: 0, total: 0, prev: "", done: false, run: false, stop: false, miss: 0 });
+  const S = AALL[ck] || (AALL[ck] = { rows: [], pos: 0, total: 0, prev: "", ck: "", ct: "", done: false, run: false, stop: false, miss: 0 });
   aaPaint(cx, S); cmpShow();
   if (S.done || S.run) return;
   S.run = true; S.stop = false;
   try {
     while (!S.stop) {
-      const r = await callQuiet("art_all", [OC, cx.kind, cx.name, cx.key, S.pos, 6, S.prev]);
+      const r = await callQuiet("art_all", [OC, cx.kind, cx.name, cx.key, S.pos, 6, S.prev, S.ck, S.ct]);
       if (!r || r.err) { toast((r && r.err) || "개정 목록을 받지 못했습니다 — 연결을 확인하세요", true); break; }
-      S.total = r.total; S.prev = r.last; S.miss += r.miss || 0; S.rows.push(...r.rows);
+      S.total = r.total; S.prev = r.last; S.mv = (S.mv || 0) + (r.moved || 0); S.ck = r.ck || S.ck; S.ct = r.ct || S.ct; S.miss += r.miss || 0; S.rows.push(...r.rows);
       if (r.next == null) { S.pos = S.total; S.done = true; aaPaint(cx, S); break; }
       S.pos = r.next; aaPaint(cx, S);
     }
@@ -2017,8 +2020,14 @@ function savePos() {
   LS.set("lv_pos", POS);
 }
 let stkRaf = 0, stkKey = "";
+function paintS1cur() {                                         // 나란히 볼 때는 고정 막대 대신 왼쪽 칸 머리줄에 '지금 보는 조문'을 보여 준다
+  const sd = $("#s1h .sd"); if (!sd) return;
+  const k = cur.doc && SPLIT ? curKey() : "", a = k && cur.doc.arts[k];
+  sd.textContent = a ? a.label + " " + (a.title || "") : "왼쪽 · 본문"; sd.dataset.k = a ? k : ""; sd.title = a ? "눌러서 이 조문 맨 위로" : "";
+}
 function paintStk() {
   stkRaf = 0; const el = $("#stk"); if (!el) return;
+  if (SPLIT) paintS1cur();
   if (!cur.doc || !$("#doc").classList.contains("on") || $("#doc").scrollTop < 120) { el.style.display = "none"; stkKey = ""; return; }
   const k = curKey(), a = k && cur.doc.arts[k];
   if (!a) { el.style.display = "none"; return; }
@@ -2083,12 +2092,28 @@ const midCut = (t, n) => { t = String(t); return t.length <= n ? t : t.slice(0, 
 const tabShort = (nm) => { nm = String(nm); const m = /^(.*?)\s*(시행령|시행규칙)$/.exec(nm); const base = m ? m[1] : nm; return (TABABB[base] || base) + (m ? " " + m[2] : ""); };
 const tabKL = (d) => ({ "k-int": "해석", "k-adm": "행정", "k-ord": "자치", "k-rule": "칙", "k-dec": "령", "k-law": "법" })[tabCls(d)];
 const ltName = (n) => String(n).replace(/\s*시행령$/, "(령)").replace(/\s*시행규칙$/, "(칙)");
+let TORD = [];                                                    // 위쪽 탭의 보이는 순서(검색 요약·법령·3단 비교를 섞어서 — 끌어서 바꾼 순서)
+function tabOrder() {
+  const has = (o) => o === SUMTAB || ltabs.includes(o) || TTTABS.includes(o);
+  TORD = TORD.filter(has);
+  if (SUMTAB && !TORD.includes(SUMTAB)) TORD.unshift(SUMTAB);
+  ltabs.forEach((t) => { if (!TORD.includes(t)) { let k = -1; TORD.forEach((o, n) => { if (ltabs.includes(o)) k = n; }); if (k < 0) k = SUMTAB && TORD[0] === SUMTAB ? 0 : -1; TORD.splice(k + 1, 0, t); } });
+  TTTABS.forEach((x) => { if (!TORD.includes(x)) TORD.push(x); });
+  return TORD;
+}
+function applyTabOrder(ord) {                                     // 섞인 순서를 법령 탭·3단 탭 각자의 순서로 되돌려 놓는다(저장도 이 순서)
+  const cu = TTTABS[TTCUR]; TORD = ord.slice();
+  const a = ord.filter((o) => ltabs.includes(o)), b = ord.filter((o) => TTTABS.includes(o));
+  ltabs.splice(0, ltabs.length, ...a); TTTABS.splice(0, TTTABS.length, ...b);
+  if (cu) TTCUR = TTTABS.indexOf(cu);
+}
 function paintLTabs() {
   saveTabs();
   const bar = $("#ltabs");
   const tabH = (t, i) => '<div class="lt ' + tabCls(t.d) + (t.d.stub ? " lz" : "") + (t.d === cur.doc && !SUMACT && cur.view !== "tt" ? " on" : "") + '" data-i="' + i + '" title="' + esc(t.d.name) + '"><i class="lk">' + tabKL(t.d) + '</i><span>' + esc(t.d === cur.doc && !SUMACT && cur.view !== "tt" ? midCut(tabShort(t.d.name), 38) : midCut(tabShort(t.d.name), 17)) + '</span><b data-x="' + i + '">✕</b></div>';
-  const tabsH = ltabs.map(tabH).join("");
-  bar.innerHTML = (SUMTAB ? '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB.q) + '’ 검색 요약</span><b data-xs="1">✕</b></div>' : "") + tabsH + TTTABS.map((x, j) => '<div class="lt k-tt' + (cur.view === "tt" && j === TTCUR ? " on" : "") + '" data-tt="' + j + '" title="3단 비교 — ' + esc(x.base) + '"><i class="lk">3단</i><span>' + esc(x.base) + '</span><b data-xt="' + j + '">✕</b></div>').join("");
+  const ttH = (x, j) => '<div class="lt k-tt' + (cur.view === "tt" && j === TTCUR ? " on" : "") + '" data-tt="' + j + '" title="3단 비교 — ' + esc(x.base) + '"><i class="lk">3단</i><span>' + esc(x.base) + '</span><b data-xt="' + j + '">✕</b></div>';
+  const smH = '<div class="lt sm' + (SUMACT ? " on" : "") + '" data-s="1" title="검색 요약"><span>🔎 ‘' + esc(SUMTAB ? SUMTAB.q : "") + '’ 검색 요약</span><b data-xs="1">✕</b></div>';
+  bar.innerHTML = tabOrder().map((o) => o === SUMTAB ? smH : TTTABS.includes(o) ? ttH(o, TTTABS.indexOf(o)) : tabH(o, ltabs.indexOf(o))).join("");
   const arrows = () => { const L = $("#ltL"), R = $("#ltR"); if (!L) return; const r = bar.getBoundingClientRect(), ov = bar.scrollWidth > bar.clientWidth + 2;
     L.style.left = r.left + "px"; R.style.left = r.right - 24 + "px"; L.classList.toggle("on", ov && bar.scrollLeft > 2); R.classList.toggle("on", ov && bar.scrollLeft < bar.scrollWidth - bar.clientWidth - 2); };
   bar.__arr = arrows; setTimeout(arrows, 0);
@@ -2277,6 +2302,8 @@ $("#docBody").addEventListener("mouseout", (e) => { if (e.target.closest && e.ta
 // ---- 끌어다 놓기: 위쪽 탭·왼쪽 목록(검색결과·즐겨찾기·최근)을 본문 위로 끌어 왼쪽(본문) 또는 오른쪽(나란히)에 연다
 function dragRef(el) {
   let x = el.closest("#ltabs .lt[data-i]"); if (x) { const t = ltabs[+x.dataset.i]; return t ? { tab: +x.dataset.i, name: t.d.name } : null; }
+  x = el.closest("#ltabs .lt[data-tt]"); if (x) { const t = TTTABS[+x.dataset.tt]; return t ? { noDrop: true, name: "3단 비교 — " + t.base } : null; }
+  x = el.closest("#ltabs .lt[data-s]"); if (x) return { noDrop: true, name: "검색 요약" };
   x = el.closest("#list .card.rc"); if (x) { const r = RECENT[+x.dataset.r]; return r ? { kind: r.k, rawmst: r.m, name: r.n, date: r.d || "" } : null; }
   x = el.closest("#list .card[data-ci]"); if (x) { const f = favs[+x.dataset.ci]; return f ? { kind: f.kind, rawmst: f.rawmst, name: f.lawname, date: f.date || "", key: f.key || "" } : null; }
   x = el.closest("#list .card[data-i], #list .hr[data-i]"); if (x && tab === "r") { const h = hits[+x.dataset.i]; return h ? { kind: h.kind, rawmst: h.rawmst, name: h.lawname, date: h.date || "", key: h.key || "", mst: h.mst } : null; }
@@ -2322,17 +2349,17 @@ async function dropRef(ref, side) {
       dg.on = true; document.body.style.userSelect = "none"; try { getSelection().removeAllRanges(); } catch (er) {}
       document.querySelectorAll(".dragghost").forEach((x) => x.remove());
       const g = document.createElement("div"); g.className = "dragghost"; g.textContent = dg.ref.name; if (dg.el && dg.el.classList.contains("lt")) { g.classList.add("tg"); dg.el.classList.add("drg"); } document.body.appendChild(g); dg.g = g;
-      const r = dzRects(), z = $("#dz"); z.style.left = r.left + 8 + "px"; z.style.width = r.right - r.left - 16 + "px"; z.style.top = r.top + 8 + "px"; z.style.height = r.bottom - r.top - 16 + "px"; z.classList.add("on");
+      const r = dzRects(), z = $("#dz"); z.style.left = r.left + 8 + "px"; z.style.width = r.right - r.left - 16 + "px"; z.style.top = r.top + 8 + "px"; z.style.height = r.bottom - r.top - 16 + "px"; if (!dg.ref.noDrop) z.classList.add("on");
       dg.r = r;
     }
     dg.g.style.left = e.clientX + 12 + "px"; dg.g.style.top = e.clientY + 10 + "px";
     dg.px = e.clientX;
     const bar = $("#ltabs"), bR = bar.getBoundingClientRect();
-    dg.inBar = !!(dg.el && dg.el.classList.contains("lt") && dg.el.dataset.i !== undefined && e.clientY >= bR.top - 4 && e.clientY <= bR.bottom + 8 && e.clientX >= bR.left && e.clientX <= bR.right);
+    dg.inBar = !!(dg.el && dg.el.classList.contains("lt") && e.clientY >= bR.top - 4 && e.clientY <= bR.bottom + 8 && e.clientX >= bR.left && e.clientX <= bR.right);
     dg.gap = -1; const ins = $("#ltIns"); ins.style.display = "none";
-    $("#dz").classList.toggle("on", !dg.inBar);
+    $("#dz").classList.toggle("on", !dg.inBar && !dg.ref.noDrop);
     if (dg.inBar) {                                                  // 탭 줄 위에서 놓으면 순서 바꾸기(왼쪽·오른쪽 칸 열기 아님)
-      const tabs = [...bar.querySelectorAll(".lt[data-i]")], from = +dg.el.dataset.i;             // 탭 사이사이(틈) 중 포인터에 가장 가까운 곳
+      const tabs = [...bar.querySelectorAll(".lt")], from = tabs.indexOf(dg.el);             // 탭 사이사이(틈) 중 포인터에 가장 가까운 곳
       if (tabs.length) {
         const gx = [tabs[0].getBoundingClientRect().left].concat(tabs.map((x) => x.getBoundingClientRect().right));
         let g = 0, bd = 1e9; gx.forEach((x, k) => { const d = Math.abs(x - e.clientX); if (d < bd) { bd = d; g = k; } });
@@ -2343,6 +2370,7 @@ async function dropRef(ref, side) {
       if (!tmr) tmr = setInterval(() => { if (!dg || !dg.inBar) return; const b2 = $("#ltabs").getBoundingClientRect(); if (dg.px < b2.left + 60) $("#ltabs").scrollLeft -= 14; else if (dg.px > b2.right - 60) $("#ltabs").scrollLeft += 14; }, 30);
       dg.side = ""; $("#dz").querySelectorAll("div").forEach((d) => d.classList.remove("ov")); return;
     }
+    if (dg.ref.noDrop) { dg.side = ""; return; }
     const r = dg.r, inY = e.clientY >= r.top && e.clientY <= r.bottom;
     dg.side = inY && e.clientX >= r.left && e.clientX < r.mid ? "L" : inY && e.clientX >= r.mid && e.clientX <= r.right ? "R" : "";
     $("#dz").querySelectorAll("div").forEach((d) => d.classList.toggle("ov", d.dataset.z === dg.side));
@@ -2356,7 +2384,7 @@ async function dropRef(ref, side) {
     if (!was.on) return;
     if (was.el) { was.el.__dragged = Date.now(); }
     if (was.inBar) {                                                  // 탭 순서 바꾸기
-      if (was.gap >= 0) { const from = +was.el.dataset.i, g = was.gap, k = g > from ? g - 1 : g; if (k !== from) { const [t] = ltabs.splice(from, 1); ltabs.splice(k, 0, t); paintLTabs(); } }
+      if (was.gap >= 0) { const els = [...$("#ltabs").querySelectorAll(".lt")], from = els.indexOf(was.el), g = was.gap, k = g > from ? g - 1 : g, ord = tabOrder().slice(); if (from >= 0 && k !== from) { const [t] = ord.splice(from, 1); ord.splice(k, 0, t); applyTabOrder(ord); paintLTabs(); } }
       return;
     }
     if (was.side) dropRef(was.ref, was.side);
