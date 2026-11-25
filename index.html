@@ -276,6 +276,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 .sp-more{display:block;width:100%;padding:7px;border:0;border-top:1px solid var(--line);background:var(--soft);color:var(--acc-d);font:inherit;font-size:.86em;font-weight:700;cursor:pointer}
 .lgt.cat button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 .lgt{display:flex;gap:6px;margin:6px 0 0}.lgt button{flex:1;padding:5px;border:1px solid var(--line);border-radius:6px;background:var(--surf);color:var(--sub);font-size:.8em;font-weight:600}
+.lgt.tier{flex-wrap:wrap;gap:5px}.lgt.tier button{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;white-space:nowrap;line-height:1.5}.lgt.tier button i{font-style:normal;font-weight:500;opacity:.65;font-size:.92em;font-variant-numeric:tabular-nums}.lgt.tier button.on i{opacity:.85}
 .nsub{margin:8px 2px 2px;font-size:.8em;font-weight:700;color:var(--sub);line-height:1.3}.nr{display:flex;gap:6px;align-items:flex-start;padding:5px 6px;border-radius:6px;cursor:pointer}.nr:hover{background:var(--acc-soft)}.nr .nrt{flex:1;min-width:0;font-size:.88em;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere}.nr .sm{flex:none;min-width:24px;height:24px;font-size:.8em;padding:0}
 .nfil select{flex:1 1 40%}.nfil .btn{flex:1 1 100%}
 .nfil select{flex:1;min-width:0;border:1px solid var(--line);border-radius:6px;padding:4px;font:inherit;font-size:.85em;background:var(--surf);color:var(--text)}
@@ -869,7 +870,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.120";
+const VERSION = "10.121";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1675,7 +1676,7 @@ function tierBar(lawOnly) {
   const ks = ["law", "dec", "rule", "adm", "ordin", "soon"].filter((k) => cnt[k]);
   if (hitTier && !cnt[hitTier]) hitTier = "";
   if (ks.length < 2 && !cnt.soon) return "";
-  return '<div class="lgt cat tier"><button data-tier=""' + (hitTier === "" ? ' class="on"' : "") + ">전체</button>" + ks.map((k) => '<button data-tier="' + k + '"' + (hitTier === k ? ' class="on"' : "") + ">" + TIERN[k] + " " + cnt[k] + "</button>").join("") + "</div>";
+  return '<div class="lgt cat tier"><button data-tier=""' + (hitTier === "" ? ' class="on"' : "") + ">전체</button>" + ks.map((k) => '<button data-tier="' + k + '"' + (hitTier === k ? ' class="on"' : "") + ">" + TIERN[k] + "<i>" + cnt[k] + "</i></button>").join("") + "</div>";
 }
 // ---- 3단 비교에 '조례' 열(이 조문 제목으로 기본 자치단체 조례에서 관련 조문)
 let TTORD = LS.get("lv_ttord", false);
