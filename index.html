@@ -749,7 +749,9 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
     <select id="bws"><option value="">꽉 채움</option><option value="1100">넓게</option><option value="900">보통 (기본)</option><option value="720">좁게</option></select>
   </section>
   <details class="sg"><summary><h4>동기화 (즐겨찾기·표시)</h4></summary>
-    <div class="hint" style="margin-top:0">PC와 폰에서 같은 인증키끼리 즐겨찾기와 표시를 맞춥니다. 비우면 끕니다.</div>
+    <label style="display:flex;gap:8px;align-items:flex-start;margin-top:0;font-weight:600"><input type="checkbox" id="autoSy" style="margin-top:3px"><span>승인 서버로 자동 동기화 (기본 켜짐)</span></label>
+    <div class="hint" style="margin-top:4px">같은 인증키를 넣은 PC·폰끼리 즐겨찾기·형광펜·메모가 저절로 맞춰집니다. 아래 공유 주소는 비워 두세요. 내용은 접속 승인 서버(관리자의 구글 계정)에 저장되며 관리자가 볼 수 있으니, 발주처 비공개 내용은 메모에 적지 마세요. 끄면 이 기기에서는 올리지 않습니다.</div>
+    <div class="hint" style="margin-top:8px">따로 쓰려면 직접 만든 공유 주소(앱스크립트 웹앱 URL) 또는 GitHub 저장소를 입력합니다. 주소를 넣으면 그쪽이 우선합니다.</div>
     <input id="syRepo" placeholder="공유 주소(앱스크립트 웹앱 URL) 또는 GitHub 저장소" autocapitalize="off" autocomplete="off" style="margin-top:6px">
     <input id="syTok" type="password" placeholder="GitHub 토큰 (웹앱 주소를 쓰면 비움)" autocapitalize="off" autocomplete="off" style="margin-top:6px">
     <div class="hint">토큰은 이 기기에만 저장됩니다. 저장소가 공개면 즐겨찾기 목록도 공개되니 비공개를 권합니다.</div>
@@ -871,7 +873,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.122";
+const VERSION = "10.123";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -1001,14 +1003,15 @@ document.querySelectorAll("#presets button").forEach((b) => (b.onclick = () => {
   $("#theme").value = p[0]; $("#fsz").value = p[1] || FSD(); $("#lhs").value = p[2]; $("#bws").value = p[3];
   applyPrefs(); toast(b.textContent + " 모드로 바꿨습니다");
 }));
-$("#bSet").onclick = () => { $("#oc").value = OC; $("#syRepo").value = LS.get("lv_syrepo", ""); $("#syTok").value = LS.get("lv_sytok", ""); $("#theme").value = LS.get("lv_theme", ""); $("#fsz").value = LS.get(FSK(), FSD()); $("#lhs").value = LS.get("lv_lh", ""); $("#bws").value = LS.get("lv_bw", ""); $("#ffs").value = LS.get("lv_ff", ""); $("#city").value = LS.get("lv_city", "고양시"); $("#ver").textContent = "법령 뷰어 모바일 v" + VERSION + " · 법제처 국가법령정보센터 Open API"; $("#ovSet").classList.add("on"); };
-$("#syNow").onclick = () => { LS.set("lv_syrepo", $("#syRepo").value.trim()); LS.set("lv_sytok", $("#syTok").value.trim()); OC = $("#oc").value.trim() || OC; syncNow(true).then(() => syncNotes(true)); };
+$("#bSet").onclick = () => { $("#oc").value = OC; $("#syRepo").value = LS.get("lv_syrepo", ""); $("#syTok").value = LS.get("lv_sytok", ""); $("#autoSy").checked = LS.get("lv_autosy", 1) !== 0; $("#theme").value = LS.get("lv_theme", ""); $("#fsz").value = LS.get(FSK(), FSD()); $("#lhs").value = LS.get("lv_lh", ""); $("#bws").value = LS.get("lv_bw", ""); $("#ffs").value = LS.get("lv_ff", ""); $("#city").value = LS.get("lv_city", "고양시"); $("#ver").textContent = "법령 뷰어 모바일 v" + VERSION + " · 법제처 국가법령정보센터 Open API"; $("#ovSet").classList.add("on"); };
+$("#syNow").onclick = () => { LS.set("lv_syrepo", $("#syRepo").value.trim()); LS.set("lv_sytok", $("#syTok").value.trim()); LS.set("lv_autosy", $("#autoSy").checked ? 1 : 0); OC = $("#oc").value.trim() || OC; syncNow(true).then(() => syncNotes(true)); };
 $("#setNo").onclick = () => $("#ovSet").classList.remove("on");
 $("#setOk").onclick = () => {
   OC = $("#oc").value.trim(); LS.set("lv_oc", OC);
   const sr = $("#syRepo").value.trim(), st = $("#syTok").value.trim(), had = LS.get("lv_syrepo", "") + LS.get("lv_sytok", "");
+  const ao = LS.get("lv_autosy", 1); LS.set("lv_autosy", $("#autoSy").checked ? 1 : 0);
   LS.set("lv_syrepo", sr); LS.set("lv_sytok", st);
-  if (sr && (st || isScript(sr)) && sr + st !== had) setTimeout(() => syncNow(true).then(() => syncNotes(true)), 300);
+  if (((sr && (st || isScript(sr)) && sr + st !== had) || (!sr && $("#autoSy").checked && !ao)) && OC) setTimeout(() => syncNow(true).then(() => syncNotes(true)), 300);
   LS.set("lv_theme", $("#theme").value); LS.set(FSK(), parseInt($("#fsz").value, 10)); LS.set("lv_lh", $("#lhs").value); LS.set("lv_bw", $("#bws").value); LS.set("lv_ff", $("#ffs").value); LS.set("lv_city", $("#city").value.trim() || "고양시");
   applyPrefs(); $("#ovSet").classList.remove("on"); toast("저장했습니다");
 };
@@ -1295,22 +1298,63 @@ async function ghReq(method, url, tok, body) {
   return r.json();
 }
 let syncing = false, syT = null;
-const isScript = (r) => /^https?:/i.test(r || "");
-function syncSoon() { clearTimeout(syT); const r = LS.get("lv_syrepo", ""); if (r && (LS.get("lv_sytok", "") || isScript(r))) syT = setTimeout(() => syncNow(false), 1500); }
+const isScript = (r) => /^(https?:|acc:)/i.test(r || "");
+// 공유 주소를 비워 두면 '접속 승인 서버'로 자동 동기화(승인된 기기만 · 같은 인증키끼리). 설정에서 끌 수 있음
+const SYR = () => LS.get("lv_syrepo", "") || (LS.get("lv_autosy", 1) !== 0 && window.LV_ACC ? "acc:" : "");
+const accJp = (q) => new Promise((ok, bad) => window.LV_ACC.jp({ ...q, id: window.LV_ACC.id, k: window.LV_ACC.adm() }, ok, () => bad(new Error("승인 서버에 연결하지 못했습니다"))));
+const accErr = (c) => new Error(c === "auth" ? "이 기기가 아직 승인되지 않았습니다" : c === "arg" ? "승인 서버를 새 버전(access_server.gs)으로 다시 배포해야 합니다" : "승인 서버 오류(" + c + ")");
+async function accHash(name) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(name + ":" + OC));
+  return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("");
+}
+async function zpack(s) {                                      // 글자를 gzip→base64url로 줄여 조각 수를 아낀다(안 되는 브라우저는 그대로)
+  if (typeof CompressionStream === "undefined") return "r" + s;
+  const u = new Uint8Array(await new Response(new Blob([s]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
+  let b = ""; for (let i = 0; i < u.length; i += 8192) b += String.fromCharCode.apply(null, u.subarray(i, i + 8192));
+  return "z" + btoa(b).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+async function zunpack(t) {
+  if (t[0] === "r") return t.slice(1);
+  if (t[0] !== "z" || typeof DecompressionStream === "undefined") throw new Error("저장된 형식을 읽지 못했습니다");
+  const b = atob(t.slice(1).replace(/-/g, "+").replace(/_/g, "/")), u = Uint8Array.from(b, (c) => c.charCodeAt(0));
+  return new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
+}
+async function accGetObj(h) {
+  for (let t = 0; t < 3; t++) {
+    const m = await accJp({ a: "fm", h }); if (m.e) throw accErr(m.e);
+    if (!m.n) return null;
+    let acc = "", stale = false;
+    for (let i = 0; i < m.n; i++) { const d = await accJp({ a: "fg", h, w: m.w, i }); if (d.e === "stale") { stale = true; break; } if (d.e || d.d == null) throw accErr(d.e || "read"); acc += d.d; }
+    if (stale) continue;
+    try { return JSON.parse(await zunpack(acc)); } catch (e) { throw new Error("승인 서버의 저장 내용을 읽지 못했습니다"); }
+  }
+  throw new Error("승인 서버가 바쁩니다 — 잠시 뒤 다시 시도하세요");
+}
+async function accPutObj(h, obj) {
+  const txt = await zpack(JSON.stringify(obj)), parts = [];
+  if (txt[0] === "z") for (let i = 0; i < txt.length; i += 1400) parts.push(txt.slice(i, i + 1400));
+  else { let cur = ""; for (const ch of txt) { if (encodeURIComponent(cur + ch).length > 1400) { parts.push(cur); cur = ""; } cur += ch; } parts.push(cur); }
+  if (parts.length > 58) throw new Error("저장할 내용이 너무 커서 승인 서버에 올리지 못했습니다");
+  const w = Math.random().toString(36).slice(2, 10);
+  for (let i = 0; i < parts.length; i++) { const d = await accJp({ a: "fp", h, w, i, n: parts.length, d: parts[i] }); if (d.e) throw accErr(d.e); }
+}
+function syncSoon() { clearTimeout(syT); const r = SYR(); if (r && (LS.get("lv_sytok", "") || isScript(r))) syT = setTimeout(() => syncNow(false), 1500); }
 async function syKey() { return (await syPath()).slice(5, 17); }
 async function scriptGet(url) {
+  if (url === "acc:") { const d = await accGetObj(await accHash("lawviewer-fav")); return d && d.ts != null ? d : null; }
   const r = await fetch(url + (url.includes("?") ? "&" : "?") + "k=" + (await syKey()));
   let d; try { d = await r.json(); } catch (e) { throw new Error("공유 서버가 이상한 답을 줬습니다(웹앱 주소·'모든 사용자' 배포 확인)"); }
   return d && d.ts != null ? d : null;
 }
 async function scriptPut(url, data) {
+  if (url === "acc:") return accPutObj(await accHash("lawviewer-fav"), data);
   const r = await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ k: await syKey(), data }) });
   const d = await r.json().catch(() => ({}));
   if (!d.ok) throw new Error("공유 서버가 저장을 거절했습니다");
 }
 async function syncNow(manual) {
-  const repo = LS.get("lv_syrepo", ""), tok = LS.get("lv_sytok", "");
-  if (!repo || (!tok && !isScript(repo)) || !OC) { if (manual) toast("설정에서 저장소와 토큰을 넣어 주세요", true); return; }
+  const repo = SYR(), tok = LS.get("lv_sytok", "");
+  if (!repo || (!tok && !isScript(repo)) || !OC) { if (manual) toast(OC ? "설정에서 저장소와 토큰을 넣어 주세요" : "설정에서 인증키(OC)를 먼저 넣어 주세요", true); return; }
   if (syncing) return; syncing = true;
   try {
     const sc = isScript(repo);
@@ -1351,9 +1395,9 @@ function mergeNotes(local, ldel, rn, rdel) {
 }
 const nSig = (notes, del) => notes.map((n) => n.id + ":" + (n.ts || 0)).sort().join(",") + "|" + Object.keys(del).sort().join(",");
 let nSyncing = false, nSyT = null;
-function syncNotesSoon() { clearTimeout(nSyT); const r = LS.get("lv_syrepo", ""); if (r && (LS.get("lv_sytok", "") || isScript(r))) nSyT = setTimeout(() => syncNotes(false), 2000); }
+function syncNotesSoon() { clearTimeout(nSyT); const r = SYR(); if (r && (LS.get("lv_sytok", "") || isScript(r))) nSyT = setTimeout(() => syncNotes(false), 2000); }
 async function syncNotes(manual) {
-  const repo = LS.get("lv_syrepo", ""), tok = LS.get("lv_sytok", "");
+  const repo = SYR(), tok = LS.get("lv_sytok", "");
   if (!repo || (!tok && !isScript(repo)) || !OC || nSyncing) return;
   nSyncing = true;
   try {
@@ -1361,14 +1405,16 @@ async function syncNotes(manual) {
     const url = sc ? repo : GHAPI + "/repos/" + repo + "/contents/favs/" + k + ".json";
     for (let t = 0; t < 3; t++) {
       let j = null, data = null;
-      if (sc) { const r = await fetch(url + (url.includes("?") ? "&" : "?") + "k=" + k); try { data = await r.json(); } catch (e) { throw new Error("공유 서버가 이상한 답을 줬습니다"); } if (!data || data.ts == null) data = null; }
+      if (sc && url === "acc:") { data = await accGetObj(await accHash("lawviewer-notes")); if (!data || data.ts == null) data = null; }
+      else if (sc) { const r = await fetch(url + (url.includes("?") ? "&" : "?") + "k=" + k); try { data = await r.json(); } catch (e) { throw new Error("공유 서버가 이상한 답을 줬습니다"); } if (!data || data.ts == null) data = null; }
       else { j = await ghReq("GET", url, tok); if (j) { try { data = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\n/g, "")), (c) => c.charCodeAt(0)))); } catch (e) { throw new Error("저장소의 표시 파일을 읽지 못했습니다"); } } }
       const m = mergeNotes(NOTES, NDEL, data && data.notes, data && data.del);
       const same = data && nSig(m.notes, m.del) === nSig(data.notes || [], data.del || {});
       if (!same && (m.notes.length || Object.keys(m.del).length)) {
         const obj = { ts: Date.now(), notes: m.notes, del: m.del };
         try {
-          if (sc) { const r = await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ k, data: obj }) }); const d = await r.json().catch(() => ({})); if (!d.ok) throw new Error("공유 서버가 저장을 거절했습니다"); }
+          if (sc && url === "acc:") await accPutObj(await accHash("lawviewer-notes"), obj);
+          else if (sc) { const r = await fetch(url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ k, data: obj }) }); const d = await r.json().catch(() => ({})); if (!d.ok) throw new Error("공유 서버가 저장을 거절했습니다"); }
           else await ghReq("PUT", url, tok, { message: "notes", content: btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(obj)))), ...(j ? { sha: j.sha } : {}) });
         } catch (e) { if (t < 2 && !sc) continue; throw e; }
       }
@@ -3697,6 +3743,7 @@ if (lastVisitPrev) setTimeout(() => toast(lvText), 1800);
     const s = []; for (const k in q) s.push(k + "=" + encodeURIComponent(q[k])); s.push("cb=" + n);
     sc.src = URL0 + "?" + s.join("&"); document.head.appendChild(sc);
   }
+  window.LV_ACC = { jp, id: ID, adm: () => lg("accAdm") || "" };      // 즐겨찾기·표시 동기화가 같은 승인 서버를 쓰도록 내어 줌
   let gate = null, poll = 0, tmr = 0, lastP = -1, flt = "all", appF = "law", cf = null, lastRc = 0;
   const isLaw = (x) => String(x.o || "").indexOf("[법령]") === 0, orgOf = (x) => String(x.o || "").replace(/^\[법령\]\s*/, "");
   const g = (i) => document.getElementById(i);
