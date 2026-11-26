@@ -627,9 +627,9 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 @media (min-width:1000px){
   #ltabs .lt:not(.on){opacity:.78;box-shadow:inset 0 2px 0 var(--tc);font-weight:400}
   #ltabs .lt:not(.on):hover{opacity:1}
-  #ltabs .lt.on,#ltabs .lt.sm.on{opacity:1;margin-top:2px;height:calc(100% - 2px);max-width:340px;background:color-mix(in srgb,var(--tc) 13%,var(--surf));color:var(--text);font-weight:800;border-width:2px 2px 0;box-shadow:inset 0 5px 0 var(--tc),0 3px 0 var(--surf)}
+  #ltabs .lt.on,#ltabs .lt.sm.on{opacity:1;margin-top:2px;height:calc(100% - 2px);max-width:none;background:color-mix(in srgb,var(--tc) 13%,var(--surf));color:var(--text);font-weight:800;border-width:2px 2px 0;box-shadow:inset 0 5px 0 var(--tc),0 3px 0 var(--surf)}
   #ltabs .lt.on,#ltabs .lt.sm.on{flex:none}
-  #ltabs .lt.on span,#ltabs .lt.sm.on span{max-width:none;overflow:visible}
+  #ltabs .lt.on span,#ltabs .lt.sm.on span{max-width:48em;overflow:hidden;text-overflow:ellipsis}
   #ltabs .lt.on i.lk{background:var(--tc);color:#fff;border-color:var(--tc)}
 }
 .pane .ocity,[id^=pane] .ocity{display:flex;gap:6px;align-items:center;margin:2px 0 8px}
@@ -873,7 +873,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.123";
+const VERSION = "10.124";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
