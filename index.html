@@ -490,6 +490,7 @@ mark.fm{background:var(--hl);color:inherit;border-radius:2px}mark.fc{background:
 #accSec summary{cursor:pointer;padding:8px 0;font-weight:700}#accList{display:flex;flex-direction:column;gap:6px}#accBadge{background:#e53935;color:#fff;border-radius:9px;padding:0 6px;font-size:.8em;margin-left:4px}
 .accRow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px}.accRow.sp{border-color:var(--acc);background:var(--acc-soft)}.accRow .who{flex:1;min-width:0;display:flex;flex-direction:column}.accRow .who b{font-size:.9em}.accRow .who small{font-size:.78em;color:var(--muted)}.accMe{font-style:normal;font-size:.75em;color:var(--acc)}
 .accRow .bt{display:flex;gap:4px}.accRow .bt button,.accF button{height:30px;padding:0 9px;border:1px solid var(--line);border-radius:8px;background:var(--surf);color:var(--text);font-weight:600;font-size:.8em}.accRow .bt button[data-a=ok],.accF button.on{background:var(--acc);color:var(--acc-t);border-color:var(--acc)}
+.accG{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:12px 0 2px;padding:0 2px 3px;border-bottom:1px solid var(--line)}.accG b{font-size:.95em}.accG small{color:var(--sub);flex:1;min-width:0}.accG .gb{display:flex;gap:4px}.accG .gb button{height:26px;padding:0 8px;border:1px solid var(--line);border-radius:8px;background:var(--surf);color:var(--text);font-size:.76em;font-weight:600}.accDl{display:flex;align-items:center;gap:8px;font-size:.9em;color:var(--sub)}.accDl select{flex:1;font:inherit;padding:9px;border:1px solid var(--line);border-radius:10px;background:var(--surf);color:var(--text)}.accDt{font-style:normal;font-size:.8em;font-weight:700;padding:1px 8px;border-radius:999px;background:var(--acc-soft);color:var(--acc-d);margin-right:6px}.accDt.nn{background:var(--soft);color:var(--sub);font-weight:500}.accRow.old{opacity:.6}.accRow{margin-left:8px}
 .accF{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}.accCf{flex-basis:100%;margin-top:6px;padding:8px 10px;border:1px solid #e5484d;border-radius:10px;font-size:.85em;line-height:1.5}.accCf div{display:flex;gap:6px;margin-top:6px}.accCf .btn{min-height:34px;padding:0 12px}
 #bSet.accDot{position:relative}#bSet.accDot::after{content:"";position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:#e53935;box-shadow:0 0 0 2px var(--acc)}
 #ovCmp .modal{display:flex;flex-direction:column;padding:14px}.cmpr{border:1px solid var(--line);border-radius:10px;padding:6px 10px;margin:0 0 8px;background:var(--acc-soft)}.cmpr summary{cursor:pointer;font-weight:700;font-size:.84em;color:var(--acc-d)}.cmpr .rt{font-size:.84em;line-height:1.65;margin-top:5px;white-space:normal;max-height:34vh;overflow:auto}
@@ -873,7 +874,7 @@ b.al,.ln.l0>b:first-child{font-weight:800;font-size:1.1em;letter-spacing:-.01em}
 <div id="toast"></div>
 
 <script>
-const VERSION = "10.124";
+const VERSION = "10.125";
 const $ = (s) => document.querySelector(s);
 const LS = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -3750,10 +3751,14 @@ if (lastVisitPrev) setTimeout(() => toast(lvText), 1800);
   const adm = () => lg("accAdm") || "";
   function unlock() { if (gate) { gate.remove(); gate = null; } clearInterval(poll); poll = 0; }
   function msg(t) { const e = g("accMsg"); if (e) e.textContent = t; }
+  const DEVS = [["핸드폰", "핸드폰"], ["태블릿", "태블릿"], ["노트북", "노트북"], ["PC", "PC (데스크톱)"], ["기타", "기타"]];
+  const guessDev = () => { const u = navigator.userAgent || ""; return /iPad|Tablet|SM-T|Nexus 7|Android(?!.*Mobile)/i.test(u) || (/Macintosh/.test(u) && navigator.maxTouchPoints > 1) ? "태블릿" : /Mobi|iPhone|Android/i.test(u) ? "핸드폰" : "노트북"; };
+  const splitN = (x) => { const m = String(x.n || "").match(/^(.*?)\s*·\s*(핸드폰|태블릿|노트북|PC|기타)$/); return m ? { nm: m[1], dt: m[2] } : { nm: String(x.n || ""), dt: "" }; };
   function showGate(m) {
     if (gate) return; gate = document.createElement("div"); gate.id = "accGate"; let w = null; try { w = JSON.parse(lg("accWhoLaw") || "null"); } catch (e) {}
-    gate.innerHTML = '<div class="box"><h2>법령 뷰어</h2><p class="sub">사용하려면 관리자의 승인이 필요합니다.<br>소속과 이름을 적고 승인을 요청해 주세요.<br>승인이 되지 않으면 관리자(이재욱)에게 문의해 주세요.</p>' +
-      '<input id="accO" maxlength="22" placeholder="소속 (예: 선진엔지니어링)" autocomplete="organization" value="' + esc(w && w.o) + '"><input id="accN" maxlength="30" placeholder="이름" autocomplete="name" value="' + esc(w && w.n) + '">' +
+    gate.innerHTML = '<div class="box"><h2>법령 뷰어</h2><p class="sub">사용하려면 관리자의 승인이 필요합니다.<br>소속·이름·기기 구분을 적고 승인을 요청해 주세요. 여러 기기를 쓰면 기기마다 따로 요청해 주세요.<br>승인이 되지 않으면 관리자(이재욱)에게 문의해 주세요.</p>' +
+      '<input id="accO" maxlength="22" placeholder="소속 (예: 선진엔지니어링)" autocomplete="organization" value="' + esc(w && w.o) + '"><input id="accN" maxlength="20" placeholder="이름" autocomplete="name" value="' + esc(w && w.n) + '">' +
+      '<label class="accDl">지금 쓰는 기기 <select id="accD">' + DEVS.map((d) => '<option value="' + d[0] + '"' + (d[0] === ((w && w.d) || guessDev()) ? " selected" : "") + ">" + d[1] + "</option>").join("") + "</select></label>" +
       '<button class="btn" id="accGo" type="button">승인 요청</button><div id="accMsg" class="sub" role="status">' + esc(m || "") + '</div>' +
       '<details id="accAd"><summary>관리자</summary><input id="accK" type="password" placeholder="관리자 키" autocomplete="off"><button class="btn g" id="accKo" type="button">관리자로 열기</button></details></div>';
     document.body.appendChild(gate);
@@ -3762,9 +3767,9 @@ if (lastVisitPrev) setTimeout(() => toast(lvText), 1800);
     if (w && w.s === "p") wait();
   }
   function request() {
-    const o = g("accO").value.trim(), n = g("accN").value.trim(); if (!o || !n) return msg("소속과 이름을 모두 적어 주세요");
+    const o = g("accO").value.trim(), n = g("accN").value.trim(), dv = g("accD").value; if (!o || !n) return msg("소속과 이름을 모두 적어 주세요");
     g("accGo").disabled = true; msg("요청을 보내는 중…");
-    jp({ a: "req", id: ID, o: "[법령] " + o, n }, (d) => { g("accGo").disabled = false; if (d.e) return msg(d.e === "full" ? "요청이 가득 찼습니다. 관리자에게 문의하세요" : "요청하지 못했습니다"); ls("accWhoLaw", JSON.stringify({ o, n, s: d.s })); res(d.s); },
+    jp({ a: "req", id: ID, o: "[법령] " + o, n: n + " · " + dv }, (d) => { g("accGo").disabled = false; if (d.e) return msg(d.e === "full" ? "요청이 가득 찼습니다. 관리자에게 문의하세요" : "요청하지 못했습니다"); ls("accWhoLaw", JSON.stringify({ o, n, d: dv, s: d.s })); res(d.s); },
       (why) => { g("accGo").disabled = false; msg("서버에 연결하지 못했습니다. " + (why === "err" ? "이 컴퓨터의 인터넷·보안 프로그램(방화벽·광고 차단)이 script.google.com 을 막았을 수 있습니다. 다른 인터넷(휴대폰 핫스팟)이나 휴대폰으로 시도해 보세요." : "응답이 너무 늦습니다. 인터넷 상태를 확인하고 잠시 뒤 다시 눌러 주세요.")); });
   }
   function res(s) {
@@ -3783,6 +3788,7 @@ if (lastVisitPrev) setTimeout(() => toast(lvText), 1800);
   const ago = (t) => { if (!t) return ""; const m = Math.floor((Date.now() - t) / 6e4); return m < 5 ? "방금" : m < 60 ? m + "분 전" : m < 1440 ? Math.floor(m / 60) + "시간 전" : Math.floor(m / 1440) + "일 전"; };
   const when = (t) => { const d = new Date(t), p = (n) => (n < 10 ? "0" + n : n); return (d.getMonth() + 1) + "/" + d.getDate() + " " + p(d.getHours()) + ":" + p(d.getMinutes()); };
   function load(cb) { jp({ a: "list", k: adm() }, (d) => { if (d.e === "auth") { ls("accAdm", null); render(null, "관리자 키가 더 이상 유효하지 않습니다"); return; } cb(d.list || []); }, () => render(null, "서버에 연결하지 못했습니다")); }
+  function setMany(ids, s) { const nx = () => { if (!ids.length) return load((l) => render(l)); jp({ a: "set", k: adm(), id: ids.shift(), s }, nx, nx); }; nx(); }
   function setS(id, s) { jp({ a: "set", k: adm(), id, s }, () => load((l) => render(l))); }
   function render(list, err) {
     const bx = g("accList"); if (!bx) return;
@@ -3798,18 +3804,33 @@ if (lastVisitPrev) setTimeout(() => toast(lvText), 1800);
     h += '<div class="sub">' + (err ? esc(err) + " · " : "") + "승인 대기 <b>" + pend + "</b>건 · 승인 <b>" + cnt.ok + "</b>대</div>";
     h += '<div class="accF">' + [["all", "전체"], ["p", "대기"], ["ok", "승인"], ["no", "차단"]].map((f) => '<button type="button" class="' + (flt === f[0] ? "on" : "") + '" data-f="' + f[0] + '">' + f[1] + " " + cnt[f[0]] + "</button>").join("") + "</div>";
     const last = (x) => x.ls || x.t2 || x.t || 0;
-    const vis = list.filter((x) => flt === "all" || x.s === flt).sort((a, b) => last(b) - last(a));
+    const vis = list.filter((x) => flt === "all" || x.s === flt);
     if (!vis.length) h += '<div class="sub">해당하는 기기가 없습니다</div>';
-    vis.forEach((x) => {
-      const st = x.s === "p" ? "대기" : x.s === "ok" ? "승인" : "차단", lt = x.s === "p" ? "요청 " + when(x.t) : (x.ls ? "마지막 접속 " + ago(x.ls) + " (" + when(x.ls) + ")" : "접속 기록 없음 · 승인 " + ago(x.t2 || x.t));
-      h += '<div class="accRow s' + x.s + '"><div class="who"><b>' + esc(x.n) + (x.id === ID ? ' <em class="accMe">이 기기</em>' : "") + "</b><small>" + (appF === "all" ? (isLaw(x) ? "법령 뷰어 · " : "딸깍 지도 · ") : "") + esc(orgOf(x)) + '</small><small class="accSt">' + st + " · " + lt + '</small></div><div class="bt">' +
-        (cf && cf.i === x.id ? "" : (x.s !== "ok" ? '<button type="button" data-a="ok" data-i="' + x.id + '">승인</button>' : "") + (x.s === "p" ? '<button type="button" data-a="no" data-i="' + x.id + '">거절</button>' : "") + (x.s === "ok" ? '<button type="button" data-a="no" data-i="' + x.id + '">차단</button>' : "") + '<button type="button" data-a="del" data-i="' + x.id + '">삭제</button>') + "</div>" +
-        (cf && cf.i === x.id ? '<div class="accCf"><b>「' + esc(x.n) + "」 " + esc(orgOf(x)) + " 기기를 " + (cf.a === "del" ? "삭제" : x.s === "p" ? "거절" : "차단") + "할까요?</b>" + (x.id === ID ? " (지금 쓰는 기기입니다)" : "") + '<div><button type="button" class="btn" data-cf="y">확인</button><button type="button" class="btn g" data-cf="n">취소</button></div></div>' : "") + "</div>";
+    const GR = new Map();                                        // 같은 사람(소속·이름)의 기기를 한 묶음으로
+    vis.forEach((x) => { const sp = splitN(x), k = (isLaw(x) ? "L" : "M") + "|" + orgOf(x) + "|" + sp.nm; if (!GR.has(k)) GR.set(k, { k, nm: sp.nm, org: orgOf(x), law: isLaw(x), it: [] }); GR.get(k).it.push(x); });
+    const gl = [...GR.values()]; gl.forEach((G) => G.it.sort((a, b) => last(b) - last(a)));
+    gl.sort((a, b) => (b.it.some((x) => x.s === "p") - a.it.some((x) => x.s === "p")) || last(b.it[0]) - last(a.it[0]));
+    h = h.replace(/(<div class="sub">[^<]*승인 대기 <b>\d+<\/b>건)/, "$1 · " + gl.length + "명");
+    const NOW = Date.now(), nm0 = (G) => G.it.filter((x) => x.s !== "no").length;
+    gl.forEach((G, gi) => {
+      const okN = G.it.filter((x) => x.s === "ok").length, pN = G.it.filter((x) => x.s === "p").length, noN = G.it.filter((x) => x.s === "no").length, gc = cf && cf.g === G.k;
+      h += '<div class="accG"><b>' + esc(G.nm) + "</b><small>" + (appF === "all" ? (G.law ? "법령 뷰어 · " : "딸깍 지도 · ") : "") + esc(G.org) + " · 기기 " + G.it.length + "대" + (okN ? " · 승인 " + okN : "") + (pN ? " · 대기 " + pN : "") + (noN ? " · 차단 " + noN : "") + "</small>" +
+        (G.it.length > 1 && !gc ? '<span class="gb">' + (nm0(G) ? '<button type="button" data-ga="no" data-gi="' + gi + '">모두 차단</button>' : "") + '<button type="button" data-ga="del" data-gi="' + gi + '">모두 삭제</button></span>' : "") + "</div>" +
+        (gc ? '<div class="accCf"><b>「' + esc(G.nm) + "」 기기 " + (cf.a === "del" ? G.it.length : nm0(G)) + "대를 모두 " + (cf.a === "del" ? "삭제" : "차단") + "할까요?</b>" + (G.it.some((x) => x.id === ID) ? " (지금 쓰는 기기가 들어 있습니다)" : "") + '<div><button type="button" class="btn" data-gcf="y" data-gi="' + gi + '">확인</button><button type="button" class="btn g" data-gcf="n">취소</button></div></div>' : "");
+      G.it.forEach((x) => {
+        const sp = splitN(x), st = x.s === "p" ? "대기" : x.s === "ok" ? "승인" : "차단", lt = x.s === "p" ? "요청 " + when(x.t) : (x.ls ? "마지막 접속 " + ago(x.ls) + " (" + when(x.ls) + ")" : "접속 기록 없음 · 승인 " + ago(x.t2 || x.t)), stale = x.s === "ok" && NOW - last(x) > 30 * 864e5;
+        h += '<div class="accRow s' + x.s + (stale ? " old" : "") + '"><div class="who"><b><i class="accDt' + (sp.dt ? "" : " nn") + '">' + (sp.dt || "구분 없음") + "</i>" + (x.id === ID ? '<em class="accMe">이 기기</em>' : "") + '</b><small class="accSt">' + st + " · " + lt + (stale ? " · 30일 넘게 안 씀" : "") + '</small></div><div class="bt">' +
+          (cf && cf.i === x.id ? "" : (x.s !== "ok" ? '<button type="button" data-a="ok" data-i="' + x.id + '">승인</button>' : "") + (x.s === "p" ? '<button type="button" data-a="no" data-i="' + x.id + '">거절</button>' : "") + (x.s === "ok" ? '<button type="button" data-a="no" data-i="' + x.id + '">차단</button>' : "") + '<button type="button" data-a="del" data-i="' + x.id + '">삭제</button>') + "</div>" +
+          (cf && cf.i === x.id ? '<div class="accCf"><b>「' + esc(sp.nm) + " · " + (sp.dt || "구분 없음") + "」 기기를 " + (cf.a === "del" ? "삭제" : x.s === "p" ? "거절" : "차단") + "할까요?</b>" + (x.id === ID ? " (지금 쓰는 기기입니다)" : "") + '<div><button type="button" class="btn" data-cf="y">확인</button><button type="button" class="btn g" data-cf="n">취소</button></div></div>' : "") + "</div>";
+      });
     });
+    window.__accGL = gl;
     h += '<div style="display:flex;gap:6px;margin-top:8px"><button class="btn g" id="accRf" type="button">새로고침</button><button class="btn g" id="accOut" type="button">관리자 해제</button></div>';
     bx.innerHTML = h;
     bx.querySelectorAll(".accRow button[data-a]").forEach((b) => (b.onclick = () => { if (b.dataset.a === "ok") { cf = null; setS(b.dataset.i, "ok"); return; } cf = { i: b.dataset.i, a: b.dataset.a }; render(all, err); }));
     bx.querySelectorAll(".accRow button[data-cf]").forEach((b) => (b.onclick = () => { if (b.dataset.cf === "n") { cf = null; render(all, err); return; } const q = cf; cf = null; b.disabled = true; setS(q.i, q.a); }));
+    bx.querySelectorAll(".accG button[data-ga]").forEach((b) => (b.onclick = () => { cf = { g: gl[+b.dataset.gi].k, a: b.dataset.ga }; render(all, err); }));
+    bx.querySelectorAll("button[data-gcf]").forEach((b) => (b.onclick = () => { if (b.dataset.gcf === "n") { cf = null; render(all, err); return; } const G = gl[+b.dataset.gi], q = cf; cf = null; b.disabled = true; setMany(G.it.filter((x) => q.a === "del" || x.s !== "no").map((x) => x.id), q.a); }));
     bx.querySelectorAll(".accF button[data-f]").forEach((b) => (b.onclick = () => { flt = b.dataset.f; cf = null; render(all); }));
     bx.querySelectorAll(".accF button[data-ap]").forEach((b) => (b.onclick = () => { appF = b.dataset.ap; cf = null; render(all); }));
     g("accRf").onclick = refresh; g("accOut").onclick = () => { ls("accAdm", null); clearInterval(tmr); badge(0); g("accSec").hidden = true; render(null); };
